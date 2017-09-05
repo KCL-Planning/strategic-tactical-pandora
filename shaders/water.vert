@@ -1,0 +1,33 @@
+#version 420
+
+uniform mat4 projection_matrix;
+uniform mat4 modelview_matrix;
+uniform mat4 model_matrix;
+uniform mat4 view_matrix;
+
+#include shaders/light_header.inc
+#include shaders/light_header_vert.inc
+
+in vec3 a_Vertex;
+in float a_WaveEffect;
+in vec2 a_TexCoord0;
+in vec3 a_Normal;
+out vec2 texCoord0;
+out float blendFactor;
+out float height;
+out vec4 worldPos;
+
+void main(void) 
+{
+	texCoord0 = a_TexCoord0;
+	vec4 pos = modelview_matrix * vec4(a_Vertex, 1.0);
+	pos[1] = pos[1] + a_WaveEffect;
+	worldPos = model_matrix * vec4(a_Vertex, 1.0);
+
+	#include shaders/light_body_vert.inc
+	
+	height = a_Vertex[1] / 10.0;
+
+	blendFactor = 1 - length(pos) / 300;
+	gl_Position = projection_matrix * pos;
+}
