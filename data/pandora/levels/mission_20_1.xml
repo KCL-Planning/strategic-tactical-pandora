@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+	<structures>
+		<structure id="structure_000" name="Small Manifold">
+			<filename>data/models/Pandora/misc/small_manifold.plf</filename>
+			<texture>data/models/Pandora/misc/atlas/ColourAtlas.tga</texture>
+			<inspection_points>
+				<inspection_point x="4" y="2" z="0" pitch="0" yaw="-90" />
+				<inspection_point x="4" y="2" z="-2" pitch="0" yaw="-90" />
+				<inspection_point x="4" y="2" z="2" pitch="0" yaw="-90" />
+				<inspection_point x="-4" y="2" z="2" pitch="0" yaw="90" />
+				<inspection_point x="-4" y="2" z="0" pitch="0" yaw="90" />
+				<inspection_point x="-4" y="2" z="-2" pitch="0" yaw="90" />
+				<inspection_point x="-0.5" y="2" z="5" pitch="0" yaw="180" />
+				<inspection_point x="-0.5" y="2" z="-5" pitch="0" yaw="0" />
+			</inspection_points>
+		</structure>
+		<structure id="structure_001" name="Pillar">
+			<filename>data/models/Pandora/misc/damaged_beacon.plf</filename>
+			<texture>data/models/Pandora/misc/damaged_beacon.tga</texture>
+			<inspection_points>
+				<inspection_point x="0" y="5" z="-1" pitch="0" yaw="0" />
+				<inspection_point x="-1" y="5" z="0" pitch="0" yaw="90" />
+				<inspection_point x="0" y="5" z="1" pitch="0" yaw="180" />
+				<inspection_point x="1" y="5" z="0" pitch="0" yaw="270" />
+				<inspection_point x="0" y="10" z="-1" pitch="0" yaw="0" />
+				<inspection_point x="-1" y="10" z="0" pitch="0" yaw="90" />
+				<inspection_point x="0" y="10" z="1" pitch="0" yaw="180" />
+				<inspection_point x="1" y="10" z="0" pitch="0" yaw="270" />
+			</inspection_points>
+		</structure>
+		<structure id="structure_002" name="RechargeStation" can_recharge="true">
+			<filename>data/models/Pandora/misc/recharge_station.plf</filename>
+			<texture>data/models/Pandora/misc/atlas/ColourAtlas.tga</texture>
+		</structure>
+		<structure id="structure_003" name="ValvePanel_000">
+			<filename>data/models/Pandora/misc/valve_panel.plf</filename>
+			<texture>data/models/Pandora/misc/atlas/ColourAtlas.tga</texture>
+		</structure>
+	</structures>
+	<world>
+		<auv_location x="10" y="13" z="-20" pitch="20" yaw="0" />
+		<mission_sites>
+
+			<!-- recharge station -->
+			<mission_site>
+				<location x="50" y="10" z="20" pitch="0" yaw="90" />
+				<start_waypoint x="0" y="-2" z="0" />
+				<structures>
+					<structure ref="structure_002" id="0">
+						<location x="50" y="10" z="20" pitch="0" yaw="90" />
+					</structure>
+				</structures>
+			</mission_site>
+
+			<mission_site>
+				<location x="0" y="0" z="0" pitch="0" yaw="0" />
+				<start_waypoint x="0" y="10" z="0" />
+				<structures>
+
+					<!-- manifolds -->
+					<structure ref="structure_000" id="manifold_000">
+						<location x="20" y="0" z="40" pitch="0" yaw="0" />
+					</structure>
+					<structure ref="structure_000" id ="manifold_001">
+						<location x="20" y="0" z="-40" pitch="0" yaw="0" />
+					</structure>
+					<structure ref="structure_000" id ="manifold_002">
+						<location x="-20" y="0" z="-40" pitch="0" yaw="0" />
+					</structure>
+					<structure ref="structure_000" id ="manifold_003">
+						<location x="-20" y="0" z="40" pitch="0" yaw="0" />
+					</structure>
+
+					<!-- valve panels -->
+					<structure ref="structure_003" id="valve_panel_000">
+						<location x="45" y="3" z="-25" pitch="0" yaw="0" />
+						<valves>
+							<valve id="valve_000">
+								<location x="0" y="1.5" z="0" pitch="0" yaw="0" />
+							</valve>
+						</valves>
+					</structure>
+
+					<structure ref="structure_003" id="valve_panel_001">
+						<location x="-45" y="3" z="-25" pitch="0" yaw="0" />
+						<valves>
+							<valve id="valve_001">
+								<location x="0" y="1.5" z="0" pitch="0" yaw="0" />
+							</valve>
+						</valves>
+					</structure>
+
+					<!-- pillars -->
+					<structure ref="structure_001" id="pillar_000">
+						<location x="40" y="-1" z="2" pitch="0" yaw="0" />
+					</structure>
+					<structure ref="structure_001" id="pillar_001">
+						<location x="40" y="-1" z="50" pitch="0" yaw="0" />
+					</structure>
+					<structure ref="structure_001" id="pillar_002">
+						<location x="40" y="-1" z="-50" pitch="0" yaw="0" />
+					</structure>
+					<structure ref="structure_001" id="pillar_003">
+						<location x="-30" y="-1" z="-2" pitch="0" yaw="0" />
+					</structure>
+				</structures>
+
+				<missions>
+					<!-- valve goals -->
+					<mission>
+						<goals>
+							<goal>
+								<type>valve_turning_mission</type>
+								<structure>valve_panel_000</structure>
+								<valve>valve_000</valve>
+								<start_time>110</start_time>
+								<dead_line>4100</dead_line>
+								<valve_angle>90</valve_angle>
+							</goal>
+						</goals>
+					</mission>
+
+					<mission>
+						<goals>
+							<goal>
+								<type>valve_turning_mission</type>
+								<structure>valve_panel_001</structure>
+								<valve>valve_001</valve>
+								<start_time>110</start_time>
+								<dead_line>7100</dead_line>
+								<valve_angle>90</valve_angle>
+							</goal>
+						</goals>
+					</mission>
+
+					<!-- manifold inspections -->
+					<mission><goals><goal><type>inspection_mission</type><structure>manifold_000</structure></goal></goals></mission>
+					<mission><goals><goal><type>inspection_mission</type><structure>manifold_001</structure></goal></goals></mission>
+					<mission><goals><goal><type>inspection_mission</type><structure>manifold_002</structure></goal></goals></mission>
+					<mission><goals><goal><type>inspection_mission</type><structure>manifold_003</structure></goal></goals></mission>
+
+					<!-- pillar inspections -->
+					<mission><goals>
+						<goal><type>inspection_mission</type><structure>pillar_000</structure></goal>
+					</goals></mission>
+
+					<mission><goals>
+						<goal><type>inspection_mission</type><structure>pillar_001</structure></goal>
+						<goal><type>inspection_mission</type><structure>pillar_001</structure></goal>
+						<goal><type>inspection_mission</type><structure>pillar_002</structure></goal>
+					</goals></mission>
+
+					<mission><goals>
+						<goal><type>inspection_mission</type><structure>pillar_002</structure></goal>
+					</goals></mission>
+
+					<mission><goals>
+						<goal><type>inspection_mission</type><structure>pillar_003</structure></goal>
+						<goal><type>inspection_mission</type><structure>pillar_000</structure></goal>
+						<goal><type>inspection_mission</type><structure>pillar_003</structure></goal>
+					</goals></mission>
+
+				</missions>
+			</mission_site>
+
+			<mission_site>
+				<location x="-50" y="0" z="0" pitch="0" yaw="0" />
+				<start_waypoint x="0" y="10" z="0" />
+				<structures>
+
+					<!-- manifolds -->
+					<structure ref="structure_000" id="manifold_000">
+						<location x="20" y="0" z="40" pitch="0" yaw="0" />
+					</structure>
+					<structure ref="structure_000" id ="manifold_001">
+						<location x="20" y="0" z="-40" pitch="0" yaw="0" />
+					</structure>
+					<structure ref="structure_000" id ="manifold_002">
+						<location x="-20" y="0" z="-40" pitch="0" yaw="0" />
+					</structure>
+					<structure ref="structure_000" id ="manifold_003">
+						<location x="-20" y="0" z="40" pitch="0" yaw="0" />
+					</structure>
+
+					<!-- valve panels -->
+					<structure ref="structure_003" id="valve_panel_000">
+						<location x="45" y="3" z="-25" pitch="0" yaw="0" />
+						<valves>
+							<valve id="valve_000">
+								<location x="0" y="1.5" z="0" pitch="0" yaw="0" />
+							</valve>
+						</valves>
+					</structure>
+
+					<structure ref="structure_003" id="valve_panel_001">
+						<location x="-45" y="3" z="-25" pitch="0" yaw="0" />
+						<valves>
+							<valve id="valve_001">
+								<location x="0" y="1.5" z="0" pitch="0" yaw="0" />
+							</valve>
+						</valves>
+					</structure>
+
+					<!-- pillars -->
+					<structure ref="structure_001" id="pillar_000">
+						<location x="40" y="-1" z="2" pitch="0" yaw="0" />
+					</structure>
+					<structure ref="structure_001" id="pillar_001">
+						<location x="40" y="-1" z="50" pitch="0" yaw="0" />
+					</structure>
+					<structure ref="structure_001" id="pillar_002">
+						<location x="40" y="-1" z="-50" pitch="0" yaw="0" />
+					</structure>
+					<structure ref="structure_001" id="pillar_003">
+						<location x="-30" y="-1" z="-2" pitch="0" yaw="0" />
+					</structure>
+				</structures>
+
+				<missions>
+					<!-- valve goals -->
+					<mission>
+						<goals>
+							<goal>
+								<type>valve_turning_mission</type>
+								<structure>valve_panel_000</structure>
+								<valve>valve_000</valve>
+								<start_time>110</start_time>
+								<dead_line>4100</dead_line>
+								<valve_angle>90</valve_angle>
+							</goal>
+						</goals>
+					</mission>
+
+					<mission>
+						<goals>
+							<goal>
+								<type>valve_turning_mission</type>
+								<structure>valve_panel_001</structure>
+								<valve>valve_001</valve>
+								<start_time>110</start_time>
+								<dead_line>7100</dead_line>
+								<valve_angle>90</valve_angle>
+							</goal>
+						</goals>
+					</mission>
+
+					<!-- manifold inspections -->
+					<mission><goals><goal><type>inspection_mission</type><structure>manifold_000</structure></goal></goals></mission>
+					<mission><goals><goal><type>inspection_mission</type><structure>manifold_001</structure></goal></goals></mission>
+					<mission><goals><goal><type>inspection_mission</type><structure>manifold_002</structure></goal></goals></mission>
+					<mission><goals><goal><type>inspection_mission</type><structure>manifold_003</structure></goal></goals></mission>
+
+					<!-- pillar inspections -->
+					<mission><goals>
+						<goal><type>inspection_mission</type><structure>pillar_000</structure></goal>
+					</goals></mission>
+
+					<mission><goals>
+						<goal><type>inspection_mission</type><structure>pillar_001</structure></goal>
+						<goal><type>inspection_mission</type><structure>pillar_001</structure></goal>
+						<goal><type>inspection_mission</type><structure>pillar_002</structure></goal>
+					</goals></mission>
+
+					<mission><goals>
+						<goal><type>inspection_mission</type><structure>pillar_002</structure></goal>
+					</goals></mission>
+
+					<mission><goals>
+						<goal><type>inspection_mission</type><structure>pillar_003</structure></goal>
+						<goal><type>inspection_mission</type><structure>pillar_000</structure></goal>
+						<goal><type>inspection_mission</type><structure>pillar_003</structure></goal>
+					</goals></mission>
+
+				</missions>
+			</mission_site>
+
+		</mission_sites>
+	</world>
+</root>

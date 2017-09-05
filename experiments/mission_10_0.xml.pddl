@@ -1,0 +1,71 @@
+(define (problem pandora_strategic_mission)
+(:domain pandora_domain_strategic)
+(:objects
+auv - vehicle
+mission_site_start_point_0 mission_site_start_point_1 wp_auv0 - waypoint
+Mission0 Mission1 Mission2 Mission3 Mission4 Mission5 Mission6 Mission7 Mission8 Mission9 - mission
+)
+(:init
+(vehicle_free auv)
+(= (mission_total) 0)
+(at auv wp_auv0) (= (charge auv) 1200)
+
+(recharge_at mission_site_start_point_0)
+
+(active Mission0)
+(active Mission1)
+(active Mission2)
+(active Mission3)
+(active Mission4)
+(active Mission5)
+(active Mission6)
+(active Mission7)
+(active Mission8)
+(active Mission9)
+
+(at 4100 (not (active Mission0)))
+(at 7100 (not (active Mission1)))
+(at 86400 (not (active Mission2)))
+(at 86400 (not (active Mission3)))
+(at 86400 (not (active Mission4)))
+(at 86400 (not (active Mission5)))
+(at 86400 (not (active Mission6)))
+(at 86400 (not (active Mission7)))
+(at 86400 (not (active Mission8)))
+(at 86400 (not (active Mission9)))
+
+(in Mission0 mission_site_start_point_1)
+(in Mission1 mission_site_start_point_1)
+(in Mission2 mission_site_start_point_1)
+(in Mission3 mission_site_start_point_1)
+(in Mission4 mission_site_start_point_1)
+(in Mission5 mission_site_start_point_1)
+(in Mission6 mission_site_start_point_1)
+(in Mission7 mission_site_start_point_1)
+(in Mission8 mission_site_start_point_1)
+(in Mission9 mission_site_start_point_1)
+
+(= (mission_duration Mission0) 261.867)
+(= (mission_duration Mission1) 242.066)
+(= (mission_duration Mission2) 336.17)
+(= (mission_duration Mission3) 365.49)
+(= (mission_duration Mission4) 340.969)
+(= (mission_duration Mission5) 337.334)
+(= (mission_duration Mission6) 608.425)
+(= (mission_duration Mission7) 800.794)
+(= (mission_duration Mission8) 692.803)
+(= (mission_duration Mission9) 629.094)
+
+(connected mission_site_start_point_0 mission_site_start_point_1) (= (distance mission_site_start_point_0 mission_site_start_point_1) 53.8888)
+(connected mission_site_start_point_0 wp_auv0) (= (distance mission_site_start_point_0 wp_auv0) 56.7891)
+(connected wp_auv0 mission_site_start_point_0) (= (distance wp_auv0 mission_site_start_point_0) 56.7891)
+(connected mission_site_start_point_1 mission_site_start_point_0) (= (distance mission_site_start_point_1 mission_site_start_point_0) 53.8888)
+(connected mission_site_start_point_1 wp_auv0) (= (distance mission_site_start_point_1 wp_auv0) 22.561)
+(connected wp_auv0 mission_site_start_point_1) (= (distance wp_auv0 mission_site_start_point_1) 22.561)
+
+)
+(:goal
+(> (mission_total) 0)
+)
+(:metric maximize (mission_total))
+)

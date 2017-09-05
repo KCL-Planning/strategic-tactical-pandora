@@ -1,0 +1,74 @@
+******************************
+**** Dreaded Portal Engine ***
+******************************
+
+Free and open source engine that is designed for indoor environments. The build-in portal 
+level format (.PLF) is used to load levels, a script is provided to export these levels 
+from Blender.
+
+The following features are currently supported:
+* Particle engine.
+* Animated models.
+* Volumetric lighting.
+* Can load multiple image formats using FreeImage.
+* AI pathfinding using meshes.
+* Custom level format (Portal Level Format PLF).
+* Multiple platforms supported (Windows and Linux).
+
+Future developments:
+* Sound.
+
+*** DEPENDENCIES ***
+Assimp (3.0 minimum, 3.1 recommended)
+FreeGlut (2.8.1)
+FreeImage
+Glew (1.9.0)
+glfw (2.7.8)
+GLM (0.9.4.3)
+
+******************************
+*** PANDORA specific stuff ***
+*****************************
+In order to show the submarine(s) in rviz run "roslaunch pandora_visualiser robot_description"
+
+- Loading a level file.
+In PANDORA you can load an underwater scene by passing the --level=<path to XML file> option. 
+
+E.g.:
+./bin/visualiser data/pandora/levels/test_level.xml
+
+The XML contains has one root node which contains three possible children:
+<structures> 
+This node contains multiple <structure> nodes which define the structures that can be placed in the world. Each <structure> node contains the following children:
+  <filename> This contains the path an PLF file which contains the mesh, UV, etc information of the structure.
+  <texture> The texture file that is applied to the loaded mesh (preferably TGA format).
+  <inspection_points> (optional) A set of <inspection_point> nodes that specifies parts of the structure that must be inspected when an inspection mission is specified (see <mission> below.
+    <inspection_point> Contains 5 attributes that specifies the location of the inspection point relative to the structure. These are: x, y, z, pitch, yaw.
+
+<world>
+This node contains the structures that are placed on the seabed as well as all possible missions and the location of the AUV.
+  <auv_location> The location of the AUV, this is given as attribute: x, y, z, pitch, yaw.
+  <mission_sites> This node contains all the seperate mission sites and specify the structures belonging to these mission sites.
+    <mission_site> The description of an individual mission site.
+       <location> The location of the mission site. Given by 5 attributes: x, y, z, pitch, yaw.
+       <start_waypoint> To access the site we specify a location where the AUV can enter the site, this location must connect collision free to all other mission site start sites. 
+       <chains> This node specifies a set of chains to be added to the world.
+         <chain> The attribute "chain_links" specifies the number of links that are part of the chain. The if attribute "has_been_observed" is "true" then the chain will be known to the AUV at the start of the mission.
+           <location> Specifies the location of the chain using 5 attributes: x, y, z, pitch, yaw.
+       <structures> This describes the structures that are part of this mission site.
+         <structure> The attribute "ref" is a reference to the "id" attribute of a /root/structures/structure node. The "id" attribute is used when defining <goals>.
+           <location> The location of the structure relative to the <mission_site> it is part of. The location is specified with 5 attributes: x, y, z, pitch, yaw.
+           <valves> Some structures can have valves.
+             <valve> Adds a valve to this structure, the "id" attribute is used by the <goal> nodes to define a valve_turning goal.
+               <location> Specifies the location of the valve using 5 attributes: x, y, z, pitch, yaw.
+       <missions> This nodes the scribes the set of missions for this mission_site.
+         <mission> Defines a single mission for this mission_site.
+           <goals> Defines the set of goals for a single mission.
+             <goal> A single goal for this single mission.
+               <type> The type of mission, the options are: "inspection_mission", "valve_turning_mission".
+               <structure> The id of the structure this goal is related to. This refers to the "id" attribute of a /root/structure/structure node.
+               <valve> (mandantory only for "valve_turning_mission") The id of the valve as defined in a ../../../structures/structure/valves/valve:id attribute.
+               <start_time> The starting time when this valve can be turned.
+               <dead_line> The deadline by which time the valve must have been turned.
+               <valve_angle> The angle at which the valve must end up in.
+       

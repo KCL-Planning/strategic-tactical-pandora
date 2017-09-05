@@ -1,0 +1,3 @@
+<launch>
+    <param name="robot_description" command="cat $(find pandora_visualiser)/data/models/submarine.urdf" />
+</launch>

@@ -1,0 +1,98 @@
+#include "FPSLabel.h"
+
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+#ifdef __linux
+#include <unistd.h>
+#endif
+
+#include <time.h>
+#include <sstream>
+#include <iomanip>
+
+#include <math.h>
+
+#include "../../core/gui/Label.h"
+
+FPSLabel::FPSLabel(Label& label)
+	: label_(&label), current_time_(getWallTime()), frames_rendered_(0), fps_(0)
+{
+	
+}
+
+void FPSLabel::frameRendered()
+{
+	++frames_rendered_;
+
+	double time = getWallTime();
+	double delta_time_ = time - current_time_;
+	
+	if (delta_time_ > 1.0f)
+	{
+		fps_ = frames_rendered_ / delta_time_;
+
+		frames_rendered_ = 0;
+		delta_time_ = 0;
+		current_time_ = time;
+
+		int fps_int = fps_ + 0.5f;
+		std::stringstream ss;
+		ss << "FPS " << fps_int;
+		label_->setLabel(ss.str());
+	}
+}
+
+#ifdef _WIN32
+double FPSLabel::getWallTime()
+{
+    LARGE_INTEGER time,freq;
+    if (!QueryPerformanceFrequency(&freq))
+    {
+        //  Handle error
+        return 0;
+    }
+    if (!QueryPerformanceCounter(&time))
+    {
+        //  Handle error
+        return 0;
+    }
+    return (double)time.QuadPart / freq.QuadPart;
+}
+
+double FPSLabel::getCPUTime()
+{
+    FILETIME a,b,c,d;
+    if (GetProcessTimes(GetCurrentProcess(),&a,&b,&c,&d) != 0)
+    {
+        //  Returns total user time.
+        //  Can be tweaked to include kernel times as well.
+        return
+            (double)(d.dwLowDateTime |
+            ((unsigned long long)d.dwHighDateTime << 32)) * 0.0000001;
+    }
+    else
+    {
+        //  Handle error
+        return 0;
+    }
+}
+//  Posix/Linux
+#else
+#include <sys/time.h>
+double FPSLabel::getWallTime()
+{
+    struct timeval time;
+    if (gettimeofday(&time,NULL))
+    {
+        //  Handle error
+        return 0;
+    }
+    return (double)time.tv_sec + (double)time.tv_usec * .000001;
+}
+
+double FPSLabel::getCPUTime()
+{
+    return (double)clock() / CLOCKS_PER_SEC;
+}
+#endif

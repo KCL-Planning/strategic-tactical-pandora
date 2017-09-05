@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<robot name="auv1">
+  <link name="location">
+    <visual>
+      <geometry>
+        <mesh filename="package://pandora_visualiser/data/models/submarine.dae"/>
+      </geometry>
+    </visual>
+  </link>
+</robot>
