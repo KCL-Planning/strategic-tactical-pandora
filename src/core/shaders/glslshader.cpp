@@ -1,4 +1,12 @@
-#include "glslshader.h"
+#include "dpengine/shaders/glslshader.h"
+
+#ifdef _WIN32
+#define NOMINMAX
+#include <Windows.h>
+#endif
+
+namespace DreadedPE
+{
 
 GLSLProgram* GLSLProgram::last_used_shader_ = NULL;
 
@@ -43,6 +51,11 @@ void GLSLProgram::addShader(GLuint type, const string& file)
 GLSLProgram::~GLSLProgram()
 {
 
+}
+
+void GLSLProgram::shapeDestroyed(const Shape& shape)
+{
+	shape_to_vbo_.erase(&shape);
 }
 
 void GLSLProgram::unload()
@@ -134,7 +147,7 @@ GLuint GLSLProgram::getUniformLocation(const string& name)
 			
 		if (location == -1)
 		{
-/*
+
 #ifdef _WIN32
 			std::stringstream ss;
 			ss << "Could not find the location of " << name;
@@ -143,9 +156,10 @@ GLuint GLSLProgram::getUniformLocation(const string& name)
 				GLSLShader& shader = *ci;
 				ss << " in " << shader.filename_ << "(" << shader.id_ << "); ";
 			}
-			MessageBox(NULL, ss.str().c_str(), "Error", MB_OK);
+			ss << std::endl;
+			OutputDebugString(ss.str().c_str());
 #endif
-			*/
+			
 			std::cerr << "Could not find the uniform name of: " << name << std::endl;
 		}
 		
@@ -332,3 +346,5 @@ void GLSLProgram::outputShaderLog(const GLSLShader& shader)
 	file << string(infolog) << std::endl;
 	file.close();
 }
+
+};

@@ -1,13 +1,16 @@
-#include "TerrainShader.h"
+#include "dpengine/shaders/TerrainShader.h"
 
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "../light/Light.h"
-#include "../scene/Material.h"
-#include "../../shapes/terrain.h"
-#include "../scene/SceneLeafModel.h"
-#include "../texture/Texture.h"
+#include "dpengine/light/Light.h"
+#include "dpengine/scene/Material.h"
+#include "dpengine/shapes/terrain.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/texture/Texture.h"
+
+namespace DreadedPE
+{
 
 TerrainShader* TerrainShader::terrain_shader_ = NULL;
 
@@ -17,9 +20,9 @@ TerrainShader::TerrainShader(const std::string& vertex_shader, const std::string
 
 }
 
-void TerrainShader::initialise(const SceneLeafModel& model_node, const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const SceneLeafLight*>& lights)
+void TerrainShader::prepareToRender(const SceneLeafModel& model_node, const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const SceneLeafLight*>& lights)
 {
-	std::map<const Shape*, GLuint>::iterator mapped_i = shape_to_vbo_.find(&model_node.getModel());
+	std::map<const Shape*, GLuint>::iterator mapped_i = shape_to_vbo_.find(model_node.getShape().get());
 	GLuint vbo_index;
 	if (mapped_i == shape_to_vbo_.end())
 	{
@@ -35,17 +38,18 @@ void TerrainShader::initialise(const SceneLeafModel& model_node, const glm::mat4
 		glDisableVertexAttribArray(6);
 		glDisableVertexAttribArray(7);
 
-		glBindBuffer(GL_ARRAY_BUFFER, model_node.getModel().getVertexBufferId());
+		glBindBuffer(GL_ARRAY_BUFFER, model_node.getShape()->getVertexBufferId());
 		glVertexAttribPointer((GLint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-		glBindBuffer(GL_ARRAY_BUFFER, model_node.getModel().getTexCoordBufferId());
+		glBindBuffer(GL_ARRAY_BUFFER, model_node.getShape()->getTexCoordBufferId());
 		glVertexAttribPointer((GLint)1, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-		glBindBuffer(GL_ARRAY_BUFFER, model_node.getModel().getNormalBufferId());
+		glBindBuffer(GL_ARRAY_BUFFER, model_node.getShape()->getNormalBufferId());
 		glVertexAttribPointer((GLint)2, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model_node.getModel().getIndexBufferId());
-		shape_to_vbo_[&model_node.getModel()] = vbo_index;
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model_node.getShape()->getIndexBufferId());
+		shape_to_vbo_[model_node.getShape().get()] = vbo_index;
+		model_node.getShape()->addDestructionListener(*this);
 	}
 	else
 	{
@@ -55,21 +59,11 @@ void TerrainShader::initialise(const SceneLeafModel& model_node, const glm::mat4
 	if (last_used_shader_ != this)
 	{
 		bindShader();
-/*
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-		glEnableVertexAttribArray(2);
-		glDisableVertexAttribArray(3);
-		glDisableVertexAttribArray(4);
-		glDisableVertexAttribArray(5);
-		glDisableVertexAttribArray(6);
-		glDisableVertexAttribArray(7);
-*/
 	}
 
-	LightShader::initialise(model_node, view_matrix, model_matrix, projection_matrix, lights);
+	LightShader::prepareToRender(model_node, view_matrix, model_matrix, projection_matrix, lights);
 	glm::mat4 model_view_matrix = view_matrix * model_matrix;
-	glm::mat4 normal_matrix = glm::inverseTranspose(model_view_matrix);
+	//glm::mat4 normal_matrix = glm::inverseTranspose(model_view_matrix);
 
 	//Send the modelview and projection matrices to the shaders
 	glUniformMatrix4fv(modelview_matrix_loc_, 1, false, glm::value_ptr(model_view_matrix));
@@ -77,40 +71,24 @@ void TerrainShader::initialise(const SceneLeafModel& model_node, const glm::mat4
 	glUniformMatrix4fv(projection_matrix_loc_, 1, false, glm::value_ptr(projection_matrix));
 	glUniformMatrix4fv(view_matrix_loc_, 1, false, glm::value_ptr( view_matrix));
 
-	assert (model_node.getMaterial().get1DTextures().size() == 1);
-	assert (model_node.getMaterial().get2DTextures().size() == 1);
+	assert (model_node.getMaterial()->get1DTextures().size() == 1);
+	assert (model_node.getMaterial()->get2DTextures().size() == 1);
 
-	//glActiveTexture(GL_TEXTURE10);
-	//glBindTexture(GL_TEXTURE_2D, model_node.getMaterial().get2DTextures()[0]);
-	//glUniform1i(texture0_loc_, 10);
-	glUniform1i(texture0_loc_, model_node.getMaterial().get2DTextures()[0]->getActiveTextureId());
+	glUniform1i(texture0_loc_, model_node.getMaterial()->get2DTextures()[0]->getActiveTextureId());
 
-	//glActiveTexture(GL_TEXTURE11);
-	//glBindTexture(GL_TEXTURE_1D, model_node.getMaterial().get1DTextures()[0]);
-	//glUniform1i(texture1_loc_, 11);
-	glUniform1i(texture1_loc_, model_node.getMaterial().get1DTextures()[0]->getActiveTextureId());
+	glUniform1i(texture1_loc_, model_node.getMaterial()->get1DTextures()[0]->getActiveTextureId());
 
-	const MaterialLightProperty& material_ambient = model_node.getMaterial().getAmbient();
-	const MaterialLightProperty& material_diffuse = model_node.getMaterial().getDiffuse();
-	const MaterialLightProperty& material_specular = model_node.getMaterial().getSpecular();
-	const MaterialLightProperty& material_emissive = model_node.getMaterial().getEmissive();
+	const MaterialLightProperty& material_ambient = model_node.getMaterial()->getAmbient();
+	const MaterialLightProperty& material_diffuse = model_node.getMaterial()->getDiffuse();
+	const MaterialLightProperty& material_specular = model_node.getMaterial()->getSpecular();
+	const MaterialLightProperty& material_emissive = model_node.getMaterial()->getEmissive();
 
 	glUniform4f(material_ambient_loc_, material_ambient.red_, material_ambient.green_, material_ambient.blue_, material_ambient.alpha_);
 	glUniform4f(material_diffuse_loc_, material_diffuse.red_, material_diffuse.green_, material_diffuse.blue_, material_diffuse.alpha_);
 	glUniform4f(material_specular_loc_, material_specular.red_, material_specular.green_, material_specular.blue_, material_specular.alpha_);
 	glUniform4f(material_emissive_loc_, material_emissive.red_, material_emissive.green_, material_emissive.blue_, material_emissive.alpha_);
-/*
-	//Bind the vertex array and set the vertex pointer to point at it
-	glBindBuffer(GL_ARRAY_BUFFER, model_node.getModel().getVertexBufferId());
-	glVertexAttribPointer((GLint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, model_node.getModel().getTexCoordBufferId());
-	glVertexAttribPointer((GLint)1, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, model_node.getModel().getNormalBufferId());
-	glVertexAttribPointer((GLint)2, 3, GL_FLOAT, GL_FALSE, 0, 0);
-*/
-	model_node.getModel().render();
+	glDrawElements(model_node.getShape()->getRenderingMode(), model_node.getShape()->getIndices().size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 }
 
@@ -150,3 +128,5 @@ TerrainShader& TerrainShader::getShader()
 	}
 	return *terrain_shader_;
 }
+
+};

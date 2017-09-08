@@ -3,13 +3,13 @@
 
 #include <GL/glew.h>
 
-#include "../../../core/texture/Texture.h"
+#include "dpengine/texture/Texture.h"
 
 /**
  * Class that handles the caustic texture and updates the texture that should be used accordingly. The images used are
  * hardcoded for now.
  */
-class CausticTexture : public Texture
+class CausticTexture : public DreadedPE::Texture
 {
 public:
 	CausticTexture();

@@ -1,7 +1,10 @@
-#include "SphereCheck.h"
-#include "../SceneLeaf.h"
-#include "../SceneNode.h"
-#include "Frustum.h"
+#include "dpengine/scene/frustum/SphereCheck.h"
+#include "dpengine/scene/SceneLeaf.h"
+#include "dpengine/scene/SceneNode.h"
+#include "dpengine/scene/frustum/Frustum.h"
+
+namespace DreadedPE
+{
 
 SphereCheck::SphereCheck(const SceneNode& node, float radius)
 	: scene_node_(&node), radius_(radius)
@@ -24,3 +27,5 @@ bool SphereCheck::isInsideFrustum(const Frustum& frustum) const
 
 	return true;
 }
+
+};

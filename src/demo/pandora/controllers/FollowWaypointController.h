@@ -10,12 +10,16 @@
 
 class AUV;
 class RRT;
-class SceneManager;
+
+namespace DreadedPE
+{
+	class SceneManager;
+};
 
 class FollowWaypointController : public PlannerAction
 {
 public:
-	FollowWaypointController(SceneManager& scene_manager, AUV& auv, RRT& rrt);
+	FollowWaypointController(DreadedPE::SceneManager& scene_manager, AUV& auv, RRT& rrt);
 	
 	void followWaypoint(const glm::vec3& goal, bool move_controlled, float pitch, float yaw, float collision_distance = 1.0f);
 	
@@ -24,7 +28,7 @@ public:
 	PlannerAction::PLANNER_ACTION_STATUS getStatus();
 	//bool isFinished() { return path_.size() == current_waypoint_; }
 private:
-	SceneManager* scene_manager_;
+	DreadedPE::SceneManager* scene_manager_;
 	AUV* auv_;
 	RRT* rrt_;
 	glm::vec3 goal_;

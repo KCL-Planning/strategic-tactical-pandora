@@ -1,7 +1,7 @@
 # Collision! collision
 # Collision! collision.001
 # Mesh? Wreck1:polySurface71
-tex //../../projects/horror-flash-thing/pandora_visualiser/data/models/Pandora/misc/DefaultMaterial_Base_Color.png
+tex data/models/Pandora/misc/DefaultMaterial_Base_Color.png
 v -0.02 8.15 -0.95
 v -0.02 8.15 -0.94
 v -0.07 8.11 -0.94

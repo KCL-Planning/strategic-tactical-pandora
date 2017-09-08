@@ -1,30 +1,33 @@
 #ifndef PANDORA_MODELS_SHARK_H
 #define PANDORA_MODELS_SHARK_H
 
-#include "../../../core/entities/Entity.h"
+#include "dpengine/entities/Entity.h"
 
-class Camera;
-class SceneNode;
-class Terrain;
-class SceneManager;
-class Material;
-class ShaderInterface;
-class Line;
+namespace DreadedPE
+{
+	class Camera;
+	class SceneNode;
+	class Terrain;
+	class SceneManager;
+	class Material;
+	class ShaderInterface;
+	class Line;
+}
 
-class Shark : public Entity
+class Shark : public DreadedPE::Entity
 {
 public:
-	Shark(SceneNode* parent, const glm::mat4& transformation, SceneManager& scene_manager);
+	Shark(DreadedPE::SceneNode* parent, const glm::mat4& transformation, DreadedPE::SceneManager& scene_manager);
 	
-	void init(Material& material, ShaderInterface& shader);
+	void init(DreadedPE::Material& material, DreadedPE::ShaderInterface& shader);
 	
 	virtual void prepare(float dt);
-	void onCollision(const CollisionInfo& collision_info);
+	void onCollision(const DreadedPE::CollisionInfo& collision_info);
 
 	void setWaypoints(const std::vector<glm::vec3>& waypoints) { waypoints_ = waypoints; }
 
 private:
-	void transition(SceneNode* new_node, glm::vec3& local_location);
+	void transition(DreadedPE::SceneNode* new_node, glm::vec3& local_location);
 
 	float height_;
 	float velocity_;
@@ -42,7 +45,7 @@ private:
 	std::vector<glm::vec3> waypoints_;
 	unsigned int current_waypoint_;
 
-	Line* collision_line_;
+	DreadedPE::Line* collision_line_;
 };
 
 #endif

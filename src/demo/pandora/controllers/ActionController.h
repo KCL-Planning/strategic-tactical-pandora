@@ -12,7 +12,13 @@ class ObserveController;
 class FollowWaypointController;
 class AUV;
 class PlannerAction;
-class SceneManager;
+
+namespace DreadedPE
+{
+	class SceneManager;
+	class HeightMap;
+};
+
 class OntologyInterface;
 class ActionExecutionListener;
 class ExaminePanelController;
@@ -20,7 +26,6 @@ class ValveTurnController;
 class IlluminateController;
 class ActionLabel;
 class ChainFollowController;
-class HeightMap;
 class RechargeController;
 
 /**
@@ -32,7 +37,7 @@ public:
 	/**
 	 * Constructor.
 	 */
-	ActionController(SceneManager& scene_manager, ros::NodeHandle& node_handle, AUV& auv, HeightMap& height_map, FollowWaypointController& follow_waypoint_controller, OntologyInterface& ontology, ActionLabel* label = NULL);
+	ActionController(DreadedPE::SceneManager& scene_manager, ros::NodeHandle& node_handle, AUV& auv, DreadedPE::HeightMap& height_map, FollowWaypointController& follow_waypoint_controller, OntologyInterface& ontology, ActionLabel* label = NULL);
 	
 	/**
 	 * Check the progress of the current action. Then either execute the action or report a success or 
@@ -70,7 +75,7 @@ private:
 	
 	ros::NodeHandle* node_handle_; /// The ROS node handle.
 	AUV* auv_;
-	HeightMap* height_map_;
+	DreadedPE::HeightMap* height_map_;
 	FollowWaypointController* follow_waypoint_controller_;
 	ObserveController* observe_controller_;
 	ExaminePanelController* examine_panel_controller_;

@@ -1,7 +1,19 @@
+/*
+#ifdef _WIN32
+#define NOMINMAX
+#include <windows.h>
+#endif
+*/
 #include <iostream>
+#include <algorithm> 
+#include <sstream>
 
 #include <glm/glm.hpp>
-#include "Math.h"
+#include <glm/gtc/quaternion.hpp>
+#include "dpengine/math/Math.h"
+
+namespace DreadedPE
+{
 
 // dist3D_Segment_to_Segment(): get the 3D minimum distance between 2 segments
 //    Input:  two 3D line segments S1 and S2
@@ -87,6 +99,123 @@ float Math::dist3D_Segment_to_Segment(const glm::vec3& p1_begin, const glm::vec3
 
 float Math::dist3D_Segment_to_Point(const glm::vec3& p1_begin, const glm::vec3& p1_end, const glm::vec3& point)
 {
+	//std::stringstream ss;
+	//ss << "[Math] Distance between the line segment: (" << p1_begin.x << ", " << p1_begin.y << ", " << p1_begin.z << ") - (" << p1_end.x << ", " << p1_end.y << ", " << p1_end.z << ") and the point: (" << point.x << ", " << point.y << ", " << point.z << ")" << std::endl;
+
+	glm::vec3 p = point - p1_begin;
+	glm::vec3 line = p1_end - p1_begin;
+	float line_length = glm::length(line);
+
+	// Solve the case where the line segment is a point...
+	if (line_length == 0.0f)
+	{
+		//ss << "[Math] The line segment is a point, returning " << glm::distance(p, p1_begin) << std::endl;
+		//OutputDebugString(ss.str().c_str());
+		return glm::distance(p, p1_begin);
+	}
+
+	float dis_to_point = glm::length(p);
+
+	glm::vec3 projection = glm::dot(p, line) / (line_length * line_length) * line + p1_begin;
+	//ss << "[Math] Projection: (" << projection.x << ", " << projection.y << ", " << projection.z << ")" << std::endl;
+
+	// Check if this projection falls on the line or not.
+	float dx = std::abs(p1_begin.x - p1_end.x);
+	float dy = std::abs(p1_begin.y - p1_end.y);
+	float dz = std::abs(p1_begin.z - p1_end.z);
+
+	const glm::vec3* left_line = NULL;
+	const glm::vec3* right_line = NULL;
+
+	if (dx >= dy && dx >= dz)
+	{
+		//ss << "[Math] Project on X-axis." << std::endl;
+		// Order the lines.
+		if (p1_begin.x < p1_end.x)
+		{
+			left_line = &p1_begin;
+			right_line = &p1_end;
+		}
+		else
+		{
+			left_line = &p1_end;
+			right_line = &p1_begin;
+		}
+
+		if (projection.x < left_line->x)
+		{
+			//ss << "[Math] Point on the left side of the X-axis, return " << glm::distance(*left_line, point) << std::endl;
+			//OutputDebugString(ss.str().c_str());
+			return glm::distance(*left_line, point);
+		}
+		else if (projection.x > right_line->x)
+		{
+			//ss << "[Math] Point on the left side of the X-axis, return " << glm::distance(*right_line, point) << std::endl;
+			//OutputDebugString(ss.str().c_str());
+			return glm::distance(*right_line, point);
+		}
+	}
+	if (dy >= dx && dy >= dz)
+	{
+		//ss << "[Math] Project on Y-axis." << std::endl;
+		// Order the lines.
+		if (p1_begin.y < p1_end.y)
+		{
+			left_line = &p1_begin;
+			right_line = &p1_end;
+		}
+		else
+		{
+			left_line = &p1_end;
+			right_line = &p1_begin;
+		}
+
+		if (projection.y < left_line->y)
+		{
+			//ss << "[Math] Point on the left side of the Y-axis, return " << glm::distance(*left_line, point) << std::endl;
+			//OutputDebugString(ss.str().c_str());
+			return glm::distance(*left_line, point);
+		}
+		else if (projection.y > right_line->y)
+		{
+			//ss << "[Math] Point on the left side of the Y-axis, return " << glm::distance(*right_line, point) << std::endl;
+			//OutputDebugString(ss.str().c_str());
+			return glm::distance(*right_line, point);
+		}
+	}
+	if (dz >= dx && dz >= dy)
+	{
+		//ss << "[Math] Project on Z-axis." << std::endl;
+		// Order the lines.
+		if (p1_begin.z < p1_end.z)
+		{
+			left_line = &p1_begin;
+			right_line = &p1_end;
+		}
+		else
+		{
+			left_line = &p1_end;
+			right_line = &p1_begin;
+		}
+
+		if (projection.z < left_line->z)
+		{
+			//ss << "[Math] Point on the left side of the Z-axis, return " << glm::distance(*left_line, point) << std::endl;
+			//OutputDebugString(ss.str().c_str());
+			return glm::distance(*left_line, point);
+		}
+		else if (projection.z > right_line->z)
+		{
+			//ss << "[Math] Point on the left side of the Z-axis, return " << glm::distance(*right_line, point) << std::endl;
+			//OutputDebugString(ss.str().c_str());
+			return glm::distance(*right_line, point);
+		}
+	}
+	//ss << "[Math] Point between the lines, return " << glm::distance(point, projection) << std::endl;
+	//OutputDebugString(ss.str().c_str());
+	return glm::distance(point, projection);
+
+	/*
 	glm::vec3 p = point - p1_begin;
 	glm::vec3 line = p1_end - p1_begin;
 	float line_length = glm::length(line);
@@ -111,6 +240,7 @@ float Math::dist3D_Segment_to_Point(const glm::vec3& p1_begin, const glm::vec3& 
 		// Due to floating point precision, we might end up with a negative number.
 		return sqrt(std::abs(dis_to_point * dis_to_point - l * l));
 	}
+	*/
 }
 
 bool Math::projectsOnLine(const glm::vec3& p1_begin, const glm::vec3& p1_end, const glm::vec3& point)
@@ -141,6 +271,18 @@ bool Math::projectsOnLine(const glm::vec3& p1_begin, const glm::vec3& p1_end, co
 	}
 }
 
+glm::vec3 Math::projectOnLine(const glm::vec3& p1_begin, const glm::vec3& p1_end, const glm::vec3& point)
+{
+	glm::vec3 direction_vector = p1_end - p1_begin;
+	float length = glm::dot(direction_vector, point - p1_begin) / glm::length(direction_vector);
+	return glm::normalize(direction_vector) * length + p1_begin;
+}
+
+glm::vec3 Math::mirrorOnLine(const glm::vec3& p1_begin, const glm::vec3& p1_end, const glm::vec3& point)
+{
+	glm::vec3 projected_line = projectOnLine(p1_begin, p1_end, point);
+	return point + (projected_line - point) * 2.0f;
+}
 
 float Math::getIntersection(const glm::vec3& p1_begin, const glm::vec3& p1_end, const glm::vec3& p2_begin, const glm::vec3& p2_end, glm::vec3& p1, glm::vec3& p2)
 {
@@ -152,11 +294,22 @@ float Math::getIntersection(const glm::vec3& p1_begin, const glm::vec3& p1_end, 
 	B0 = B1 + (nB/d)*(B2-B1);
 	*/
 
-	// Check that the lines are parallel, so they will never intersect! We could calculate the distance from the point to a line
-	// but for now we simply return this.
+	// Check that the lines are parallel, so they can only intersect if they are part of the same line.
 	if (glm::dot(glm::normalize(p1_end - p1_begin), glm::normalize(p2_end - p2_begin)) > 0.999f)
 	{
-		return std::numeric_limits<float>::max();
+		// TODO: Check this properly by checking which segment of a line overlaps.
+		if (p1_begin == p2_begin || p1_begin == p2_end)
+		{
+			p1 = p1_begin;
+			p2 = p1_begin;
+		}
+		if (p1_end == p2_begin || p1_end == p2_end)
+		{
+			p1 = p1_end;
+			p2 = p1_end;
+		}
+
+		return std::min(Math::dist3D_Segment_to_Point(p1_begin, p1_end, p2_begin), Math::dist3D_Segment_to_Point(p1_begin, p1_end, p2_end));
 	}
 
 	float nA = glm::dot(glm::cross(p2_end - p2_begin, p1_begin - p2_begin), glm::cross(p1_end - p1_begin, p2_end - p2_begin));
@@ -167,10 +320,30 @@ float Math::getIntersection(const glm::vec3& p1_begin, const glm::vec3& p1_end, 
 	return glm::distance(p1, p2);
 }
 
-bool Math::getIntersection(const glm::vec2& p1_begin, const glm::vec2& p1_end, const glm::vec2& p2_begin, glm::vec2& p2_end, glm::vec2& p1)
+bool Math::getIntersection(const glm::vec2& p1_begin, const glm::vec2& p1_end, const glm::vec2& p2_begin, const glm::vec2& p2_end, glm::vec2& p1)
 {
+	float EPSILON = 0.0001f;
+	
 	// Ignore if the lines are parallel.
-	if (glm::dot(p1_end - p1_begin, p2_end - p1_begin) < 0.001f) return false;
+	float dot_value = glm::dot(glm::normalize(p1_end - p1_begin), glm::normalize(p2_end - p2_begin));
+	if (dot_value > 0.999f || dot_value < -0.999f) return false;
+
+	// Check if any of the lines are vertical, if so we solve the equation: f(x) = ax + b, where x is the x-value.
+	if (glm::distance(p1_begin.x, p1_end.x) < EPSILON)
+	{
+		float delta = (p2_end.y - p2_begin.y) / (p2_end.x - p2_begin.x);
+		p1.x = p1_begin.x;
+		p1.y = delta * p1_begin.x + p2_begin.y - p2_begin.x * delta;
+		return true;
+	}
+	else if (glm::distance(p2_begin.x, p2_end.x) < EPSILON)
+	{
+		float delta = (p1_end.y - p1_begin.y) / (p1_end.x - p1_begin.x);
+		p1.x = p2_begin.x;
+		p1.y = delta * p2_begin.x + p1_begin.y - p1_begin.x * delta;
+		return true;
+	}
+
 	float delta1 = (p1_end.y - p1_begin.y) / (p1_end.x - p1_begin.x);
 	float delta2 = (p2_end.y - p2_begin.y) / (p2_end.x - p2_begin.x);
 
@@ -183,7 +356,7 @@ bool Math::getIntersection(const glm::vec2& p1_begin, const glm::vec2& p1_end, c
 	return true;
 }
 
-bool Math::getIntersectionSegments(const glm::vec2& p1_begin, const glm::vec2& p1_end, const glm::vec2& p2_begin, glm::vec2& p2_end, glm::vec2& p1)
+bool Math::getIntersectionSegments(const glm::vec2& p1_begin, const glm::vec2& p1_end, const glm::vec2& p2_begin, const glm::vec2& p2_end, glm::vec2& p1)
 {
 	glm::vec2 tmp_p;
 	if (!getIntersection(p1_begin, p1_end, p2_begin, p2_end, tmp_p))
@@ -198,7 +371,14 @@ bool Math::getIntersectionSegments(const glm::vec2& p1_begin, const glm::vec2& p
 	float max_x1 = p1_begin.x < p1_end.x ? p1_end.x : p1_begin.x;
 	float max_x2 = p2_begin.x < p2_end.x ? p2_end.x : p2_begin.x;
 
-	if (tmp_p.x >= min_x1 && tmp_p.x >= min_x2 && tmp_p.x <= max_x1 && tmp_p.x <= max_x2)
+	float min_y1 = p1_begin.y < p1_end.y ? p1_begin.y : p1_end.y;
+	float min_y2 = p2_begin.y < p2_end.y ? p2_begin.y : p2_end.y;
+
+	float max_y1 = p1_begin.y < p1_end.y ? p1_end.y : p1_begin.y;
+	float max_y2 = p2_begin.y < p2_end.y ? p2_end.y : p2_begin.y;
+
+	if (tmp_p.x >= min_x1 && tmp_p.x >= min_x2 && tmp_p.x <= max_x1 && tmp_p.x <= max_x2 &&
+		tmp_p.y >= min_y1 && tmp_p.y >= min_y2 && tmp_p.y <= max_y1 && tmp_p.y <= max_y2)
 	{
 		p1 = tmp_p;
 		return true;
@@ -209,7 +389,6 @@ bool Math::getIntersectionSegments(const glm::vec2& p1_begin, const glm::vec2& p
 float Math::signedAngle(const glm::vec2& v1, const glm::vec2& v2)
 {
       float perpDot = v1.x * v2.y - v1.y * v2.x;
- 
       return (float)atan2(perpDot, glm::dot(v1, v2));
 }
 
@@ -236,3 +415,5 @@ glm::fquat Math::getQuaternion(glm::vec3 u, glm::vec3 v)
 
 	return glm::normalize(glm::fquat(real_part, w.x, w.y, w.z));
 }
+
+};

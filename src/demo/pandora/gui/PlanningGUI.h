@@ -7,23 +7,28 @@
 #include <planning_msgs/ActionDispatch.h>
 #include <planning_msgs/CompletePlan.h>
 
-#include "../../../core/gui/Container.h"
+#include "dpengine/gui/Container.h"
 #include "../controllers/ActionExecutionListener.h"
 
 class AUV;
-class Font;
-class Label;
-class Line;
+
+namespace DreadedPE
+{
+	class Font;
+	class Label;
+	class Line;
+};
+
 class PlanLine;
 class PlanGraph;
 
 /**
  * This GUI covers the entire screen and handles all planning related GUI elements.
  */
-class PlanningGUI : public Container, public ActionExecutionListener
+class PlanningGUI : public DreadedPE::Container, public ActionExecutionListener
 {
 public:
-	PlanningGUI(ros::NodeHandle& ros_node, Theme& theme, Font& font, float x, float y, float size_x, float size_y, float pixels_per_seconds);
+	PlanningGUI(ros::NodeHandle& ros_node, DreadedPE::Theme& theme, DreadedPE::Font& font, float x, float y, float size_x, float size_y, float pixels_per_seconds);
 	//virtual ~PlanningGUI();
 	void update(float dt);
 	
@@ -57,9 +62,9 @@ public:
 private:
 	ros::NodeHandle* ros_node_;
 	
-	Line* time_markers_;
-	Line* current_time_line_;
-	Font* font_;
+	DreadedPE::Line* time_markers_;
+	DreadedPE::Line* current_time_line_;
+	DreadedPE::Font* font_;
 	float plan_line_heights_;
 	
 	PlanGraph* plan_graph_;

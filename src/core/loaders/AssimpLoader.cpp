@@ -1,35 +1,38 @@
-#include "AssimpLoader.h"
+#include "dpengine/loaders/AssimpLoader.h"
 
 #ifdef _WIN32
+#define NOMINMAX
 #include <windows.h>
 #endif
 
 #include <sstream>
 #include <iostream>
+#include <memory>
 
 #include <vector>
 #include <glm/glm.hpp>
-#include <GL/glew.h>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "targa.h"
-#include "../texture/Texture.h"
-//#include "../texture/TargaTexture.h"
-#include "../texture/FreeImageLoader.h"
-#include "../models/AnimatedModel.h"
-#include "../scene/Material.h"
+#include "dpengine/loaders/targa.h"
+#include "dpengine/texture/Texture.h"
+#include "dpengine/texture/FreeImageLoader.h"
+#include "dpengine/models/AnimatedModel.h"
+#include "dpengine/scene/Material.h"
 
-#include "../models/Bone.h"
-#include "../models/BoneNode.h"
-#include "../models/Animation.h"
-#include "../models/AnimationNode.h"
+#include "dpengine/models/Bone.h"
+#include "dpengine/models/BoneNode.h"
+#include "dpengine/models/Animation.h"
+#include "dpengine/models/AnimationNode.h"
 
 #define ASSIMP_LOADER_DEBUG
 
-std::pair<AnimatedModel*, std::map<aiTextureType, std::vector<Texture*>* >* > AssimpLoader::LoadModel(SceneManager& scene_manager, const std::string& filename)
+namespace DreadedPE
+{
+
+	std::pair<std::shared_ptr<AnimatedModel>, std::map<aiTextureType, std::vector<Texture*>* >* > AssimpLoader::LoadModel(SceneManager& scene_manager, const std::string& filename, const std::string& default_texture)
 {
 	//clear();
 #ifdef ASSIMP_LOADER_DEBUG
@@ -53,11 +56,11 @@ std::pair<AnimatedModel*, std::map<aiTextureType, std::vector<Texture*>* >* > As
 #else
 		std::cout << "File does not exit " << filename << "(" << importer.GetErrorString() << ")" << std::endl;
 #endif
-		return std::make_pair<AnimatedModel*, std::map<aiTextureType, std::vector<Texture*>* >* >(NULL, NULL);
+		return std::make_pair<std::shared_ptr<AnimatedModel>, std::map<aiTextureType, std::vector<Texture*>* >* >(NULL, NULL);
 	}
 	
 	std::map<aiTextureType, std::vector<Texture*>* >* texture_mappings = new std::map<aiTextureType, std::vector<Texture*>* >();
-	AnimatedModel* animated_model = new AnimatedModel();
+	std::shared_ptr<AnimatedModel> animated_model(std::make_shared<AnimatedModel>());
 
 	if (scene->HasMaterials())
 	{
@@ -76,15 +79,15 @@ std::pair<AnimatedModel*, std::map<aiTextureType, std::vector<Texture*>* >* > As
 		for (unsigned int i = 0; i < scene->mNumMaterials; ++i)
 		{
 			aiMaterial* material = scene->mMaterials[i];
-			loadMaterial(i, *material, relative_path, *texture_mappings);
+			loadMaterial(i, *material, relative_path, *texture_mappings, default_texture);
 		}
 	}
 	else
 	{
 		std::cout << "Scene has no materials: " << filename << "." << std::endl;
 		delete texture_mappings;
-		delete animated_model;
-		return std::make_pair<AnimatedModel*, std::map<aiTextureType, std::vector<Texture*>* >* >(NULL, NULL);
+		//delete animated_model;
+		return std::make_pair<std::shared_ptr<AnimatedModel>, std::map<aiTextureType, std::vector<Texture*>* >* >(NULL, NULL);
 	}
 
 	std::vector<unsigned int> mesh_vertex_offsets;
@@ -97,7 +100,7 @@ std::pair<AnimatedModel*, std::map<aiTextureType, std::vector<Texture*>* >* > As
 		{
 			mesh_vertex_offsets.push_back(vertex_offset);
 			aiMesh* mesh = scene->mMeshes[i];
-			if (!loadMesh(*mesh, vertex_offset, *animated_model))
+			if (!loadMesh(*mesh, vertex_offset, animated_model))
 			{
 				continue;
 			}
@@ -107,9 +110,9 @@ std::pair<AnimatedModel*, std::map<aiTextureType, std::vector<Texture*>* >* > As
 	else
 	{
 		delete texture_mappings;
-		delete animated_model;
+		//delete animated_model;
 		std::cout << "Scene has no materials: " << filename << "." << std::endl;
-		return std::make_pair<AnimatedModel*, std::map<aiTextureType, std::vector<Texture*>* >* >(NULL, NULL);
+		return std::make_pair<std::shared_ptr<AnimatedModel>, std::map<aiTextureType, std::vector<Texture*>* >* >(NULL, NULL);
 	}
 
 	if (scene->HasAnimations())
@@ -158,7 +161,7 @@ std::pair<AnimatedModel*, std::map<aiTextureType, std::vector<Texture*>* >* > As
 		BoneNode* root_node = new BoneNode(scene_manager, scene->mRootNode->mName.C_Str(), glm::transpose(glm::mat4(scene->mRootNode->mTransformation[0][0], scene->mRootNode->mTransformation[0][1], scene->mRootNode->mTransformation[0][2], scene->mRootNode->mTransformation[0][3], 
 																				scene->mRootNode->mTransformation[1][0], scene->mRootNode->mTransformation[1][1], scene->mRootNode->mTransformation[1][2], scene->mRootNode->mTransformation[1][3],
 																				scene->mRootNode->mTransformation[2][0], scene->mRootNode->mTransformation[2][1], scene->mRootNode->mTransformation[2][2], scene->mRootNode->mTransformation[2][3],
-																				scene->mRootNode->mTransformation[3][0], scene->mRootNode->mTransformation[3][1], scene->mRootNode->mTransformation[3][2], scene->mRootNode->mTransformation[3][3])), NULL, root_bone);
+																				scene->mRootNode->mTransformation[3][0], scene->mRootNode->mTransformation[3][1], scene->mRootNode->mTransformation[3][2], scene->mRootNode->mTransformation[3][3])), NULL, root_bone, glm::vec3(1, 1, 1));
 		animated_model->setRootNode(*root_node);
 
 		std::vector<std::pair<BoneNode*, aiNode*> > open_list;
@@ -195,7 +198,7 @@ std::pair<AnimatedModel*, std::map<aiTextureType, std::vector<Texture*>* >* > As
 				BoneNode* animation_node = new BoneNode(scene_manager, child->mName.C_Str(), glm::transpose(glm::mat4(child->mTransformation[0][0], child->mTransformation[0][1], child->mTransformation[0][2], child->mTransformation[0][3], 
 																						child->mTransformation[1][0], child->mTransformation[1][1], child->mTransformation[1][2], child->mTransformation[1][3],
 																						child->mTransformation[2][0], child->mTransformation[2][1], child->mTransformation[2][2], child->mTransformation[2][3],
-																						child->mTransformation[3][0], child->mTransformation[3][1], child->mTransformation[3][2], child->mTransformation[3][3])), node.first, child_bone);
+																						child->mTransformation[3][0], child->mTransformation[3][1], child->mTransformation[3][2], child->mTransformation[3][3])), node.first, child_bone, glm::vec3(1, 1, 1));
 				open_list.push_back(std::make_pair(animation_node, child));
 			}
 		}
@@ -256,7 +259,7 @@ std::pair<AnimatedModel*, std::map<aiTextureType, std::vector<Texture*>* >* > As
 	return std::make_pair(animated_model, texture_mappings);
 }
 
-bool AssimpLoader::loadMesh(const aiMesh& mesh, unsigned int vertex_offset, AnimatedModel& animated_model)
+bool AssimpLoader::loadMesh(const aiMesh& mesh, unsigned int vertex_offset, std::shared_ptr<AnimatedModel> animated_model)
 {
 	if (!mesh.HasTextureCoords(0) || mesh.mNumUVComponents[0] != 2)
 	{
@@ -269,9 +272,9 @@ bool AssimpLoader::loadMesh(const aiMesh& mesh, unsigned int vertex_offset, Anim
 	// Load the faces, normals, and UV mappings.
 	for (unsigned int i = 0; i < mesh.mNumVertices; ++i)
 	{
-		animated_model.getVertices().push_back(glm::vec3(mesh.mVertices[i].x, mesh.mVertices[i].y, mesh.mVertices[i].z));
-		animated_model.getNormals().push_back(glm::vec3(mesh.mNormals[i].x, mesh.mNormals[i].y, mesh.mNormals[i].z));
-		animated_model.getTexCoords().push_back(glm::vec2(mesh.mTextureCoords[0][i].x, mesh.mTextureCoords[0][i].y));
+		animated_model->getVertices().push_back(glm::vec3(mesh.mVertices[i].x, mesh.mVertices[i].y, mesh.mVertices[i].z));
+		animated_model->getNormals().push_back(glm::vec3(mesh.mNormals[i].x, mesh.mNormals[i].y, mesh.mNormals[i].z));
+		animated_model->getTexCoords().push_back(glm::vec2(mesh.mTextureCoords[0][i].x, mesh.mTextureCoords[0][i].y));
 	}
 
 	for (unsigned int i = 0; i < mesh.mNumFaces; ++i)
@@ -279,15 +282,15 @@ bool AssimpLoader::loadMesh(const aiMesh& mesh, unsigned int vertex_offset, Anim
 		// We only deal with triangles.
 		//assert (mesh.mFaces[i].mNumIndices == 3);
 		if (mesh.mFaces[i].mNumIndices != 3) continue;
-		animated_model.getIndices().push_back(mesh.mFaces[i].mIndices[0] + vertex_offset);
-		animated_model.getIndices().push_back(mesh.mFaces[i].mIndices[1] + vertex_offset);
-		animated_model.getIndices().push_back(mesh.mFaces[i].mIndices[2] + vertex_offset);
+		animated_model->getIndices().push_back(mesh.mFaces[i].mIndices[0] + vertex_offset);
+		animated_model->getIndices().push_back(mesh.mFaces[i].mIndices[1] + vertex_offset);
+		animated_model->getIndices().push_back(mesh.mFaces[i].mIndices[2] + vertex_offset);
 	}
 	
 	return true;
 }
 
-void AssimpLoader::loadMaterial(unsigned int material_index, const aiMaterial& material, const std::string& relative_path, std::map<aiTextureType, std::vector<Texture*>* >& texture_mappings)
+void AssimpLoader::loadMaterial(unsigned int material_index, const aiMaterial& material, const std::string& relative_path, std::map<aiTextureType, std::vector<Texture*>* >& texture_mappings, const std::string& default_texture)
 {
 	const std::string texture_type_strings[] = { 
 		"aiTextureType_NONE", 
@@ -305,26 +308,28 @@ void AssimpLoader::loadMaterial(unsigned int material_index, const aiMaterial& m
 		"aiTextureType_UNKNOWN"
 	};
 	
-	for (int j = 0; j < aiTextureType_UNKNOWN; ++j)
+	for (unsigned int j = 0; j < aiTextureType_UNKNOWN; ++j)
 	{
 		std::cout << "Process the texture type: " << texture_type_strings[j] << std::endl;
 		aiTextureType texture_type = static_cast<aiTextureType>(j);
 		for (unsigned int i = 0; i < material.GetTextureCount(texture_type); ++i)
 		{
 			aiString path;
+
+#ifdef ASSIMP_LOADER_DEBUG
+#ifdef _WIN32
+			std::stringstream ss;
+			ss << "Load Texture: " << relative_path << "/" << path.data << "." << std::endl;
+			OutputDebugString(ss.str().c_str());
+#else
+			std::cout << "Load Texture: " << relative_path << "/" << path.data << "." << std::endl;
+#endif
+#endif
+
 			if (material.GetTexture(texture_type, i, &path) == AI_SUCCESS)
 			{
 				std::string full_path = path.data;
 
-#ifdef ASSIMP_LOADER_DEBUG
-#ifdef _WIN32
-				std::stringstream ss;
-				ss << "Load Texture: " << relative_path << "/" << full_path << "." << std::endl;
-				OutputDebugString(ss.str().c_str());
-#else
-				std::cout << "Load Texture: " << relative_path << "/" << full_path << "." << std::endl;
-#endif
-#endif
 				//Texture* texture = TargaTexture::loadTexture(relative_path + "/" + full_path);
 				Texture* texture = FreeImageLoader::loadTexture(relative_path + "/" + full_path);
 				if (texture == NULL)
@@ -332,7 +337,7 @@ void AssimpLoader::loadMaterial(unsigned int material_index, const aiMaterial& m
 #ifdef _WIN32
 					std::stringstream ss;
 					ss << "Texture not complete :((";
-					MessageBox(NULL, ss.str().c_str(), "An error occurred", MB_ICONERROR | MB_OK);
+					OutputDebugString(ss.str().c_str());
 #else
 					std::cout << "texture not complete :(" << std::endl;
 #endif
@@ -356,7 +361,7 @@ void AssimpLoader::loadMaterial(unsigned int material_index, const aiMaterial& m
 #ifdef _WIN32
 				std::stringstream ss;
 				ss << "Could not load texture.";
-				MessageBox(NULL, ss.str().c_str(), "An error occurred", MB_ICONERROR | MB_OK);
+				OutputDebugString(ss.str().c_str());
 #else
 				std::cout << "Could not load texture." << std::endl;
 #endif
@@ -366,13 +371,13 @@ void AssimpLoader::loadMaterial(unsigned int material_index, const aiMaterial& m
 		if (material.GetTextureCount(texture_type) == 0)
 		{
 			//Texture* texture = TargaTexture::loadTexture("data/models/snake_pattern.tga");
-			Texture* texture = FreeImageLoader::loadTexture("data/models/snake_pattern.tga");
+			Texture* texture = FreeImageLoader::loadTexture(default_texture);
 			if (texture == NULL)
 			{
 #ifdef _WIN32
 				std::stringstream ss;
 				ss << "Texture not complete :((";
-				MessageBox(NULL, ss.str().c_str(), "An error occurred", MB_ICONERROR | MB_OK);
+				OutputDebugString(ss.str().c_str());
 #else
 				std::cout << "Texture not complete :((" << std::endl;
 #endif
@@ -406,3 +411,5 @@ void AssimpLoader::clear()
 	texture_mappings_.clear();
 }
 */
+
+};

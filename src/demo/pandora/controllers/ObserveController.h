@@ -6,17 +6,20 @@
 #include "PlannerAction.h"
 
 class AUV;
-class Line;
-class SceneNode;
-class SceneLeafModel;
-class SceneManager;
-class Material;
+namespace DreadedPE
+{
+	class Line;
+	class SceneNode;
+	class SceneLeafModel;
+	class SceneManager;
+	class Material;
+};
 class OntologyInterface;
 
 class ObserveController : public PlannerAction
 {
 public:
-	ObserveController(SceneManager& scene_manager, AUV& auv, OntologyInterface& ontology);
+	ObserveController(DreadedPE::SceneManager& scene_manager, AUV& auv, OntologyInterface& ontology);
 	
 	/**
 	 * Create a cool visualisation of the AUV inspecting the given point.
@@ -36,15 +39,14 @@ public:
 	
 private:
 	AUV* auv_;
-	
+	float time_; // Time that we have been observing.
 	glm::vec3 inspection_point_; // The location of the point we want to inspect.
 	//Line* line_; // We visualise the inspection with a few lines (for now, it will look crap, but who cares :).
 	//SceneNode* scene_node_; // The location where the lines will start.
 	//SceneLeafModel* model_; // The nodes that visualises the lines.
 	
-	float time_; // Time that we have been observing.
 	
-	Material* material_; // The material used to render the observation frustum.
+	DreadedPE::Material* material_; // The material used to render the observation frustum.
 	OntologyInterface* ontology_; // The ontology that stores all the things we care about.
 };
 

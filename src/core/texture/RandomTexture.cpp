@@ -1,7 +1,10 @@
-#include "RandomTexture.h"
+#include "dpengine/texture/RandomTexture.h"
 
 #include <time.h>
 #include <stdlib.h>
+
+namespace DreadedPE
+{
 
 RandomTexture::RandomTexture(unsigned int size)
 	: Texture(GL_TEXTURE_1D), size_(size)
@@ -22,3 +25,5 @@ RandomTexture::RandomTexture(unsigned int size)
 	glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 }
+
+};

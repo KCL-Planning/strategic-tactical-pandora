@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "../../../core/entities/Entity.h"
+#include "dpengine/entities/Entity.h"
 #include "../ontology/InspectionGoal.h"
 
 class Waypoint;
@@ -18,7 +18,7 @@ class Structure;
 /**
  * Load a mission site from a level description in the PLF format.
  */
-class MissionSite : public Entity
+class MissionSite : public DreadedPE::Entity
 {
 public:
 
@@ -29,7 +29,7 @@ public:
 	 * @param parent The parent node of this entity.
 	 * @param transformation The transformation relative to its parent.
 	 */
-	MissionSite(SceneManager& scene_manager, SceneNode* parent, const glm::mat4& transformation, const glm::vec3& start_point, OntologyInterface& ontology);
+	MissionSite(DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, const glm::mat4& transformation, const glm::vec3& start_point, OntologyInterface& ontology);
 	
 	/**
 	 * Get methods.

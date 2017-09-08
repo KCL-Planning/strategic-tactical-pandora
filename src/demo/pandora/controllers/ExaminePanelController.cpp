@@ -9,21 +9,21 @@
 
 #include "../AUV.h"
 #include "../ontology/OntologyInterface.h"
-#include "../../../core/scene/SceneNode.h"
-#include "../../../core/scene/SceneLeafModel.h"
-#include "../../../core/scene/SceneManager.h"
-#include "../../../core/scene/Material.h"
-#include "../../../core/shaders/LineShader.h"
-#include "../../../core/shaders/ShadowShader.h"
-#include "../../../core/shaders/BasicShadowShader.h"
-#include "../../../shapes/Line.h"
-#include "../../../shapes/FrustumShape.h"
-#include "../../../core/texture/Texture.h"
-#include "../../../core/texture/TargaTexture.h"
+#include "dpengine/scene/SceneNode.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/scene/SceneManager.h"
+#include "dpengine/scene/Material.h"
+#include "dpengine/shaders/LineShader.h"
+#include "dpengine/shaders/ShadowShader.h"
+#include "dpengine/shaders/BasicShadowShader.h"
+#include "dpengine/shapes/Line.h"
+#include "dpengine/shapes/FrustumShape.h"
+#include "dpengine/texture/Texture.h"
+#include "dpengine/texture/TargaTexture.h"
 #include "../structures/Structure.h"
 #include "../structures/Valve.h"
 
-ExaminePanelController::ExaminePanelController(SceneManager& scene_manager, AUV& auv, OntologyInterface& ontology, ros::Publisher& action_feedback_pub)
+ExaminePanelController::ExaminePanelController(DreadedPE::SceneManager& scene_manager, AUV& auv, OntologyInterface& ontology, ros::Publisher& action_feedback_pub)
 	: auv_(&auv), time_(0), ontology_(&ontology), panel_(NULL), action_feedback_pub_(&action_feedback_pub)
 {
 	/*

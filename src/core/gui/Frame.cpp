@@ -1,18 +1,20 @@
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include <Windows.h>
 #endif
 
-#include "Frame.h"
+#include "dpengine/gui/Frame.h"
 
-#include <GL/glew.h>
-#include <GL/glfw.h>
+#include "dpengine/gui/fonts/Font.h"
+#include "dpengine/gui/themes/Theme.h"
+#include "dpengine/shaders/GUIShader.h"
+#include "dpengine/gui/GUIManager.h"
+#include "dpengine/renderer/Window.h"
+#include "dpengine/gui/Button.h"
 
-#include "fonts/Font.h"
-#include "themes/Theme.h"
-#include "../shaders/GUIShader.h"
-#include "GUIManager.h"
-
-#include "Button.h"
+namespace DreadedPE
+{
 
 Frame::Frame(Theme& theme, Font& font, float x, float y, float size_x, float size_y)
 	: Container(theme, font, x, y, size_x, size_y, false), font_(&font), org_size_x(size_x), org_size_y_(size_y), is_minimized_(false), frame_grapped_(false), grap_location_x_(0), grap_location_y_(0), org_location_x_(x), org_location_y_(y)
@@ -23,8 +25,9 @@ Frame::Frame(Theme& theme, Font& font, float x, float y, float size_x, float siz
 	Container::addElement(*menu_bar_, 0.0f, 0.0f);
 	Container::addElement(*content_pane_, 0.0f, -20.0f);
 
+	Window* window = Window::getActiveWindow();
 	int width, height;
-	glfwGetWindowSize(&width, &height);
+	window->getSize(width, height);
 
 	local_transformation_ = glm::translate(glm::mat4(1.0f), glm::vec3(x, -y, 0.0f));
 
@@ -46,6 +49,7 @@ Frame::Frame(Theme& theme, Font& font, float x, float y, float size_x, float siz
 
 GUIElement* Frame::processMousePressEvent(int mouse_x, int mouse_y)
 {
+	markForUpdate();
 	if (!frame_grapped_)
 	{
 		GUIElement* activated_element = Container::processMousePressEvent(mouse_x, mouse_y);
@@ -73,8 +77,9 @@ GUIElement* Frame::processMousePressEvent(int mouse_x, int mouse_y)
 	// Move the frame :).
 	if (frame_grapped_)
 	{
+		Window* window = Window::getActiveWindow();
 		int width, height;
-		glfwGetWindowSize(&width, &height);
+		window->getSize(width, height);
 		
 		float diff_x = grap_location_x_ - mouse_x;
 		float diff_y = grap_location_y_ - mouse_y;
@@ -92,7 +97,10 @@ GUIElement* Frame::processMousePressEvent(int mouse_x, int mouse_y)
 
 void Frame::processMouseReleasedEvent(int mouse_x, int mouse_y)
 {
-	if (glfwGetMouseButton(GLFW_MOUSE_BUTTON_LEFT) != GLFW_PRESS)
+	markForUpdate();
+	Window* window = Window::getActiveWindow();
+	
+	if (!window->isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT))
 	{
 		frame_grapped_ = false;
 		org_location_x_ = local_transformation_[3][0];
@@ -123,19 +131,23 @@ void Frame::draw(const glm::mat4& perspective_matrix, int level) const
 
 void Frame::update(float dt)
 {
-	m_tex_coords_ = theme_->getFrameTexture();
-	if (!is_minimized_)
+	if (needs_update_ || is_selected_)
 	{
-		Container::update(dt);
-	}
-	else
-	{
-		menu_bar_->update(dt);
+		m_tex_coords_ = theme_->getFrameTexture();
+		if (!is_minimized_)
+		{
+			Container::update(dt);
+		}
+		else
+		{
+			menu_bar_->update(dt);
+		}
 	}
 }
 
 void Frame::buttonPressed(const Button& source)
 {
+	markForUpdate();
 	if (&source == close_button_)
 	{
 		// Close the frame.
@@ -157,8 +169,9 @@ void Frame::buttonPressed(const Button& source)
 			content_pane_->setVisible(true);
 		}
 		
+		Window* window = Window::getActiveWindow();
 		int width, height;
-		glfwGetWindowSize(&width, &height);
+		window->getSize(width, height);
 
 		m_vertices_[2].y = height - size_y_;
 		m_vertices_[3].y = height - size_y_;
@@ -169,19 +182,25 @@ void Frame::buttonPressed(const Button& source)
 void Frame::addElement(GUIElement& child, float x, float y)
 {
 	content_pane_->addElement(child, x, y);
+	markForUpdate();
 }
 
 void Frame::removeElement(GUIElement& child)
 {
 	content_pane_->removeElement(child);
+	markForUpdate();
 }
 
 void Frame::addElement(Container& child, float x, float y)
 {
 	content_pane_->addElement(child, x, y);
+	markForUpdate();
 }
 
 void Frame::removeElement(Container& child)
 {
 	content_pane_->removeElement(child);
+	markForUpdate();
 }
+
+};

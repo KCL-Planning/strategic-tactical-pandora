@@ -5,18 +5,22 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-#include "../../../core/entities/Entity.h"
 
-class RotateBehaviour;
-class SceneNode;
-class Texture;
+#include "dpengine/entities/Entity.h"
+
+namespace DreadedPE
+{
+	class SceneNode;
+	class Texture;
+};
+
 class Structure;
 class ValveGoal;
 
-class Valve : public Entity
+class Valve : public DreadedPE::Entity
 {
 public:
-	Valve(Structure& structure, SceneManager& scene_manager, SceneNode* parent, const glm::mat4& transformation, const std::string& name);
+	Valve(Structure& structure, DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, const glm::mat4& transformation, const std::string& name);
 	
 	//const std::string& getId() const { return id_; }
 	
@@ -37,7 +41,6 @@ private:
 	//std::string id_;
 	float desired_rotation_;
 	Structure* structure_;
-	RotateBehaviour* valve_rotate_behaviour_;
 	
 	std::vector<ValveGoal*> valve_goals_;
 	

@@ -1,14 +1,19 @@
-#include "MergeFBOShader.h"
+#include "dpengine/shaders/MergeFBOShader.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
-#include "../light/Light.h"
-#include "../scene/Material.h"
-#include "../../shapes/Water.h"
-#include "../scene/SceneLeafModel.h"
-#include "../texture/Texture.h"
+#include "dpengine/light/Light.h"
+#include "dpengine/scene/Material.h"
+#include "dpengine/shapes/Water.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/texture/Texture.h"
+#include "dpengine/renderer/Window.h"
+
+namespace DreadedPE
+{
 
 MergeFBOShader* MergeFBOShader::shader_ = NULL;
 GLuint MergeFBOShader::modelview_matrix_loc_ = 0;
@@ -19,8 +24,7 @@ GLuint MergeFBOShader::screen_texture_loc_ = 0;
 MergeFBOShader::MergeFBOShader(const std::string& vertex_shader, const std::string& fragment_shader)
 	: GLSLProgram(vertex_shader, fragment_shader)
 {
-	width_ = 1024;
-	height_ = 768;
+	Window::getActiveWindow()->getSize(width_, height_);
 }
 
 void MergeFBOShader::initialise()
@@ -99,34 +103,17 @@ void MergeFBOShader::postProcess(const Texture& texture0, const Texture& texture
 		glDisableVertexAttribArray(7);
 	}
 
-	float simpleModelviewMatrix[16];
-	float simpleProjecetionMatrix[16];
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo_id_);
 	glClear(GL_COLOR_BUFFER_BIT);
 	
 	glm::mat4 perspective_matrix = glm::ortho(0.0f, (float)width_, (float)height_, 0.0f, -1.0f, 1.0f);
 	glm::mat4 model_view_matrix = glm::mat4(1.0f);
 
-	/*
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, width_, height_, 0, -1, 1);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	
-	glGetFloatv(GL_MODELVIEW_MATRIX, simpleModelviewMatrix);
-	glGetFloatv(GL_PROJECTION_MATRIX, simpleProjecetionMatrix);
-	*/
-
 	glUniformMatrix4fv(modelview_matrix_loc_, 1, false, glm::value_ptr(model_view_matrix));
 	glUniformMatrix4fv(projection_matrix_loc_, 1, false, glm::value_ptr(perspective_matrix));
 	
-	//glActiveTexture(GL_TEXTURE1);
-	//glBindTexture(GL_TEXTURE_2D, texture0);
 	glUniform1i(fbo_texture_loc_, texture0.getActiveTextureId());
 
-	//glActiveTexture(GL_TEXTURE2);
-	//glBindTexture(GL_TEXTURE_2D, texture1);
 	glUniform1i(screen_texture_loc_, texture1.getActiveTextureId());
 	
 	glBindBuffer(GL_ARRAY_BUFFER, buffer_index_);
@@ -192,3 +179,5 @@ void MergeFBOShader::onResize(int width, int height)
 	glBindBuffer(GL_ARRAY_BUFFER, buffer_index_); //Bind the vertex buffer
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 3 * m_vertices_.size(), &m_vertices_[0], GL_STATIC_DRAW); //Send the data to OpenGL
 }
+
+};

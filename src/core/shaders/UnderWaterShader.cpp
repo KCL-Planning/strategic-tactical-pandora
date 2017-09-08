@@ -1,26 +1,28 @@
-#include "UnderWaterShader.h"
+#include "dpengine/shaders/UnderWaterShader.h"
 
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "../light/Light.h"
-#include "../scene/Material.h"
-#include "../../shapes/Water.h"
-#include "../scene/SceneLeafModel.h"
-#include "../texture/Texture.h"
+#include "dpengine/light/Light.h"
+#include "dpengine/scene/Material.h"
+#include "dpengine/shapes/Water.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/texture/Texture.h"
+#include "dpengine/renderer/Window.h"
+
+namespace DreadedPE
+{
 
 UnderWaterShader* UnderWaterShader::shader_ = NULL;
 GLuint UnderWaterShader::modelview_matrix_loc_ = 0;
 GLuint UnderWaterShader::projection_matrix_loc_ = 0;
 GLuint UnderWaterShader::time_loc_ = 0;
 GLuint UnderWaterShader::fbo_texture_loc_ = 0;
-//GLuint UnderWaterShader::screen_texture_loc_ = 0;
 
 UnderWaterShader::UnderWaterShader(const std::string& vertex_shader, const std::string& fragment_shader)
 	: GLSLProgram(vertex_shader, fragment_shader)
 {
-	width_ = 1024;
-	height_ = 768;
+	Window::getActiveWindow()->getSize(width_, height_);
 	
 	// TODO: Change to the new texture system.
 	assert(false);
@@ -28,36 +30,8 @@ UnderWaterShader::UnderWaterShader(const std::string& vertex_shader, const std::
 
 void UnderWaterShader::initialise()
 {
-	/*
-	glGenTextures(1, &texture_id_);
-	glBindTexture(GL_TEXTURE_2D, texture_id_);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width_, height_, 0, GL_RGB, GL_FLOAT, NULL);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	
-	glGenTextures(1, &depth_id_);
-	glBindTexture(GL_TEXTURE_2D, depth_id_);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, width_, height_, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	
-	glGenFramebuffers(1, &fbo_id_);
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo_id_);
-
-	// Attach the rgb texture to it.
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture_id_, 0);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_id_, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	
-	glActiveTexture(GL_TEXTURE13);
-	glBindTexture(GL_TEXTURE_2D, texture_id_);
-	glActiveTexture(GL_TEXTURE30);
-	*/
 	texture_ = new Texture(GL_TEXTURE_2D);
 	
-	//glGenTextures(1, &texture_id2_);
 	glBindTexture(GL_TEXTURE_2D, texture_->getTextureId());
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width_, height_, 0, GL_RGB, GL_FLOAT, NULL);
 
@@ -122,15 +96,6 @@ void UnderWaterShader::postProcess(float dt)
 	glDisableVertexAttribArray(6);
 	glDisableVertexAttribArray(7);
 
-	//glm::mat4 model_view_matrix = view_matrix * model_matrix;
-	
-	//Send the modelview and projection matrices to the shaders
-	//glUniformMatrix4fv(modelview_matrix_loc_, 1, false, glm::value_ptr(model_view_matrix));
-	//glUniformMatrix4fv(projection_matrix_loc_, 1, false, glm::value_ptr(projection_matrix));
-
-	//assert (model_node.getMaterial().get1DTextures().size() == 0);
-	//assert (model_node.getMaterial().get2DTextures().size() == 1);
-
 	float simpleModelviewMatrix[16];
 	float simpleProjecetionMatrix[16];
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo_id_);
@@ -151,10 +116,6 @@ void UnderWaterShader::postProcess(float dt)
 	time_ += dt;
 	glUniform1i(fbo_texture_loc_, texture_->getActiveTextureId());
 	glUniform1f(time_loc_, time_);
-	//glUniform1i(screen_texture_loc_, 14);
-	//shader_->sendUniform("fbo_texture", 13);
-	//shader_->sendUniform4x4("modelview_matrix", simpleModelviewMatrix);
-	//shader_->sendUniform4x4("projection_matrix", simpleProjecetionMatrix);
 	
 	glBindBuffer(GL_ARRAY_BUFFER, buffer_index_);
 	glVertexAttribPointer((GLint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
@@ -196,8 +157,9 @@ UnderWaterShader& UnderWaterShader::getShader()
 		projection_matrix_loc_ = shader_->getUniformLocation("projection_matrix");
 		time_loc_ = shader_->getUniformLocation("time");
 		fbo_texture_loc_ = shader_->getUniformLocation("fbo_texture");
-		//screen_texture_loc_ = shader_->getUniformLocation("screen_texture");
 		shader_->initialise();
 	}
 	return *shader_;
 }
+
+};

@@ -38,7 +38,7 @@
 #include "../core/animation/BouncingBox.h"
 #include "../core/entities/WavingWater.h"
 #include "../core/entities/Player.h"
-#include "../core/collision/BoxCollision.h"
+#include "../core/collision/ConvexPolygon.h"
 #include "../core/entities/Lever.h"
 #include "../core/entities/Bridge.h"
 #include "../core/scene/frustum/SphereCheck.h"
@@ -250,7 +250,7 @@ bool FrustumCullingExample::init(int argc, char** argv)
 		float z = 1;//((float)(rand()) / RAND_MAX) * 30.0f;
 
 		Entity* stair_step_entity = new Entity(*scene_manager_, parent, glm::translate(glm::mat4(1.0), glm::vec3(x, y, z)), OBSTACLE, "stair");
-		BoxCollision* stair_step_bc = new BoxCollision(*stair_step_entity, 0.5f, 0.3f, 1.0f);
+		ConvexPolygon* stair_step_bc = new ConvexPolygon(*stair_step_entity, 0.5f, 0.3f, 1.0f);
 		stair_step_entity->addCollision(*stair_step_bc);
 		//SceneLeafModel* stair_step_leaf_node = new SceneLeafModel(*stair_step_entity, NULL, *stair_step_, *bright_material, BasicShadowShader::getShader(), &ShadowShader::getShader(), false, false);
 		SceneLeafModel* stair_step_leaf_node = new SceneLeafModel(*stair_step_entity, NULL, *stair_step_, *bright_material, BasicShadowShader::getShader(), false, false);
@@ -270,7 +270,7 @@ bool FrustumCullingExample::init(int argc, char** argv)
 		float z = 1;//((float)(rand()) / RAND_MAX) * 30.0f;
 
 		Entity* stair_step_entity = new Entity(*scene_manager_, parent, glm::translate(glm::mat4(1.0), glm::vec3(x, y, z + 10)), OBSTACLE, "stair");
-		BoxCollision* stair_step_bc = new BoxCollision(*stair_step_entity, 0.5f, 0.3f, 1.0f);
+		ConvexPolygon* stair_step_bc = new ConvexPolygon(*stair_step_entity, 0.5f, 0.3f, 1.0f);
 		stair_step_entity->addCollision(*stair_step_bc);
 		//SceneLeafModel* stair_step_leaf_node = new SceneLeafModel(*stair_step_entity, NULL, *stair_step_, *bright_material, BasicShadowShader::getShader(), &ShadowShader::getShader(), false, false);
 		SceneLeafModel* stair_step_leaf_node = new SceneLeafModel(*stair_step_entity, NULL, *stair_step_, *bright_material, BasicShadowShader::getShader(), false, false);

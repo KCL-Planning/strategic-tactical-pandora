@@ -1,32 +1,34 @@
 #include <algorithm>
 
 #include <glm/glm.hpp>
-#include "../../../shapes/Cube.h"
+#include "dpengine/shapes/Cube.h"
 
-#include "../../shaders/BasicShadowShader.h"
-#include "Region.h"
-#include "Portal.h"
-#include "../SceneNode.h"
-#include "../SceneLeafModel.h"
-#include "../SceneManager.h"
+#include "dpengine/shaders/BasicShadowShader.h"
+#include "dpengine/scene/portal/Region.h"
+#include "dpengine/scene/portal/Portal.h"
+#include "dpengine/scene/SceneNode.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/scene/SceneManager.h"
 
-#include "../../math/BoundedBox.h"
-#include "../../math/Plane.h"
-#include "../../entities/Entity.h"
+#include "dpengine/collision/ConvexPolygon.h"
+#include "dpengine/math/Plane.h"
+#include "dpengine/entities/Entity.h"
 
+namespace DreadedPE
+{
 std::vector<Region*> Region::all_regions_;
 
 std::map<SceneNode*, std::vector<Region*>* > Region::scene_node_regions_;
 std::map<Entity*, std::vector<Region*>* > Region::entity_collision_regions_;
 
 Region::Region(SceneNode& scene_node)
-	: scene_node_(&scene_node), name_(std::string())
+	: name_(std::string()), scene_node_(&scene_node)
 {
 	all_regions_.push_back(this);
 }
 
 Region::Region(SceneNode& scene_node, const std::string& name)
-	:  scene_node_(&scene_node), name_(name)
+	:  name_(name), scene_node_(&scene_node)
 {
 	all_regions_.push_back(this);
 }
@@ -39,6 +41,17 @@ Region::~Region()
 const std::vector<Region*>& Region::getAllRegions() 
 {
 	return all_regions_;
+}
+
+void Region::deleteAllRegions()
+{
+	for (Region* region : all_regions_)
+	{
+		delete region;
+	}
+	all_regions_.clear();
+	entity_collision_regions_.clear();
+	scene_node_regions_.clear();
 }
 
 void Region::debugCreateBoundedBox(SceneManager& scene_manager)
@@ -104,10 +117,12 @@ Portal& Region::addPortalToOtherRegion(Region& other, const std::vector<glm::vec
 	return *portal;
 }
 
-void Region::preRender(const Frustum& frustum, const glm::vec3& camera_position, Renderer& renderer, bool process_lights, unsigned int& nr_calls, unsigned int portal_depth, std::vector<const Portal*>& processed_portals, std::stringstream& ss)
+void Region::preRender(const Frustum& frustum, const glm::vec3& camera_position, Renderer& renderer, bool process_lights, unsigned int& nr_calls, unsigned int portal_depth, std::vector<const Portal*>& processed_portals)
 {
 	//std::cout << "$preRender:" << name_ << " -- ";
-	ss << " $preRender (" << entities_visible_from_different_regions_.size() << "):" << name_ << " ";
+	//std::stringstream ss;
+	//ss << "Region::preRender: "<< name_ << std::endl;
+	//OutputDebugString(ss.str().c_str());
 
 	// Render this region.
 	scene_node_->preRender(frustum, camera_position, renderer, process_lights, nr_calls);
@@ -116,7 +131,10 @@ void Region::preRender(const Frustum& frustum, const glm::vec3& camera_position,
 	// TODO: Fix double rendering issue.
 	for (std::vector<SceneNode*>::const_iterator ci = entities_visible_from_different_regions_.begin(); ci != entities_visible_from_different_regions_.end(); ++ci)
 	{
-		(*ci)->preRender(frustum, camera_position, renderer, process_lights, nr_calls);
+		if ((*ci)->isAlive())
+		{
+			(*ci)->preRender(frustum, camera_position, renderer, process_lights, nr_calls);
+		}
 	}
 
 	//std::vector<const Portal*> new_processed_portals(processed_portals);
@@ -124,8 +142,11 @@ void Region::preRender(const Frustum& frustum, const glm::vec3& camera_position,
 	// Check for any portals that must also be rendered.
 	for (std::vector<Portal*>::const_iterator ci = portals_.begin(); ci != portals_.end(); ++ci)
 	{
+		//std::stringstream ss;
+		//ss << "Can see " << (*ci)->getToRegion().getName() << "?" << std::endl;
+		//OutputDebugString(ss.str().c_str());
 		//std::cout << "???" << (*ci)->getToRegion().getName();
-		(*ci)->preRender(frustum, camera_position, renderer, process_lights, nr_calls, portal_depth, processed_portals, ss);
+		(*ci)->preRender(frustum, camera_position, renderer, process_lights, nr_calls, portal_depth, processed_portals);
 		//std::cout << "!!!" << (*ci)->getToRegion().getName();
 	}
 }
@@ -140,21 +161,10 @@ void Region::getRenderingPortals(const Frustum& frustum, const glm::vec3& camera
 		//std::cout << "!!!" << (*ci)->getToRegion().getName();
 	}
 }
-/*
-void Region::getRegionsToRender(const Frustum& frustum, const glm::vec3& camera_position, unsigned int portal_depth, const Portal* accessed_from, std::vector<const Portal*>& processed_portals, std::vector<RegionPortalDebug>& processed) const
-{
-	processed.push_back(RegionPortalDebug(this, accessed_from, ""));
 
-	std::vector<const Portal*> new_processed_portals(processed_portals);
-
-	for (std::vector<Portal*>::const_iterator ci = portals_.begin(); ci != portals_.end(); ++ci)
-	{
-		(*ci)->getRegionsToRender(frustum, camera_position, portal_depth, new_processed_portals, processed);
-	}
-}
-*/
 bool Region::doesCollide(Entity& entity, CollisionInfo& info) const
 {
+	/**/
 	std::vector<Region*>* collision_regions = entity_collision_regions_[&entity];
 	if (collision_regions == NULL)
 	{
@@ -174,10 +184,6 @@ bool Region::doesCollide(Entity& entity, CollisionInfo& info) const
 		}
 	}
 	return false;
-	/*
-	std::vector<const Region*> closed_list;
-	return doesCollide(entity, info, closed_list);
-	*/
 }
 
 bool Region::getCollisions(Entity& entity, std::vector<CollisionInfo>& info) const
@@ -189,49 +195,79 @@ bool Region::getCollisions(Entity& entity, std::vector<CollisionInfo>& info) con
 		return false;
 	}
 
+	//std::stringstream ss;
+	//ss << "[Region::getCollisions] " << entity.getName() << " is in " << collision_regions->size() << " regions!" << std::endl;
+	//OutputDebugString(ss.str().c_str());
+	//ss.str(std::string());
 	for (std::vector<Region*>::const_iterator ci = collision_regions->begin(); ci != collision_regions->end(); ++ci)
 	{
 		Region* region = *ci;
+		//ss << "[Region::getCollisions] Check region" << region->getName() << " has " << region->collidable_entities_.size() << " collidable entities!" << std::endl;
+		//OutputDebugString(ss.str().c_str());
+		//ss.str(std::string());
 		for (std::vector<Entity*>::const_iterator ci = region->collidable_entities_.begin(); ci != region->collidable_entities_.end(); ++ci)
 		{
+			//ss << "[Region::getCollisions] " << entity.getName() << " -> " << (*ci)->getName() << std::endl;
+			//OutputDebugString(ss.str().c_str());
+			//ss.str(std::string());
 			if ((*ci)->getCollisions(entity, info))
 			{
 				found_collision = true;
 			}
 		}
 	}
+	
 	return found_collision;
-	/*
-	std::vector<const Region*> closed_list;
-	return getCollisions(entity, info, closed_list);
-	*/
 }
 
 bool Region::getCollisions(Entity& entity, const glm::vec3& begin, const glm::vec3& end, std::vector<CollisionInfo>& info) const
 {
 	bool found_collision = false;
 	std::vector<Region*>* collision_regions = entity_collision_regions_[&entity];
+
 	if (collision_regions == NULL)
 	{
 		return false;
 	}
-	
+
 	for (std::vector<Region*>::const_iterator ci = collision_regions->begin(); ci != collision_regions->end(); ++ci)
 	{
 		Region* region = *ci;
 		for (std::vector<Entity*>::const_iterator ci = region->collidable_entities_.begin(); ci != region->collidable_entities_.end(); ++ci)
 		{
-			if ((*ci)->getCollisions(entity, begin, end, info))
+			Entity* other_entity = *ci;
+			if (other_entity->getCollisions(entity, begin, end, info))
 			{
 				found_collision = true;
 			}
 		}
 	}
 	return found_collision;
-	/*
-	std::vector<const Region*> closed_list;
-	return getCollisions(entity, begin, end, info, closed_list);
-	*/
+}
+
+bool Region::getCollisions(Entity& entity, const glm::vec3& begin, const glm::vec3& end, float effective_width, std::vector<CollisionInfo>& info) const
+{
+	bool found_collision = false;
+	std::vector<Region*>* collision_regions = entity_collision_regions_[&entity];
+
+	if (collision_regions == NULL)
+	{
+		return false;
+	}
+
+	for (std::vector<Region*>::const_iterator ci = collision_regions->begin(); ci != collision_regions->end(); ++ci)
+	{
+		Region* region = *ci;
+		for (std::vector<Entity*>::const_iterator ci = region->collidable_entities_.begin(); ci != region->collidable_entities_.end(); ++ci)
+		{
+			Entity* other_entity = *ci;
+			if (other_entity->getCollisions(entity, begin, end, effective_width, info))
+			{
+				found_collision = true;
+			}
+		}
+	}
+	return found_collision;
 }
 
 bool Region::doesCollide(Entity& entity, const glm::vec3& begin, const glm::vec3& end, CollisionInfo& info) const
@@ -254,10 +290,6 @@ bool Region::doesCollide(Entity& entity, const glm::vec3& begin, const glm::vec3
 		}
 	}
 	return false;
-	/*
-	std::vector<const Region*> closed_list;
-	return doesCollide(entity, begin, end, info, closed_list);
-	*/
 }
 
 bool Region::doesCollide(Entity* entity, const glm::vec3& begin, const glm::vec3& end, float effective_width) const
@@ -304,10 +336,6 @@ bool Region::doesCollide(Entity* entity, const glm::vec3& begin, const glm::vec3
 		}
 	}
 	return false;
-	/*
-	std::vector<const Region*> closed_list;
-	return doesCollide(begin, end, effective_width, closed_list);
-	*/
 }
 
 bool Region::doesCollide(Entity* entity, const glm::vec3& point) const
@@ -327,10 +355,6 @@ bool Region::doesCollide(Entity* entity, const glm::vec3& point) const
 		}
 	}
 	return false;
-	/*
-	std::vector<const Region*> closed_list;
-	return doesCollide(point, closed_list);
-	*/
 }
 
 void Region::removeVisibleEntityFromOtherRegion(SceneNode& node)
@@ -339,15 +363,6 @@ void Region::removeVisibleEntityFromOtherRegion(SceneNode& node)
 	if (i_find != entities_visible_from_different_regions_.end())
 	{
 		entities_visible_from_different_regions_.erase(i_find);
-		
-		// Update the cache.
-		std::vector<Region*>* visible_regions = scene_node_regions_[&node];
-		std::vector<Region*>::iterator r_find = std::find(visible_regions->begin(), visible_regions->end(), this);
-		visible_regions->erase(r_find);
-	}
-	else
-	{
-		assert (false);
 	}
 }
 
@@ -368,6 +383,11 @@ void Region::addVisibleEntityFromOtherRegion(SceneNode& node)
 	{
 		visible_regions = (*map_i).second;
 	}
+	// Make sure this entity has not been added yet.
+	if (std::find(visible_regions->begin(), visible_regions->end(), this) != visible_regions->end())
+	{
+		return;
+	}
 	visible_regions->push_back(this);
 }
 
@@ -377,15 +397,6 @@ void Region::removeCollidableEntity(Entity& entity)
 	if (i_find != collidable_entities_.end())
 	{
 		collidable_entities_.erase(i_find);
-
-		// Update the cache.
-		std::vector<Region*>* collidable_regions = (*entity_collision_regions_.find(&entity)).second;
-		std::vector<Region*>::iterator r_find = std::find(collidable_regions->begin(), collidable_regions->end(), this);
-		collidable_regions->erase(r_find);
-	}
-	else
-	{
-		assert (false);
 	}
 }
 
@@ -406,7 +417,52 @@ void Region::addCollidableEntity(Entity& entity)
 	{
 		collidable_regions = (*map_i).second;
 	}
+
+	// Make sure this entity has not been added yet.
+	if (std::find(collidable_regions->begin(), collidable_regions->end(), this) != collidable_regions->end())
+	{
+		return;
+	}
 	collidable_regions->push_back(this);
+}
+
+void Region::destroy(SceneNode& node)
+{
+	std::vector<Region*>* visible_entities = scene_node_regions_[&node];
+	if (visible_entities != NULL)
+	{
+		for (std::vector<Region*>::const_iterator ci = visible_entities->begin(); ci != visible_entities->end(); ++ci)
+		{
+			Region* region = *ci;
+			region->removeVisibleEntityFromOtherRegion(node);
+		}
+		visible_entities->clear();
+	}
+}
+
+void Region::destroy(Entity& entity)
+{
+	std::vector<Region*>* visible_entities = scene_node_regions_[&entity];
+	if (visible_entities != NULL)
+	{
+		for (std::vector<Region*>::const_iterator ci = visible_entities->begin(); ci != visible_entities->end(); ++ci)
+		{
+			Region* region = *ci;
+			region->removeVisibleEntityFromOtherRegion(entity);
+		}
+		visible_entities->clear();
+	}
+
+	std::vector<Region*>* collidable_entities = entity_collision_regions_[&entity];
+	if (collidable_entities != NULL)
+	{
+		for (std::vector<Region*>::const_iterator ci = collidable_entities->begin(); ci != collidable_entities->end(); ++ci)
+		{
+			Region* region = *ci;
+			region->removeCollidableEntity(entity);
+		}
+		collidable_entities->clear();
+	}
 }
 
 void Region::updateCollidableEntity(Entity& entity)
@@ -484,12 +540,12 @@ void Region::updateVisibility(SceneNode& scene_node)
 		visible_entities = new std::vector<Region*>();
 		scene_node_regions_[&scene_node	] = visible_entities;
 	}
-
-	for (std::vector<Region*>::const_iterator ci = visible_entities->begin(); ci != visible_entities->end(); ++ci)
+	for (std::vector<Region*>::reverse_iterator ri = visible_entities->rbegin(); ri != visible_entities->rend(); ++ri)
 	{
-		(*ci)->removeVisibleEntityFromOtherRegion(scene_node);
+		(*ri)->removeVisibleEntityFromOtherRegion(scene_node);
 	}
 	visible_entities->clear();
+	
 
 	// Rebuild the entities this entity is collidable in.
 	if (scene_node.getRegion() == NULL)
@@ -497,10 +553,9 @@ void Region::updateVisibility(SceneNode& scene_node)
 		// If the entity is not part of a region we are done.
 		return;
 	}
-
+	
 	std::set<Region*> closed_set;
 	std::vector<Region*> open_list;
-
 	open_list.push_back(scene_node.getRegion());
 
 	while (open_list.size() != 0)
@@ -513,12 +568,11 @@ void Region::updateVisibility(SceneNode& scene_node)
 			continue;
 		}
 		closed_set.insert(region);
-		
 		if (region->isVisibleIn(scene_node))
 		{
-			visible_entities->push_back(region);
+			//visible_entities->push_back(region);
 			region->addVisibleEntityFromOtherRegion(scene_node);
-
+			
 			// Add all nearby regions to the open list.
 			for (std::vector<Portal*>::const_iterator ci = region->getPortals().begin(); ci != region->getPortals().end(); ++ci)
 			{
@@ -537,204 +591,7 @@ std::vector<Region*>* Region::getRegionsVisibleIn(SceneNode& scene_node)
 {
 	return scene_node_regions_[&scene_node];
 }
-/*
-bool Region::doesCollide(Entity& entity, CollisionInfo& info, std::vector<const Region*>& closed_list) const
-{
-	if (std::find(closed_list.begin(), closed_list.end(), this) != closed_list.end())
-	{
-		return false;
-	}
-	closed_list.push_back(this);
-	
-	if (scene_node_->doesCollide(entity, info))
-	{
-		return true;
-	}
 
-	// Check if the entity is part of anothe region.
-	for (std::vector<Portal*>::const_iterator ci = portals_.begin(); ci != portals_.end(); ++ci)
-//	for (Portal* portal : portals_)
-	{
-		Portal* portal = *ci;
-		for (unsigned int i = 0; i < 8; ++i)
-		{
-			glm::vec3 point = entity.getCollisionChecker().getPoints()[i] + entity.getCollisionChecker().getCentrePoint() + entity.getGlobalLocation();
-			if (portal->getToRegion().getSceneNode().getFrustumChecker().isInside(point))
-			{
-				if (portal->getToRegion().doesCollide(entity, info, closed_list))
-				{
-					return true;
-				}
-			}
-		}
-	}
-	return false;
-}
-
-bool Region::getCollisions(Entity& entity, std::vector<CollisionInfo>& info, std::vector<const Region*>& closed_list) const
-{
-	if (std::find(closed_list.begin(), closed_list.end(), this) != closed_list.end())
-	{
-		return false;
-	}
-	closed_list.push_back(this);
-	
-	bool found_collision = false;
-	if (scene_node_->getCollisions(entity, info))
-	{
-		found_collision = true;
-	}
-
-	// Check if the entity is part of another region.
-	for (std::vector<Portal*>::const_iterator ci = portals_.begin(); ci != portals_.end(); ++ci)
-	//for (Portal* portal : portals_)
-	{
-		Portal* portal = *ci;
-		for (unsigned int i = 0; i < 8; ++i)
-		{
-			glm::vec3 point = entity.getCollisionChecker().getPoints()[i] + entity.getCollisionChecker().getCentrePoint() + entity.getGlobalLocation();
-			if (portal->getToRegion().getSceneNode().getFrustumChecker().isInside(point))
-			{
-				if (portal->getToRegion().getCollisions(entity, info, closed_list))
-				{
-					found_collision = true;
-				}
-			}
-		}
-	}
-	return found_collision;
-}
-
-bool Region::getCollisions(Entity& entity, const glm::vec3& begin, const glm::vec3& end, std::vector<CollisionInfo>& info, std::vector<const Region*>& closed_list) const
-{
-	if (std::find(closed_list.begin(), closed_list.end(), this) != closed_list.end())
-	{
-		return false;
-	}
-	closed_list.push_back(this);
-	
-	bool found_collision = false;
-	if (scene_node_->getCollisions(entity, begin, end, info))
-	{
-		found_collision = true;
-	}
-
-	// Check if the entity is part of another region.
-	glm::vec3 intersection;
-	for (std::vector<Portal*>::const_iterator ci = portals_.begin(); ci != portals_.end(); ++ci)
-	//for (Portal* portal : portals_)
-	{
-		Portal* portal = *ci;
-		for (unsigned int i = 0; i < 8; ++i)
-		{
-			Plane p(portal->getPoints());
-			if (p.intersectsWith(begin, end, intersection))
-			{
-				if (portal->getToRegion().getCollisions(entity, begin, end, info, closed_list))
-				{
-					found_collision = true;
-				}
-			}
-		}
-	}
-	return found_collision;
-}
-
-bool Region::doesCollide(Entity& entity, const glm::vec3& begin, const glm::vec3& end, CollisionInfo& info, std::vector<const Region*>& closed_list) const
-{
-	if (std::find(closed_list.begin(), closed_list.end(), this) != closed_list.end())
-	{
-		return false;
-	}
-	closed_list.push_back(this);
-	
-	if (scene_node_->doesCollide(entity, begin, end, info))
-	{
-		return true;
-	}
-
-	// Check if the entity is part of another region.
-	glm::vec3 intersection;
-	for (std::vector<Portal*>::const_iterator ci = portals_.begin(); ci != portals_.end(); ++ci)
-	//for (Portal* portal : portals_)
-	{
-		Portal* portal = *ci;
-		for (unsigned int i = 0; i < 8; ++i)
-		{
-			Plane p(portal->getPoints());
-			if (p.intersectsWith(begin, end, intersection))
-			{
-				if (portal->getToRegion().doesCollide(entity, begin, end, info, closed_list))
-				{
-					return true;
-				}
-			}
-		}
-	}
-	return false;
-}
-
-bool Region::doesCollide(const glm::vec3& begin, const glm::vec3& end, float effective_width, std::vector<const Region*>& closed_list) const
-{
-	if (std::find(closed_list.begin(), closed_list.end(), this) != closed_list.end())
-	{
-		return false;
-	}
-	closed_list.push_back(this);
-	
-	if (scene_node_->doesCollide(begin, end, effective_width))
-	{
-		return true;
-	}
-
-	// Check if the entity is part of another region.
-	glm::vec3 intersection;
-	for (std::vector<Portal*>::const_iterator ci = portals_.begin(); ci != portals_.end(); ++ci)
-	//for (Portal* portal : portals_)
-	{
-		Portal* portal = *ci;
-		for (unsigned int i = 0; i < 8; ++i)
-		{
-			Plane p(portal->getPoints());
-			if (p.getDistance(begin, end) < effective_width)
-			{
-				if (portal->getToRegion().doesCollide(begin, end, effective_width, closed_list))
-				{
-					return true;
-				}
-			}
-		}
-	}
-	return false;
-}
-
-bool Region::doesCollide(const glm::vec3& point, std::vector<const Region*>& closed_list) const
-{
-	if (std::find(closed_list.begin(), closed_list.end(), this) != closed_list.end())
-	{
-		return false;
-	}
-	closed_list.push_back(this);
-	
-	if (scene_node_->doesCollide(point))
-	{
-		return true;
-	}
-
-	// Check if the entity is part of another region.
-	// NOTE: This seems very inefficient, but then again there is not much to go on with just a point :P.
-	glm::vec3 intersection;
-	for (std::vector<Portal*>::const_iterator ci = portals_.begin(); ci != portals_.end(); ++ci)
-	{
-		Portal* portal = *ci;
-		if (portal->getToRegion().doesCollide(point))
-		{
-			return true;
-		}
-	}
-	return false;
-}
-*/
 bool Region::isInRegion(const glm::vec3& location) const
 {
 	return scene_node_->getFrustumChecker().isInside(location);
@@ -788,3 +645,5 @@ Region* Region::findRegion(const glm::vec3& location, std::vector<const Region*>
 	}
 	return found_region;
 }
+
+};

@@ -1,10 +1,11 @@
 #include <algorithm>
-#include <GL/glew.h>
-#include <GL/glfw.h>
 
-#include "GUIManager.h"
+#include "dpengine/gui/GUIManager.h"
+#include "dpengine/gui/Frame.h"
+#include "dpengine/renderer/Window.h"
 
-#include "Frame.h"
+namespace DreadedPE
+{
 
 GUIManager* GUIManager::gui_manager_ = NULL;
 
@@ -30,23 +31,6 @@ Frame& GUIManager::createFrame(Theme& theme, Font& font, float x, float y, float
 	return *frame;
 }
 
-void GUIManager::deleteFrame(Container& frame)
-{
-	for (std::vector<Container*>::iterator i = active_frames_.begin(); i != active_frames_.end(); ++i)
-	{
-		if (*i == &frame)
-		{
-			inactive_frames_.push_back(&frame);
-			break;
-		}
-	}
-}
-
-void GUIManager::addFrame(Container& frame)
-{
-	active_frames_.push_back(&frame);
-}
-
 void GUIManager::draw(const glm::mat4& perspective_matrix) const
 {
 	for (std::vector<Container*>::const_iterator i = active_frames_.begin(); i != active_frames_.end(); ++i)
@@ -55,13 +39,13 @@ void GUIManager::draw(const glm::mat4& perspective_matrix) const
 	}
 }
 
-void GUIManager::update(float dt)
+void GUIManager::tick(float dt)
 {
-	// First process
-	int mouse_x, mouse_y;
-	glfwGetMousePos(&mouse_x, &mouse_y);
+	Window* window = Window::getActiveWindow();
+	double mouse_x, mouse_y;
+	window->getMouseCursor(mouse_x, mouse_y);
 
-	if (glfwGetMouseButton(GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+	if (window->isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT))
 	{
 		if (picked_gui_element_ == NULL)
 		{
@@ -94,7 +78,7 @@ void GUIManager::update(float dt)
 		}
 	}
 
-	else if (glfwGetMouseButton(GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE && picked_gui_element_ != NULL)
+	else if (!window->isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT) && picked_gui_element_ != NULL)
 	{
 		if (picked_gui_element_ != NULL)
 		{
@@ -104,20 +88,30 @@ void GUIManager::update(float dt)
 	}
 
 
-	for (std::vector<Container*>::iterator i = inactive_frames_.begin(); i != inactive_frames_.end(); ++i)
+	for (Container* c : frames_to_remove_)
 	{
-		std::vector<Container*>::iterator find_i = std::find(active_frames_.begin(), active_frames_.end(), *i);
+		std::vector<Container*>::iterator find_i = std::find(active_frames_.begin(), active_frames_.end(), c);
 		if (find_i != active_frames_.end())
 		{
+			if (picked_gui_element_ != NULL && (*find_i)->containsElement(*picked_gui_element_))
+			{
+				picked_gui_element_ = NULL;
+			}
 			active_frames_.erase(find_i);
+			delete c;
 		}
-		delete *i;
 	}
-	inactive_frames_.clear();
+	frames_to_remove_.clear();
 
-	for (std::vector<Container*>::reverse_iterator i = active_frames_.rbegin(); i != active_frames_.rend(); ++i)
+	active_frames_.insert(active_frames_.end(), frames_to_add_.begin(), frames_to_add_.end());
+	frames_to_add_.clear();
+
+	for (Container* c : active_frames_)
 	{
-		(*i)->update(dt);
+		if (c->needsUpdate())
+		{
+			c->update(dt);
+		}
 	}
 }
 
@@ -128,3 +122,5 @@ void GUIManager::onResize(int width, int height)
 		(*i)->onResize(width, height);
 	}
 }
+
+};

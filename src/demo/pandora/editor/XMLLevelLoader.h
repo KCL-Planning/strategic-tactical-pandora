@@ -7,10 +7,13 @@
 #include "../3rdparty/pugixml/pugixml.hpp"
 #include "../ontology/Pose.h"
 
-class SceneManager;
-class SceneNode;
+namespace DreadedPE
+{
+	class SceneManager;
+	class SceneNode;
+	class HeightMap;
+};
 class Ontology;
-class HeightMap;
 
 struct StructureDescription
 {
@@ -26,7 +29,7 @@ std::ostream& operator<<(std::ostream& os, const StructureDescription& sd);
 class XMLLevelLoader
 {
 public:
-	XMLLevelLoader(SceneManager& scene_manager, SceneNode& root, Ontology& ontology, HeightMap& height_map);
+	XMLLevelLoader(DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode& root, Ontology& ontology, DreadedPE::HeightMap& height_map);
 	void loadLevel(const std::string& xml_file);
 	
 	const glm::mat4& getAUVLocation() const { return auv_location_; }
@@ -37,10 +40,10 @@ private:
 	
 	void printXMLNode(const pugi::xml_node& node, unsigned int depth = 0) const;
 	
-	SceneManager* scene_manager_;
-	SceneNode* root_;
+	DreadedPE::SceneManager* scene_manager_;
+	DreadedPE::SceneNode* root_;
 	Ontology* ontology_;
-	HeightMap* height_map_;
+	DreadedPE::HeightMap* height_map_;
 	
 	glm::mat4 auv_location_;
 	

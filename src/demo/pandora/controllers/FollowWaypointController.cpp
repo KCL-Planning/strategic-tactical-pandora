@@ -12,13 +12,13 @@
 
 #include "../AUV.h"
 #include "../RRT.h"
-#include "../../../core/math/Math.h"
-#include "../../../core/scene/SceneManager.h"
+#include "dpengine/math/Math.h"
+#include "dpengine/scene/SceneManager.h"
 
 #include "../gui/AUVStatusIcon.h"
 
 
-FollowWaypointController::FollowWaypointController(SceneManager& scene_manager, AUV& auv, RRT& rrt)
+FollowWaypointController::FollowWaypointController(DreadedPE::SceneManager& scene_manager, AUV& auv, RRT& rrt)
 	: scene_manager_(&scene_manager), auv_(&auv), rrt_(&rrt), move_controlled_(false), pitch_(0), yaw_(0), time_(0), collision_distance_(1.0f)
 {
 	//rrt_->addListener(*this);

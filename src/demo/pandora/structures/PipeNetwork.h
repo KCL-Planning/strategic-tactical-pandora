@@ -1,14 +1,19 @@
 #ifndef DEMO_PANDORA_STRUCTURES_PIPE_NETWORK_H
 #define DEMO_PANDORA_STRUCTURES_PIPE_NETWORK_H
 
+#include <memory>
 #include <vector>
 
-#include "../../../core/entities/Entity.h"
+#include "dpengine/entities/Entity.h"
 
 class MissionSite;
-class SceneManager;
-class Material;
-class Shape;
+
+namespace DreadedPE
+{
+	class SceneManager;
+	class Material;
+	class Shape;
+};
 
 /**
  * The data regarding the grid.
@@ -168,16 +173,16 @@ std::ostream& operator<<(std::ostream& os, const PipeNetworkNode& node);
 /**
  * Create a pipe network given a set of mission sites.
  */
-class PipeNetwork : public Entity
+class PipeNetwork : public DreadedPE::Entity
 {
 public:
-	PipeNetwork(SceneManager& scene_manager, SceneNode* parent, const std::vector<MissionSite*>& mission_sites, float grid_size);
+	PipeNetwork(DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, const std::vector<MissionSite*>& mission_sites, float grid_size);
 	
 	void findPath(const glm::vec3& from, const glm::vec3& to, PipeNetworkNode::PIPE_NETWORK_DIRECTION direction);
 private:
-	Shape* pipe_shape_;
+	std::shared_ptr<DreadedPE::Shape> pipe_shape_;
 	PipeNetworkGrid* grid_;
-	Material* pipe_material_;
+	std::shared_ptr<DreadedPE::Material> pipe_material_;
 };
 
 #endif

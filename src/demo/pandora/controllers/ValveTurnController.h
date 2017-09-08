@@ -6,11 +6,14 @@
 #include "PlannerAction.h"
 
 class AUV;
-class Line;
-class SceneNode;
-class SceneLeafModel;
-class SceneManager;
-class Material;
+namespace DreadedPE
+{
+	class Line;
+	class SceneNode;
+	class SceneLeafModel;
+	class SceneManager;
+	class Material;
+};
 class OntologyInterface;
 class Valve;
 class FollowWaypointController;
@@ -19,7 +22,7 @@ class RRT;
 class ValveTurnController : public PlannerAction
 {
 public:
-	ValveTurnController(SceneManager& scene_manager, AUV& auv, OntologyInterface& ontology, ros::Publisher& action_feedback_pub, FollowWaypointController& follow_waypoint_controller);
+	ValveTurnController(DreadedPE::SceneManager& scene_manager, AUV& auv, OntologyInterface& ontology, ros::Publisher& action_feedback_pub, FollowWaypointController& follow_waypoint_controller);
 	
 	void setValve(Valve& valve, float desired_increment, int valve_deadline);
 	

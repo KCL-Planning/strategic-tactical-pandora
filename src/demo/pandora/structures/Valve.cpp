@@ -1,21 +1,22 @@
 #include "Valve.h"
 
-#include "../../../core/entities/behaviours/RotateBehaviour.h"
-#include "../../../core/scene/SceneLeafModel.h"
-#include "../../../core/shaders/BasicShadowShader.h"
-#include "../../../core/shaders/ToonShader.h"
-#include "../../../core/scene/Material.h"
-#include "../../../core/texture/TargaTexture.h"
-#include "../../../core/texture/Texture.h"
-#include "../../../shapes/Cube.h"
-#include "../../../core/collision/BoxCollision.h"
+#include <glm/gtc/matrix_transform.hpp>
+
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/shaders/BasicShadowShader.h"
+#include "dpengine/shaders/ToonShader.h"
+#include "dpengine/scene/Material.h"
+#include "dpengine/texture/TargaTexture.h"
+#include "dpengine/texture/Texture.h"
+#include "dpengine/shapes/Cube.h"
+#include "dpengine/collision/ConvexPolygon.h"
 
 //int Valve::global_valve_id_ = 0;
 
-Valve::Valve(Structure& structure, SceneManager& scene_manager, SceneNode* parent, const glm::mat4& transformation, const std::string& name)
-	: Entity(scene_manager, parent, transformation, OBSTACLE, name), desired_rotation_(0), structure_(&structure), nr_times_blocked_(0)
+Valve::Valve(Structure& structure, DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, const glm::mat4& transformation, const std::string& name)
+	: DreadedPE::Entity(scene_manager, parent, transformation, DreadedPE::OBSTACLE, name), desired_rotation_(0), structure_(&structure), nr_times_blocked_(0)
 {
-	Texture* texture = TargaTexture::loadTexture("data/textures/grass.tga");
+	DreadedPE::Texture* texture = DreadedPE::TargaTexture::loadTexture("data/textures/grass.tga");
 	//std::stringstream ss;
 	//ss << global_valve_id_;
 	//id_ = ss.str();
@@ -25,22 +26,22 @@ Valve::Valve(Structure& structure, SceneManager& scene_manager, SceneNode* paren
 	//name_ = ss.str();
 	//++global_valve_id_;
 	
-	MaterialLightProperty* ambient = new MaterialLightProperty(0.1f, 0.1f, 0.1f, 1.0f);
-	MaterialLightProperty* diffuse = new MaterialLightProperty(0.9f, 0.9f, 0.9f, 1.0f);
-	MaterialLightProperty* specular = new MaterialLightProperty(0.11f, 0.11f, 0.11f, 1.0f);
-	MaterialLightProperty* valve_colour = new MaterialLightProperty(0.3f, 0.3f, 0.3f, 1.0f);
-	Material* valve_material = new Material(*ambient, *diffuse, *specular, *valve_colour);
+	DreadedPE::MaterialLightProperty ambient(0.1f, 0.1f, 0.1f, 1.0f);
+	DreadedPE::MaterialLightProperty diffuse(0.9f, 0.9f, 0.9f, 1.0f);
+	DreadedPE::MaterialLightProperty specular(0.11f, 0.11f, 0.11f, 1.0f);
+	DreadedPE::MaterialLightProperty valve_colour(0.3f, 0.3f, 0.3f, 1.0f);
+	std::shared_ptr<DreadedPE::Material> valve_material(std::make_shared<DreadedPE::Material>(ambient, diffuse, specular, valve_colour));
 	valve_material->add2DTexture(*texture);
 	
 	// Create the T-valve.
-	Cube* bottom_valve = new Cube(0.1f, 0.1f, 0.3f);
-	Cube* top_valve = new Cube(0.3f, 0.1f, 0.1f);
+	std::shared_ptr<DreadedPE::Cube> bottom_valve(std::make_shared<DreadedPE::Cube>(0.1f, 0.1f, 0.3f));
+	std::shared_ptr<DreadedPE::Cube> top_valve(std::make_shared<DreadedPE::Cube>(0.3f, 0.1f, 0.1f));
 	
-	SceneNode* valve_node = new SceneNode(scene_manager, this, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.25f)));
-	SceneNode* bottom_valve_node = new SceneNode(scene_manager, valve_node, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
-	SceneNode* top_valve_node = new SceneNode(scene_manager, valve_node, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.15f)));
-	SceneLeafModel* bottom_valve_leaf = new SceneLeafModel(*bottom_valve_node, NULL, *bottom_valve, *valve_material, ToonShader::getShader(), false, false);
-	SceneLeafModel* top_valve_leaf = new SceneLeafModel(*top_valve_node, NULL, *top_valve, *valve_material, ToonShader::getShader(), false, false);
+	DreadedPE::SceneNode* valve_node = new DreadedPE::SceneNode(scene_manager, this, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.25f)));
+	DreadedPE::SceneNode* bottom_valve_node = new DreadedPE::SceneNode(scene_manager, valve_node, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
+	DreadedPE::SceneNode* top_valve_node = new DreadedPE::SceneNode(scene_manager, valve_node, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.15f)));
+	DreadedPE::SceneLeafModel* bottom_valve_leaf = new DreadedPE::SceneLeafModel(*bottom_valve_node, NULL, bottom_valve, valve_material, DreadedPE::ToonShader::getShader(), false, false);
+	DreadedPE::SceneLeafModel* top_valve_leaf = new DreadedPE::SceneLeafModel(*top_valve_node, NULL, top_valve, valve_material, DreadedPE::ToonShader::getShader(), false, false);
 }
 
 void Valve::prepare(float dt)
@@ -62,8 +63,8 @@ void Valve::prepare(float dt)
 		}
 	}
 	
-	local_transformation_ = glm::rotate(local_transformation_, rotation, glm::vec3(0, 0, 1));
-	SceneNode::prepare(dt);
+	local_transformation_ = glm::rotate(local_transformation_, glm::radians(rotation), glm::vec3(0, 0, 1));
+	DreadedPE::SceneNode::prepare(dt);
 	
 	desired_rotation_ -= rotation;
 }

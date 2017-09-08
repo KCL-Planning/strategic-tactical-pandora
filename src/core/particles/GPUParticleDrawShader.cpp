@@ -1,15 +1,18 @@
-#include "GPUParticleDrawShader.h"
-#include "GPUParticleComputerShader.h"
+#include "dpengine/particles/GPUParticleDrawShader.h"
+#include "dpengine/particles/GPUParticleComputerShader.h"
 
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "GPUParticleEmitter.h"
-#include "../../core/scene/SceneLeafModel.h"
-#include "../../core/texture/Texture.h"
+#include "dpengine/particles/GPUParticleEmitter.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/texture/Texture.h"
+
+namespace DreadedPE
+{
 
 GPUParticleDrawShader::GPUParticleDrawShader(GPUParticleComputerShader& computer_shader, const Texture& texture, const std::string& vertex_shader, const std::string& geometry_shader, const std::string& fragment_shader)
-	: GLSLProgram(vertex_shader, geometry_shader, fragment_shader), computer_shader_(&computer_shader), texture_(&texture)
+	: GLSLProgram(vertex_shader, geometry_shader, fragment_shader), texture_(&texture), computer_shader_(&computer_shader)
 {
 	init();
 }
@@ -85,3 +88,5 @@ void GPUParticleDrawShader::drawParticles(const glm::mat4& view_matrix, const gl
 
 	glDrawTransformFeedback(GL_POINTS, computer_shader_->getTransformFeedbackBufferId());
 }
+
+};

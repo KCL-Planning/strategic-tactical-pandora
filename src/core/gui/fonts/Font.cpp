@@ -1,7 +1,10 @@
 #include <iostream>
 #include <stdlib.h> 
 
-#include "Font.h"
+#include "dpengine/gui/fonts/Font.h"
+
+namespace DreadedPE
+{
 
 Font::Font(Texture& texture)
 	: buffers_need_updating_(false), font_texture_(&texture)
@@ -56,3 +59,5 @@ void Font::finaliseBuffers()
 		buffers_need_updating_ = false;
 	}
 }
+
+};

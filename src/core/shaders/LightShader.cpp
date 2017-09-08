@@ -1,10 +1,13 @@
 #include <glm/gtc/type_ptr.hpp>
 
-#include "LightShader.h"
-#include "../light/Light.h"
-#include "../scene/SceneLeafLight.h"
-#include "../renderer/ShadowRenderer.h"
-#include "../texture/Texture.h"
+#include "dpengine/shaders/LightShader.h"
+#include "dpengine/light/Light.h"
+#include "dpengine/scene/SceneLeafLight.h"
+#include "dpengine/renderer/ShadowRenderer.h"
+#include "dpengine/texture/Texture.h"
+
+namespace DreadedPE
+{
 
 LightShader::LightShader(const string& vertexShader, const string& fragmentShader)
 	: GLSLProgram(vertexShader, fragmentShader)
@@ -18,7 +21,7 @@ LightShader::LightShader(const string& vertexShader, const string& geometryShade
 
 }
 
-void LightShader::initialise(const SceneLeafModel& model_node, const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const SceneLeafLight*>& lights)
+void LightShader::prepareToRender(const SceneLeafModel& model_node, const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const SceneLeafLight*>& lights)
 {
 	//bindShader();
 	for (unsigned int light_nr = 0; light_nr < lights.size() && light_nr < MAX_LIGHTS_; ++light_nr)
@@ -37,7 +40,7 @@ void LightShader::initialise(const SceneLeafModel& model_node, const glm::mat4& 
 		glUniform3f(getDirectionId(light_nr), light->getLight().getDirection()[0], light->getLight().getDirection()[1], light->getLight().getDirection()[2]);
 		glUniform1f(getLightAngleId(light_nr), light->getLight().getAngle());
 		glUniform4f(getPositionId(light_nr), light->getLight().getLocation()[0], light->getLight().getLocation()[1], light->getLight().getLocation()[2], 1.0f);
-		glUniform1i(getDepthTextureId(light_nr), light->getLight().getShadowRenderer().getTexture().getActiveTextureId());
+		glUniform1i(getDepthTextureId(light_nr), light->getLight().getShadowRendererTextureID());
 	}
 
 	for (unsigned int light_nr = lights.size(); light_nr < MAX_LIGHTS_; ++light_nr)
@@ -135,3 +138,5 @@ void LightShader::resolveUniformNames()
 		}
 	}
 }
+
+};

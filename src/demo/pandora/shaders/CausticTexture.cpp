@@ -8,10 +8,10 @@
 
 #include <sstream>
 
-#include "../../../core/texture/TargaTexture.h"
+#include "dpengine/texture/TargaTexture.h"
 
 CausticTexture::CausticTexture()
-	: Texture(GL_TEXTURE_2D_ARRAY), total_time_(0)
+	: DreadedPE::Texture(GL_TEXTURE_2D_ARRAY), total_time_(0)
 {
 	glBindTexture(GL_TEXTURE_2D_ARRAY, texture_id_);
 
@@ -30,7 +30,7 @@ CausticTexture::CausticTexture()
 		if ((i + 1) < 10) texture_path << "0";
 		texture_path << (i + 1) << ".tga";
 
-		TargaImage image;
+		DreadedPE::TargaImage image;
 		if (!image.load(texture_path.str()))
 		{
 #ifdef _WIN32

@@ -1,13 +1,16 @@
-#include "CreateAnimatedShadowMapShader.h"
+#include "dpengine/shaders/CreateAnimatedShadowMapShader.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "../scene/SceneLeafModel.h"
-#include "../../shapes/Shape.h"
-#include "../scene/Material.h"
-#include "../models/Bone.h"
-#include "../texture/Texture.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/shapes/Shape.h"
+#include "dpengine/scene/Material.h"
+#include "dpengine/models/Bone.h"
+#include "dpengine/texture/Texture.h"
+
+namespace DreadedPE
+{
 
 CreateAnimatedShadowMapShader* CreateAnimatedShadowMapShader::shader_ = NULL;
 GLuint CreateAnimatedShadowMapShader::projectiomodelview_matrix_loc_ = 0;
@@ -54,14 +57,14 @@ CreateAnimatedShadowMapShader& CreateAnimatedShadowMapShader::getShader()
 	return *shader_;
 }
 
-void CreateAnimatedShadowMapShader::initialise(const SceneLeafModel& model_node, const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const SceneLeafLight*>& lights)
+void CreateAnimatedShadowMapShader::prepareToRender(const SceneLeafModel& model_node, const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const SceneLeafLight*>& lights)
 {
-	if (model_node.getMaterial().get2DTextures().size() == 0)
+	if (model_node.getMaterial()->get2DTextures().size() == 0)
 	{
 		return;
 	}
 
-	std::map<const Shape*, GLuint>::iterator mapped_i = shape_to_vbo_.find(&model_node.getModel());
+	std::map<const Shape*, GLuint>::iterator mapped_i = shape_to_vbo_.find(model_node.getShape().get());
 	GLuint vbo_index;
 	if (mapped_i == shape_to_vbo_.end())
 	{
@@ -77,26 +80,27 @@ void CreateAnimatedShadowMapShader::initialise(const SceneLeafModel& model_node,
 		glDisableVertexAttribArray(6);
 		glDisableVertexAttribArray(7);
 
-		glBindBuffer(GL_ARRAY_BUFFER, model_node.getModel().getVertexBufferId());
+		glBindBuffer(GL_ARRAY_BUFFER, model_node.getShape()->getVertexBufferId());
 		glVertexAttribPointer((GLint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-		glBindBuffer(GL_ARRAY_BUFFER, model_node.getModel().getTexCoordBufferId());
+		glBindBuffer(GL_ARRAY_BUFFER, model_node.getShape()->getTexCoordBufferId());
 		glVertexAttribPointer((GLint)1, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-		glBindBuffer(GL_ARRAY_BUFFER, model_node.getModel().getBoneIdsBufferId());
+		glBindBuffer(GL_ARRAY_BUFFER, model_node.getShape()->getBoneIdsBufferId());
 		glVertexAttribIPointer((GLint)2, 4, GL_INT, 0, 0);
 
-		glBindBuffer(GL_ARRAY_BUFFER, model_node.getModel().getBoneWeightsBufferId());
+		glBindBuffer(GL_ARRAY_BUFFER, model_node.getShape()->getBoneWeightsBufferId());
 		glVertexAttribPointer((GLint)3, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-		glBindBuffer(GL_ARRAY_BUFFER, model_node.getModel().getBoneIds2BufferId());
+		glBindBuffer(GL_ARRAY_BUFFER, model_node.getShape()->getBoneIds2BufferId());
 		glVertexAttribIPointer((GLint)4, 4, GL_INT, 0, 0);
 
-		glBindBuffer(GL_ARRAY_BUFFER, model_node.getModel().getBoneWeights2BufferId());
+		glBindBuffer(GL_ARRAY_BUFFER, model_node.getShape()->getBoneWeights2BufferId());
 		glVertexAttribPointer((GLint)5, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model_node.getModel().getIndexBufferId());
-		shape_to_vbo_[&model_node.getModel()] = vbo_index;
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model_node.getShape()->getIndexBufferId());
+		shape_to_vbo_[model_node.getShape().get()] = vbo_index;
+		model_node.getShape()->addDestructionListener(*this);
 	}
 	else
 	{
@@ -107,56 +111,26 @@ void CreateAnimatedShadowMapShader::initialise(const SceneLeafModel& model_node,
 	if (last_used_shader_ != this)
 	{
 		bindShader();
-/*
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-		glEnableVertexAttribArray(2);
-		glEnableVertexAttribArray(3);
-		glEnableVertexAttribArray(4);
-		glEnableVertexAttribArray(5);
-		glDisableVertexAttribArray(6);
-		glDisableVertexAttribArray(7);
-*/
 	}
 
 	glm::mat4 projection_model_view = projection_matrix * view_matrix * model_matrix;
 	
 	glUniformMatrix4fv(projectiomodelview_matrix_loc_, 1, false, glm::value_ptr(projection_model_view));
 
-	//glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D, model_node.getMaterial().get2DTextures()[0]);
-	//glUniform1i(texture0_loc_, 0);
-	glUniform1i(texture0_loc_, model_node.getMaterial().get2DTextures()[0]->getActiveTextureId());
+	glUniform1i(texture0_loc_, model_node.getMaterial()->get2DTextures()[0]->getActiveTextureId());
 
 	unsigned int i = 0;
-	for (; i < model_node.getModel().getBones().size(); ++i)
+	for (; i < model_node.getShape()->getBones().size(); ++i)
 	{
-		glUniformMatrix4fv(bone_matrix_loc_[i], 1, false, glm::value_ptr(model_node.getModel().getBones()[i]->getFinalTransformation()));
+		glUniformMatrix4fv(bone_matrix_loc_[i], 1, false, glm::value_ptr(model_node.getShape()->getBones()[i]->getFinalTransformation()));
 	}
 	for (; i < MAX_BONES_; ++i)
 	{
 		glUniformMatrix4fv(bone_matrix_loc_[i], 1, false, glm::value_ptr(glm::mat4(1.0f)));
 	}
-/*
-	glBindBuffer(GL_ARRAY_BUFFER, model_node.getModel().getVertexBufferId());
-	glVertexAttribPointer((GLint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, model_node.getModel().getTexCoordBufferId());
-	glVertexAttribPointer((GLint)1, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, model_node.getModel().getBoneIdsBufferId());
-	glVertexAttribIPointer((GLint)2, 4, GL_INT, 0, 0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, model_node.getModel().getBoneWeightsBufferId());
-	glVertexAttribPointer((GLint)3, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, model_node.getModel().getBoneIds2BufferId());
-	glVertexAttribIPointer((GLint)4, 4, GL_INT, 0, 0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, model_node.getModel().getBoneWeights2BufferId());
-	glVertexAttribPointer((GLint)5, 4, GL_FLOAT, GL_FALSE, 0, 0);
-*/
-	model_node.getModel().render();
+	glDrawElements(model_node.getShape()->getRenderingMode(), model_node.getShape()->getIndices().size(), GL_UNSIGNED_INT, 0);
 
 	glBindVertexArray(0);
 }
+
+};

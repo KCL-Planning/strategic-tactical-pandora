@@ -39,7 +39,7 @@
 #include "../core/entities/WavingWater.h"
 #include "../core/entities/Player.h"
 #include "../core/entities/Monster.h"
-#include "../core/collision/BoxCollision.h"
+#include "../core/collision/ConvexPolygon.h"
 #include "../core/entities/Lever.h"
 #include "../core/entities/Bridge.h"
 #include "../core/scene/frustum/SphereCheck.h"
@@ -191,7 +191,7 @@ bool FlatDemo::init(int argc, char** argv)
 	for (std::vector<Quad>::const_iterator ci = ground_floor->getQuads().begin(); ci != ground_floor->getQuads().end(); ++ci)
 	{
 		const Quad& quad = *ci;
-		BoxCollision* bc = new BoxCollision(*ground_floor_node,
+		ConvexPolygon* bc = new ConvexPolygon(*ground_floor_node,
                                             glm::vec3(quad.bottom_left_.x, -ground_floor->getDepth() / 2.0f, quad.bottom_left_.y),
                                             glm::vec3(quad.bottom_right_.x, -ground_floor->getDepth() / 2.0f, quad.bottom_right_.y),
                                             glm::vec3(quad.top_left_.x, -ground_floor->getDepth() / 2.0f, quad.top_left_.y),
@@ -218,7 +218,7 @@ bool FlatDemo::init(int argc, char** argv)
 			ss << "Lower stairs: " << i << ". Floor nr: " << floor_nr;
 			//Entity* stair_step_entity = new Entity(current_ground_floor, glm::translate(glm::mat4(1.0), glm::vec3(0.5f * i + 5.25f, 0.3f * i, 9.0f)), ENTITY_TYPE::OBSTACLE, ss.str());
 			Entity* stair_step_entity = new Entity(*scene_manager_, stair_case, glm::translate(glm::mat4(1.0), glm::vec3(0.5f * i + 5.25f, 0.3f * i, 9.0f)), OBSTACLE, ss.str());
-			BoxCollision* stair_step_bc = new BoxCollision(*stair_step_entity, 0.5f, 0.3f, 1.0f);
+			ConvexPolygon* stair_step_bc = new ConvexPolygon(*stair_step_entity, 0.5f, 0.3f, 1.0f);
 			stair_step_entity->addCollision(*stair_step_bc);
 			//SceneLeafModel* stair_step_leaf_node = new SceneLeafModel(*stair_step_entity, NULL, *stair_step_, *concrete_material_, BasicShadowShader::getShader(), &ShadowShader::getShader(), false, false);
 			SceneLeafModel* stair_step_leaf_node = new SceneLeafModel(*stair_step_entity, NULL, *stair_step_, *concrete_material_, BasicShadowShader::getShader(), false, false);
@@ -230,7 +230,7 @@ bool FlatDemo::init(int argc, char** argv)
 			ss << "Upper stairs: " << i << ". Floor nr: " << floor_nr;
 			//Entity* stair_step_entity = new Entity(current_ground_floor, glm::translate(glm::rotate(glm::mat4(1.0), 90.0f, glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(0.5f * i - 8.75f, 0.3f * i + 6 * 0.3, 9.0f)), ENTITY_TYPE::OBSTACLE, ss.str());
 			Entity* stair_step_entity = new Entity(*scene_manager_, stair_case, glm::translate(glm::rotate(glm::mat4(1.0), 90.0f, glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(0.5f * i - 8.75f, 0.3f * i + 6 * 0.3, 9.0f)), OBSTACLE, ss.str());
-			BoxCollision* stair_step_bc = new BoxCollision(*stair_step_entity, 0.5f, 0.3f, 1.0f);
+			ConvexPolygon* stair_step_bc = new ConvexPolygon(*stair_step_entity, 0.5f, 0.3f, 1.0f);
 			stair_step_entity->addCollision(*stair_step_bc);
 			//SceneLeafModel* stair_step_leaf_node = new SceneLeafModel(*stair_step_entity, NULL, *stair_step_, *concrete_material_, BasicShadowShader::getShader(), &ShadowShader::getShader(), false, false);
 			SceneLeafModel* stair_step_leaf_node = new SceneLeafModel(*stair_step_entity, NULL, *stair_step_, *concrete_material_, BasicShadowShader::getShader(), false, false);
@@ -243,7 +243,7 @@ bool FlatDemo::init(int argc, char** argv)
 			ss << "Stepping stone: " << floor_nr;
 			//Entity* stair_step_entity = new Entity(current_ground_floor, glm::translate(glm::mat4(1.0), glm::vec3(8.75f, 0.3f * 6, 9.0f)), ENTITY_TYPE::OBSTACLE, ss.str());
 			Entity* stair_step_entity = new Entity(*scene_manager_, stair_case, glm::translate(glm::mat4(1.0), glm::vec3(8.75f, 0.3f * 6, 9.0f)), OBSTACLE, ss.str());
-			BoxCollision* stair_step_bc = new BoxCollision(*stair_step_entity, 1.5f, 0.3f, 1.0f);
+			ConvexPolygon* stair_step_bc = new ConvexPolygon(*stair_step_entity, 1.5f, 0.3f, 1.0f);
 			stair_step_entity->addCollision(*stair_step_bc);
 			//SceneLeafModel* stair_step_leaf_node = new SceneLeafModel(*stair_step_entity, NULL, *stepping_stone, *concrete_material_, BasicShadowShader::getShader(), &ShadowShader::getShader(), false, false);
 			SceneLeafModel* stair_step_leaf_node = new SceneLeafModel(*stair_step_entity, NULL, *stepping_stone, *concrete_material_, BasicShadowShader::getShader(), false, false);
@@ -258,7 +258,7 @@ bool FlatDemo::init(int argc, char** argv)
 		for (std::vector<Quad>::const_iterator ci = plain_wall->getQuads().begin(); ci != plain_wall->getQuads().end(); ++ci)
 		{
 			const Quad& quad = *ci;
-			BoxCollision* bc = new BoxCollision(*wall_entity_,
+			ConvexPolygon* bc = new ConvexPolygon(*wall_entity_,
                                                 glm::vec3(quad.bottom_left_.x, quad.bottom_left_.y, -plain_wall->getDepth() / 2.0f),
                                                 glm::vec3(quad.bottom_right_.x, quad.bottom_right_.y, -plain_wall->getDepth() / 2.0f),
                                                 glm::vec3(quad.top_left_.x, quad.top_left_.y, -plain_wall->getDepth() / 2.0f),
@@ -282,7 +282,7 @@ bool FlatDemo::init(int argc, char** argv)
 		for (std::vector<Quad>::const_iterator ci = plain_wall->getQuads().begin(); ci != plain_wall->getQuads().end(); ++ci)
 		{
 			const Quad& quad = *ci;
-			BoxCollision* bc = new BoxCollision(*wall_entity_,
+			ConvexPolygon* bc = new ConvexPolygon(*wall_entity_,
                                                 glm::vec3(quad.bottom_left_.x, quad.bottom_left_.y, -plain_wall->getDepth() / 2.0f),
                                                 glm::vec3(quad.bottom_right_.x, quad.bottom_right_.y, -plain_wall->getDepth() / 2.0f),
                                                 glm::vec3(quad.top_left_.x, quad.top_left_.y, -plain_wall->getDepth() / 2.0f),
@@ -305,7 +305,7 @@ bool FlatDemo::init(int argc, char** argv)
 		for (std::vector<Quad>::const_iterator ci = plain_wall->getQuads().begin(); ci != plain_wall->getQuads().end(); ++ci)
 		{
 			const Quad& quad = *ci;
-			BoxCollision* bc = new BoxCollision(*wall_entity_,
+			ConvexPolygon* bc = new ConvexPolygon(*wall_entity_,
                                                 glm::vec3(quad.bottom_left_.x, quad.bottom_left_.y, -plain_wall->getDepth() / 2.0f),
                                                 glm::vec3(quad.bottom_right_.x, quad.bottom_right_.y, -plain_wall->getDepth() / 2.0f),
                                                 glm::vec3(quad.top_left_.x, quad.top_left_.y, -plain_wall->getDepth() / 2.0f),
@@ -328,7 +328,7 @@ bool FlatDemo::init(int argc, char** argv)
 		for (std::vector<Quad>::const_iterator ci = wall_with_door->getQuads().begin(); ci != wall_with_door->getQuads().end(); ++ci)
 		{
 			const Quad& quad = *ci;
-			BoxCollision* bc = new BoxCollision(*wall_entity_,
+			ConvexPolygon* bc = new ConvexPolygon(*wall_entity_,
                                                 glm::vec3(quad.bottom_left_.x, quad.bottom_left_.y, -wall_with_door->getDepth() / 2.0f),
                                                 glm::vec3(quad.bottom_right_.x, quad.bottom_right_.y, -wall_with_door->getDepth() / 2.0f),
                                                 glm::vec3(quad.top_left_.x, quad.top_left_.y, -wall_with_door->getDepth() / 2.0f),
@@ -376,7 +376,7 @@ bool FlatDemo::init(int argc, char** argv)
 		for (std::vector<Quad>::const_iterator ci = floor_access->getQuads().begin(); ci != floor_access->getQuads().end(); ++ci)
 		{
 			const Quad& quad = *ci;
-			BoxCollision* bc = new BoxCollision(*floor_access_entity,
+			ConvexPolygon* bc = new ConvexPolygon(*floor_access_entity,
                                                 glm::vec3(quad.bottom_left_.x, -floor_access->getDepth() / 2.0f, quad.bottom_left_.y),
                                                 glm::vec3(quad.bottom_right_.x, -floor_access->getDepth() / 2.0f, quad.bottom_right_.y),
                                                 glm::vec3(quad.top_left_.x, -floor_access->getDepth() / 2.0f, quad.top_left_.y),
@@ -451,7 +451,7 @@ bool FlatDemo::init(int argc, char** argv)
 		ss << "Door: " << floor_nr;
 		// Create a door.
 		Entity* door_entity = new Entity(*scene_manager_, current_ground_floor, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 4.0f)), OBSTACLE, "door" + ss.str());
-		BoxCollision* door_bc = new BoxCollision(*door_entity, 0.3f, 2.0f, 1.0f);
+		ConvexPolygon* door_bc = new ConvexPolygon(*door_entity, 0.3f, 2.0f, 1.0f);
 
 		RotateBehaviour* door_rotation = new RotateBehaviour(*door_entity, glm::vec3(0.0f, 0.0f, -0.5f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 0.0f, 10.0f);
 		door_entity->addBehaviour(*door_rotation);
@@ -545,7 +545,7 @@ void FlatDemo::generateFloor(Entity& parent)
 	for (unsigned int i = 0; i < 20; ++i)
 	{
 		Entity* stair_step_entity = new Entity(&parent, glm::translate(glm::mat4(1.0), glm::vec3(0.5f * i - 5.0f, 0.2f * i, 0.0f)), ENTITY_TYPE::OBSTACLE, *game_world_);
-		BoxCollision* stair_step_bc = new BoxCollision(*stair_step_entity, 0.5f, 0.2f, 2.0f);
+		ConvexPolygon* stair_step_bc = new ConvexPolygon(*stair_step_entity, 0.5f, 0.2f, 2.0f);
 		stair_step_entity->addCollision(*stair_step_bc, *bright_material, BasicShadowShader::getShader());
 		game_world_->addEntity(*stair_step_entity);
 		SceneLeafModel* stair_step_leaf_node = new SceneLeafModel(*stair_step_entity, NULL, *stair_step_, *concrete_material_, BasicShadowShader::getShader(), false, false);
@@ -554,7 +554,7 @@ void FlatDemo::generateFloor(Entity& parent)
 	// Stair case.
 	{
 		Entity* stair_entity_ = new Entity(parent, glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(5.0f, 2.2f, 2.0f)), 15.0f, glm::vec3(0.0f, 0.0f, 1.0f)), ENTITY_TYPE::OBSTACLE, *game_world_);
-		BoxCollision* stair_bc = new BoxCollision(*stair_entity_, 50.0f, 0.5f, 2.0f);
+		ConvexPolygon* stair_bc = new ConvexPolygon(*stair_entity_, 50.0f, 0.5f, 2.0f);
 		stair_entity_->setCollision(*stair_bc);
 		game_world_->addEntity(*stair_entity_);
 		SceneLeafModel* stair_leaf_node = new SceneLeafModel(*stair_entity_, NULL, *stair, *concrete_material_, BasicShadowShader::getShader(), false, false);

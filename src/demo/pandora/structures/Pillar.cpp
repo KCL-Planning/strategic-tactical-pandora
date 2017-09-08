@@ -2,36 +2,36 @@
 
 #include <stdlib.h>
 
-#include "../../../core/loaders/PortalLevelFormatLoader.h"
-#include "../../../core/scene/SceneManager.h"
-#include "../../../core/scene/SceneLeaf.h"
-#include "../../../core/scene/SceneLeafModel.h"
-#include "../../../core/scene/SceneNode.h"
-#include "../../../core/scene/Material.h"
-#include "../../../core/texture/TargaTexture.h"
-#include "../../../core/shaders/BasicShadowShader.h"
+#include "dpengine/loaders/PortalLevelFormatLoader.h"
+#include "dpengine/scene/SceneManager.h"
+#include "dpengine/scene/SceneLeaf.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/scene/SceneNode.h"
+#include "dpengine/scene/Material.h"
+#include "dpengine/texture/TargaTexture.h"
+#include "dpengine/shaders/BasicShadowShader.h"
 
 #include "../Waypoint.h"
 #include "../level/MissionSite.h"
 #include "../shaders/CausticShader.h"
 
-Pillar::Pillar(const std::string& name, MissionSite& mission_site, SceneManager& scene_manager, SceneNode* parent, const glm::mat4& transformation, const std::string& level_file_name, Texture& texture)
-	: Entity(scene_manager, parent, transformation, OBSTACLE, name), shinny_timer_(0), has_been_observed_(false), mission_site_(&mission_site), notification_sent_(false)
+Pillar::Pillar(const std::string& name, MissionSite& mission_site, DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, const glm::mat4& transformation, const std::string& level_file_name, DreadedPE::Texture& texture)
+	: DreadedPE::Entity(scene_manager, parent, transformation, DreadedPE::OBSTACLE, name), shinny_timer_(0), has_been_observed_(false), notification_sent_(false), mission_site_(&mission_site)
 {
 	//Texture* wfl_texture = TargaTexture::loadTexture("data/models/levels/modular/atlas.tga");
 	
 	// Initialise the texture to use.
-	MaterialLightProperty* wfl_ambient = new MaterialLightProperty(0.4f, 0.4f, 0.4f, 1.0f);
-	MaterialLightProperty* wfl_diffuse = new MaterialLightProperty(0.8f, 0.8f, 0.8f, 1.0f);
-	MaterialLightProperty* wfl_specular = new MaterialLightProperty(0.3f, 0.3f, 0.3f, 1.0f);
-	MaterialLightProperty* wfl_emmisive = new MaterialLightProperty(0.6f, 0.6f, 0.6f, 1.0f);
+	DreadedPE::MaterialLightProperty wfl_ambient(0.4f, 0.4f, 0.4f, 1.0f);
+	DreadedPE::MaterialLightProperty wfl_diffuse(0.8f, 0.8f, 0.8f, 1.0f);
+	DreadedPE::MaterialLightProperty wfl_specular(0.3f, 0.3f, 0.3f, 1.0f);
+	DreadedPE::MaterialLightProperty wfl_emmisive(0.6f, 0.6f, 0.6f, 1.0f);
 
-	wfl_material_ = new Material(*wfl_ambient, *wfl_diffuse, *wfl_specular, *wfl_emmisive);
+	wfl_material_ = std::make_shared<DreadedPE::Material>(wfl_ambient, wfl_diffuse, wfl_specular, wfl_emmisive);
 	wfl_material_->add2DTexture(texture);
 	
-	PortalLevelFormatLoader* level_loader = new PortalLevelFormatLoader();
+	DreadedPE::PortalLevelFormatLoader* level_loader = new DreadedPE::PortalLevelFormatLoader();
 	//level_node_ = level_loader->importLevel("data/models/levels/pandora/structures.plf", *scene_manager_, scene_manager_->getRoot());
-	SceneNode* level_node_ = level_loader->importLevel(level_file_name, *wfl_material_, CausticShader::getShader(), *scene_manager_, *this, false);
+	DreadedPE::SceneNode* level_node_ = level_loader->importLevel(level_file_name, wfl_material_, &CausticShader::getShader(), *scene_manager_, *this, false);
 	if (level_node_ == NULL)
 	{
 #ifdef _WIN32
@@ -55,8 +55,8 @@ void Pillar::setObserved()
 
 void Pillar::prepare(float dt)
 {
-	Entity::prepare(dt);
-	MaterialLightProperty& mwp = wfl_material_->getEmissive();
+	DreadedPE::Entity::prepare(dt);
+	DreadedPE::MaterialLightProperty& mwp = wfl_material_->getEmissive();
 	if (shinny_timer_ > 0)
 	{
 		shinny_timer_ -= dt;
@@ -80,20 +80,22 @@ void Pillar::prepare(float dt)
 	}
 }
 
-void Pillar::makeBright(SceneNode& scene_node)
+void Pillar::makeBright(DreadedPE::SceneNode& scene_node)
 {
-	for (std::vector<SceneLeaf*>::const_iterator ci = scene_node.getLeafs().begin(); ci != scene_node.getLeafs().end(); ++ci)
+	/*
+	for (std::vector<DreadedPE::SceneLeaf*>::const_iterator ci = scene_node.getLeafs().begin(); ci != scene_node.getLeafs().end(); ++ci)
 	{
-		SceneLeaf* scene_leaf = *ci;
-		SceneLeafModel* model = dynamic_cast<SceneLeafModel*>(scene_leaf);
+		DreadedPE::SceneLeaf* scene_leaf = *ci;
+		DreadedPE::SceneLeafModel* model = dynamic_cast<DreadedPE::SceneLeafModel*>(scene_leaf);
 		if (model != NULL)
 		{
-			model->setMaterial(*SceneNode::bright_material_);
+			model->setMaterial(*DreadedPE::SceneNode::bright_material_);
 		}
 	}
 
-	for (std::vector<SceneNode*>::const_iterator ci = scene_node.getChildren().begin(); ci != scene_node.getChildren().end(); ++ci)
+	for (std::vector<DreadedPE::SceneNode*>::const_iterator ci = scene_node.getChildren().begin(); ci != scene_node.getChildren().end(); ++ci)
 	{
 		makeBright(**ci);
 	}
+	*/
 }

@@ -1,170 +1,101 @@
-#ifdef _WIN32
-#include <windows.h>
-#endif
-
 #include <algorithm>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/matrix_interpolation.hpp>
 
-#include "SceneNode.h"
-#include "SceneLeaf.h"
-#include "../math/BoundedBox.h"
-#include "../entities/Entity.h"
-#include "SceneManager.h"
-#include "../entities/behaviours/Behaviour.h"
+#include "dpengine/scene/SceneNode.h"
+#include "dpengine/scene/SceneLeaf.h"
+#include "dpengine/entities/Entity.h"
+#include "dpengine/scene/SceneManager.h"
+#include "dpengine/scene/events/SceneNodeDestroyedListener.h"
 
 // DEBUG.
-#include "../collision/BoxCollision.h"
-#include "../../shapes/Cube.h"
-#include "SceneLeafModel.h"
-#include "Material.h"
-#include "../shaders/BasicShadowShader.h"
-#include "portal/Region.h"
-#include "portal/Portal.h"
-#include "../texture/Texture.h"
-#include "../texture/TargaTexture.h"
+#include "dpengine/collision/ConvexPolygon.h"
+#include "dpengine/shapes/Cube.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/scene/Material.h"
+#include "dpengine/shaders/BasicShadowShader.h"
+#include "dpengine/scene/portal/Region.h"
+#include "dpengine/scene/portal/Portal.h"
+#include "dpengine/texture/Texture.h"
+#include "dpengine/texture/TargaTexture.h"
 
-Material* SceneNode::bright_material_ = NULL;
+#include "dpengine/math/Plane.h"
 
-SceneNode::SceneNode(SceneManager& scene_manager, SceneNode* parent, const glm::mat4& transformation, bool init_children)
-	: scene_manager_(&scene_manager), local_transformation_(transformation), complete_transformation_(1.0), bounded_collision_box_(NULL), frustum_checker_(NULL), current_region_(NULL), ignore_rotations_(false)
+namespace DreadedPE
 {
-	parent_ = parent;
-	if (init_children)
+
+std::vector<SceneNode*> SceneNode::to_delete_list_;
+
+SceneNode::SceneNode(SceneManager& scene_manager, SceneNode* parent, const glm::mat4& transformation, const glm::vec3& scaling, bool init_children)
+	: is_alive_(true), is_marked_for_removal_(false), scene_manager_(&scene_manager), local_transformation_(transformation), complete_transformation_(1.0), complete_transformation_no_scaling_(1.0), local_scaling_(scaling), scaling_(scaling), parent_(parent), bounded_collision_box_(NULL), frustum_checker_(NULL), current_region_(NULL), marked_for_update_(true), marked_for_visit_(true), previous_transform_(local_transformation_), previous_transform_no_scaling_(local_transformation_), previous_scaling_(scaling), interpolated_transform_(1.0f), ignore_rotations_(false)
+{
+	if (parent != NULL)
 	{
-		if (parent != NULL)
+		if (init_children)
 		{
 			parent->children_.push_back(this);
-			parent_ = parent;
 		}
 		else
 		{
-			scene_manager.getRoot().children_.push_back(this);
-			parent_ = &scene_manager.getRoot();
+			parent->addChild(*this);
 		}
 	}
-
-	if (bright_material_ == NULL)
-	{
-		Texture* texture = TargaTexture::loadTexture("data/textures/gold.tga");
-		MaterialLightProperty* bright_ambient = new MaterialLightProperty(0.0, 0.0, 0.0, 1.0);
-		MaterialLightProperty* bright_diffuse = new MaterialLightProperty(0.0, 0.0, 0.0, 1.0);
-		MaterialLightProperty* bright_specular = new MaterialLightProperty(0.0, 0.0, 0.0, 1.0);
-		MaterialLightProperty* bright_emmisive = new MaterialLightProperty(1.0, 1.0, 1.0, 1.0);
-
-		bright_material_ = new Material(*bright_ambient, *bright_diffuse, *bright_specular, *bright_emmisive);
-		bright_material_->add2DTexture(*texture);
-	}
 	updateTransformations();
+	
+	// Initialise the interpolated and previous transforms / scaling.
+	interpolated_transform_ = complete_transformation_;
+	previous_transform_ = complete_transformation_;
+	previous_scaling_ = scaling_;
+	previous_transform_no_scaling_ = complete_transformation_no_scaling_;
 }
 
 SceneNode::~SceneNode()
 {
+	/**
+	 * Remove this node from the parent's children list.
+	 * NOTE: This is already done in the destroy() method.
+	 */
 	if (parent_ != NULL)
 	{
-		parent_->removeChild(*this);
+		std::vector<SceneNode*>::iterator i = std::find(parent_->children_.begin(), parent_->children_.end(), this);
+		if (i != parent_->children_.end())
+		{
+			parent_->children_.erase(i);
+		}
 	}
 
+	/**
+	 * Delete all our children.
+	 */
 	for (std::vector<SceneNode*>::const_iterator ci = children_.begin(); ci != children_.end(); ++ci)
 	{
+		SceneNode* node = *ci;
+		if (Entity::isToBeDeleted(*node))
+		{
+			continue;
+		}
 		delete *ci;
 	}
+
+	/**
+	 * Delete all our leaf nodes.
+	 */
 	for (std::vector<SceneLeaf*>::const_iterator ci = leafs_.begin(); ci != leafs_.end(); ++ci)
 	{
 		delete *ci;
 	}
+
+	/**
+	 * Delete the frustrum and collision convex shapes.
+	 */
+	delete frustum_checker_;
+	delete bounded_collision_box_;
 }
-/*
-void SceneNode::updateVisibility()
-{
-	// If we have moved, check if we are in a separate region.
-	bool update_visibility = false;
-	if (current_region_ == NULL)
-	{
-		update_visibility = true;
-		current_region_ = Region::findRegionGlobal(getGlobalLocation());
-	}
-	else if (getCompleteTransformation() != previous_transform_)
-	{
-		update_visibility = true;
-		
-		//Region* new_region = scene_manager_->getRoot().findRegion(getGlobalLocation());
-		Region* new_region = current_region_->findRegion(getGlobalLocation());
-		current_region_ = new_region;
-	}
-	
-	if (update_visibility)
-	{
-		// Check in what regions -- others than the one it is in -- the entity is visible.
-		std::vector<Region*> new_regions_visible_from;
-		if (current_region_ != NULL)
-		{
-			std::set<Region*> closed_list, open_list;
-			open_list.insert(current_region_);
-			
-			while (open_list.size() > 0)
-			{
-				Region* region = *open_list.begin();
-				open_list.erase(open_list.begin());
-				closed_list.insert(region);
-				
-				if (region->isVisibleIn(*this))
-				{
-					new_regions_visible_from.push_back(region);
-				}
-				
-				for (std::vector<Portal*>::const_iterator ci = region->getPortals().begin(); ci != region->getPortals().end(); ++ci)
-				{
-					const Portal* portal = *ci;
-					if (closed_list.count(&portal->getFromRegion()) != 1)
-					{
-						open_list.insert(&portal->getFromRegion());
-					}
-					
-					if (closed_list.count(&portal->getToRegion()) != 1)
-					{
-						open_list.insert(&portal->getToRegion());
-					}
-				}
-			}
-		}
 
-		// Update the existing regions the entity was visible from.
-		for (int i = regions_visible_from_.size() - 1; i > -1; --i)
-		{
-			Region* region = regions_visible_from_[i];
-
-			// The entity is no longer visible from the region!
-			std::vector<Region*>::iterator i_find = std::find(new_regions_visible_from.begin(), new_regions_visible_from.end(), region);
-			if (i_find == new_regions_visible_from.end())
-			{
-				region->removeVisibleEntityFromOtherRegion(*this);
-				regions_visible_from_.erase(regions_visible_from_.begin() + i);
-				continue;
-			}
-
-			new_regions_visible_from.erase(i_find);
-		}
-
-		// Now add all the regions where it was not visible from before.
-		for (std::vector<Region*>::const_iterator ci = new_regions_visible_from.begin(); ci != new_regions_visible_from.end(); ++ci)
-		{
-			Region* new_region = *ci;
-			new_region->addVisibleEntityFromOtherRegion(*this);
-			regions_visible_from_.push_back(new_region);
-		}
-	}
-}
-*/
 void SceneNode::updateChildren()
 {
 	// Delete and insert children of this node.
-	for (std::vector<SceneNode*>::const_iterator ci = children_to_add_.begin(); ci != children_to_add_.end(); ++ci)
-	{
-		children_.push_back(*ci);
-	}
-	children_to_add_.clear();
-
 	for (std::vector<const SceneNode*>::const_iterator ci = children_to_remove_.begin(); ci != children_to_remove_.end(); ++ci)
 	{
 		std::vector<SceneNode*>::iterator i = std::find(children_.begin(), children_.end(), *ci);
@@ -174,16 +105,21 @@ void SceneNode::updateChildren()
 		}
 	}
 	children_to_remove_.clear();
+
+	for (std::vector<SceneNode*>::const_iterator ci = children_to_add_.begin(); ci != children_to_add_.end(); ++ci)
+	{
+		children_.push_back(*ci);
+	}
+	children_to_add_.clear();
 	
 	for (std::vector<const SceneLeaf*>::const_iterator ci = leafs_to_remove_.begin(); ci != leafs_to_remove_.end(); ++ci)
 	{
 		const SceneLeaf* leaf = *ci;
 		
-		std::vector<SceneLeaf*>::iterator i = std::find(leafs_.begin(), leafs_.end(), *ci);
+		std::vector<SceneLeaf*>::iterator i = std::find(leafs_.begin(), leafs_.end(), leaf);
 		if (i != leafs_.end())
 		{
 			leafs_.erase(i);
-			delete leaf;
 		}
 	}
 	leafs_to_remove_.clear();
@@ -191,15 +127,16 @@ void SceneNode::updateChildren()
 
 void SceneNode::prepare(float dt)
 {
+	if (!is_alive_)
+	{
+		return;
+	}
 	if (marked_for_update_)
 	{
-		for (std::vector<Behaviour*>::const_iterator ci = behaviours_.begin(); ci != behaviours_.end(); ++ci)
-		{
-			(*ci)->prepare(dt);
-		}
+		marked_for_update_ = false;
+		updateChildren();
 		updateTransformations();
 	}
-
 	if (transformationIsUpdated())
 	{
 		if (current_region_ != NULL)
@@ -212,24 +149,27 @@ void SceneNode::prepare(float dt)
 		}
 		Region::updateVisibility(*this);
 	}
-	//updateVisibility();
-	updateChildren();
 	
 	if (marked_for_visit_)
 	{
+		marked_for_visit_ = false;
 		for (std::vector<SceneNode*>::const_iterator ci = children_.begin(); ci != children_.end(); ++ci)
 		{
-			(*ci)->prepare(dt);
+			(*ci)->storeAndPrepare(dt);
 		}
 		for (std::vector<SceneLeaf*>::const_iterator ci = leafs_.begin(); ci != leafs_.end(); ++ci)
 		{
 			(*ci)->prepare(dt);
 		}
 	}
+}
 
-	marked_for_update_ = false;
-	marked_for_visit_ = false;
+void SceneNode::storeAndPrepare(float dt)
+{
 	previous_transform_ = getCompleteTransformation();
+	previous_transform_no_scaling_ = complete_transformation_no_scaling_;
+	previous_scaling_ = scaling_;
+	prepare(dt);
 }
 
 void SceneNode::mark(bool update, bool visit)
@@ -241,7 +181,11 @@ void SceneNode::mark(bool update, bool visit)
 		// Update the children as well.
 		for (std::vector<SceneNode*>::const_iterator ci = children_.begin(); ci != children_.end(); ++ci)
 		{
-			(*ci)->mark(true, true);
+			SceneNode* child = *ci;
+			if (child->is_alive_)
+			{
+				(*ci)->mark(true, true);
+			}
 		}
 	}
 	if (visit)
@@ -260,38 +204,31 @@ void SceneNode::updateTransformations()
 	// Cache the transformation of the local transformation and all the transformation done above.
 	if (parent_ != NULL)
 	{
-		complete_transformation_ = parent_->complete_transformation_ * local_transformation_;
-		
+		scaling_ = parent_->scaling_ * local_scaling_;
 		if (ignore_rotations_)
 		{
-			complete_transformation_ = glm::translate(local_transformation_, parent_->getGlobalLocation());
+			complete_transformation_no_scaling_ = glm::translate(local_transformation_, parent_->getGlobalLocation());
+		}
+		else
+		{
+			complete_transformation_no_scaling_ = parent_->complete_transformation_ * local_transformation_;
 		}
 	}
 	else
 	{
-		complete_transformation_ = local_transformation_;
+		scaling_ = local_scaling_;
+		complete_transformation_no_scaling_ = local_transformation_;
 	}
-}
-
-void SceneNode::addBehaviour(Behaviour& behaviour)
-{
-	behaviours_.push_back(&behaviour);
-}
-
-void SceneNode::deleteBehaviour(const Behaviour& behaviour)
-{
-	for (std::vector<Behaviour*>::iterator ci = behaviours_.begin(); ci != behaviours_.end(); ++ci)
-	{
-		if (*ci == &behaviour)
-		{
-			behaviours_.erase(ci);
-			return;
-		}
-	}
+	complete_transformation_ = glm::scale(complete_transformation_no_scaling_, scaling_);
 }
 
 void SceneNode::preRender(const Frustum& frustum, const glm::vec3& camera_position, Renderer& renderer, bool process_lights, unsigned int& nr_calls)
 {
+	if (!isAlive())
+	{
+		return;
+	}
+
 	++nr_calls;
 	if (frustum_checker_ != NULL && !frustum_checker_->isInsideFrustum(frustum))
 	{
@@ -299,8 +236,7 @@ void SceneNode::preRender(const Frustum& frustum, const glm::vec3& camera_positi
 	}
 	
 	// Prepare all the children and entities which are about to be rendered.
-	// TODO: We should not presome that all entities should be prepared, this will be fixed later when
-	// we use a visitor's pattern or something similar such that the tree can be traversed and only the 
+
 	// relevent nodes will be rendered and prerendered.
 	for (std::vector<SceneNode*>::const_iterator ci = children_.begin(); ci != children_.end(); ++ci)
 	{
@@ -323,25 +259,77 @@ void SceneNode::setTransformation(const glm::mat4& local_transformation, bool up
 		updateBoundingBoxesBoundaries(false);
 	}
 	mark(true, true);
-	//	std::cout << "SceneNode::setTransformation: (" << getLocalLocation().x << ", " << getLocalLocation().y << ", " << getLocalLocation().z << ")" << std::endl;
+}
+
+void SceneNode::updateInterpolationMatrix(float p)
+{
+	if (marked_for_update_ || marked_for_visit_)
+	{
+		interpolated_transform_ = glm::scale(glm::interpolate(previous_transform_no_scaling_, complete_transformation_no_scaling_, p), previous_scaling_ * (1 - p) + scaling_ * p);
+
+		for (SceneNode* child : children_)
+		{
+			child->updateInterpolationMatrix(p);
+		}
+		for (SceneLeaf* leaf : leafs_)
+		{
+			leaf->updateInterpolationMatrix(p);
+		}
+	}
 }
 
 void SceneNode::destroy()
 {
+	if (is_marked_for_removal_) return;
+	scene_manager_->removeUpdateableEntity(*this);
 	if (parent_ != NULL)
 	{
 		parent_->removeChild(*this);
 	}
-	delete this;
+
+	for (std::vector<SceneNode*>::const_iterator ci = children_.begin(); ci != children_.end(); ++ci)
+	{
+		(*ci)->destroy();
+	}
+
+	Region::destroy(*this);
+	is_alive_ = false;
+	is_marked_for_removal_ = true;
+	mark(true, true);
+
+	to_delete_list_.push_back(this);
+
+	for (SceneNodeDestroyedListener* listener : listeners_)
+	{
+		listener->sceneNodeDestroyed(*this);
+	}
+}
+
+void SceneNode::cleanup()
+{
+	for (std::vector<SceneNode*>::const_iterator ci = to_delete_list_.begin(); ci != to_delete_list_.end(); ++ci)
+	{
+		SceneNode* scene_node = *ci;
+		if (scene_node->getParent() != NULL)
+		{
+			scene_node->getParent()->updateChildren();
+		}
+	}
+
+	for (std::vector<SceneNode*>::const_iterator ci = to_delete_list_.begin(); ci != to_delete_list_.end(); ++ci)
+	{
+		SceneNode* scene_node = *ci;
+		delete scene_node;
+	}
+	to_delete_list_.clear();
 }
 
 void SceneNode::initialiseBoundedBoxes(const std::vector<const SceneNode*>& excluded_nodes)
 {
 	updateTransformations();
-	if (frustum_checker_ != NULL)
-	{
-		delete frustum_checker_;
-	}
+	previous_transform_ = complete_transformation_;
+	delete frustum_checker_;
+	delete bounded_collision_box_;
 	
 	for (std::vector<SceneNode*>::const_iterator ci = children_.begin(); ci != children_.end(); ++ci)
 	{
@@ -353,8 +341,8 @@ void SceneNode::initialiseBoundedBoxes(const std::vector<const SceneNode*>& excl
 		(*ci)->initialiseFrustrumChecker();
 	}
 
-	frustum_checker_ = new BoundedBox(*this, true, excluded_nodes);
-	bounded_collision_box_ = new BoundedBox(*this, false, excluded_nodes);
+	frustum_checker_ = new ConvexPolygon(*this, true, excluded_nodes);
+	bounded_collision_box_ = new ConvexPolygon(*this, false, excluded_nodes);
 
 #ifdef HORROR_GAME_ENABLE_DEBUG
 	if (std::find(excluded_nodes.begin(), excluded_nodes.end(), this) == excluded_nodes.end())// && dynamic_cast<Region*>(this) != NULL)
@@ -378,16 +366,6 @@ void SceneNode::initialiseBoundedBoxes(const std::vector<const SceneNode*>& excl
 #endif
 }
 
-void SceneNode::compress()
-{
-
-}
-
-void SceneNode::setCollisionBoundedBox(BoundedBox& box)
-{
-	bounded_collision_box_ = &box;
-}
-
 bool SceneNode::getCollisions(Entity& entity, std::vector<CollisionInfo>& info) const
 {
 	bool process_children = bounded_collision_box_ == NULL;
@@ -396,9 +374,9 @@ bool SceneNode::getCollisions(Entity& entity, std::vector<CollisionInfo>& info) 
 	if (!process_children)
 	{
 		// Check if the entity is within this node.
-		for (std::vector<BoxCollision*>::const_iterator ci = entity.getCollisions().begin(); ci != entity.getCollisions().end(); ++ci)
+		for (std::vector<const ConvexPolygon*>::const_iterator ci = entity.getCollisions().begin(); ci != entity.getCollisions().end(); ++ci)
 		{
-			BoxCollision* collision_box = *ci;
+			const ConvexPolygon* collision_box = *ci;
 
 			//ss << "Collision box: (" << bounded_collision_box_->getPoints()[0].x << ", " << bounded_collision_box_->getPoints()[0].y << ", " << bounded_collision_box_->getPoints()[0].z << ")";
 			//ss << " - (" << bounded_collision_box_->getPoints()[2].x << ", " << bounded_collision_box_->getPoints()[2].y << ", " << bounded_collision_box_->getPoints()[2].z << ")";
@@ -458,6 +436,32 @@ bool SceneNode::getCollisions(Entity& entity, const glm::vec3& begin, const glm:
 	return collision_detected;
 }
 
+bool SceneNode::getCollisions(Entity& entity, const glm::vec3& begin, const glm::vec3& end, float effective_width, std::vector<CollisionInfo>& info) const
+{
+	bool process_children = bounded_collision_box_ == NULL;
+
+	// Check if the entity is within this node.
+	if (!process_children)
+	{
+		if (bounded_collision_box_->isInside(begin) || bounded_collision_box_->isInside(end) || bounded_collision_box_->doesCollide(begin, end, effective_width))
+		{
+			process_children = true;
+		}
+	}
+
+	if (process_children)
+	{
+		for (std::vector<SceneNode*>::const_iterator ci = children_.begin(); ci != children_.end(); ++ci)
+		{
+			if ((*ci)->getCollisions(entity, begin, end, effective_width, info))
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 bool SceneNode::doesCollide(Entity& entity, CollisionInfo& info) const
 {
 	bool process_children = bounded_collision_box_ == NULL;
@@ -465,9 +469,9 @@ bool SceneNode::doesCollide(Entity& entity, CollisionInfo& info) const
 	// Check if the entity is within this node.
 	if (!process_children)
 	{
-		for (std::vector<BoxCollision*>::const_iterator ci = entity.getCollisions().begin(); ci != entity.getCollisions().end(); ++ci)
+		for (std::vector<const ConvexPolygon*>::const_iterator ci = entity.getCollisions().begin(); ci != entity.getCollisions().end(); ++ci)
 		{
-			BoxCollision* collision_box = *ci;
+			const ConvexPolygon* collision_box = *ci;
 
 			if (bounded_collision_box_->isInside(*collision_box))
 			{
@@ -585,27 +589,27 @@ bool SceneNode::doesCollide(Entity* entity, const glm::vec3& point) const
 
 void SceneNode::removeChild(const SceneNode& scene_node)
 {
-	mark(false, true);
+	mark(true, true);
 	children_to_remove_.push_back(&scene_node);
 }
 
 void SceneNode::addChild(SceneNode& child)
 {
-	mark(false, true);
+	mark(true, true);
 	child.parent_ = this;
 	children_to_add_.push_back(&child);
 }
 
 void SceneNode::addLeaf(SceneLeaf& leaf)
 {
-	mark(false, true);
+	mark(true, true);
 	leafs_.push_back(&leaf);
 	leaf.setParent(this);
 }
 
 void SceneNode::removeLeaf(SceneLeaf& leaf)
 {
-	mark(false, true);
+	mark(true, true);
 	leafs_to_remove_.push_back(&leaf);
 }
 
@@ -625,7 +629,6 @@ void SceneNode::updateBoundingBoxesBoundaries(bool recursive)
 		if (frustum_checker_->update(recursive, false))
 		{
 			update_parent = true;
-			
 		}
 	}
 
@@ -634,3 +637,21 @@ void SceneNode::updateBoundingBoxesBoundaries(bool recursive)
 		parent_->updateBoundingBoxesBoundaries(false);
 	}
 }
+
+void SceneNode::addListener(SceneNodeDestroyedListener& listener)
+{
+	listeners_.push_back(&listener);
+}
+
+void SceneNode::removeListener(SceneNodeDestroyedListener& listener)
+{
+	for (int i = listeners_.size() - 1; i >= 0; --i)
+	{
+		if (listeners_[i] == &listener)
+		{
+			listeners_.erase(listeners_.begin() + i);
+		}
+	}
+}
+
+};

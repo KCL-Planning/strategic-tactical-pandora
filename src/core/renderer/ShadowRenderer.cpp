@@ -1,26 +1,28 @@
-#include <GL/glew.h>
-#include <GL/glfw.h>
-
 #ifdef _WIN32
+#define NOMINMAX
 #include <windows.h>
 #endif
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "FrustumCaster.h"
-#include "ShadowRenderer.h"
-#include "../scene/SceneNode.h"
-#include "../scene/SceneManager.h"
-#include "../scene/SceneLeafLight.h"
-#include "../scene/SceneLeafModel.h"
-#include "../light/PointLight.h"
-#include "../entities/Entity.h"
-#include "../shaders/ShadowShader.h"
-#include "../shaders/CreateAnimatedShadowMapShader.h"
-#include "../scene/frustum/Frustum.h"
-#include "../scene/portal/Region.h"
-#include "../texture/Texture.h"
+#include "dpengine/renderer/FrustumCaster.h"
+#include "dpengine/renderer/ShadowRenderer.h"
+#include "dpengine/renderer/Window.h"
+#include "dpengine/scene/SceneNode.h"
+#include "dpengine/scene/SceneManager.h"
+#include "dpengine/scene/SceneLeafLight.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/light/PointLight.h"
+#include "dpengine/entities/Entity.h"
+#include "dpengine/shaders/ShadowShader.h"
+#include "dpengine/shaders/CreateAnimatedShadowMapShader.h"
+#include "dpengine/scene/frustum/Frustum.h"
+#include "dpengine/scene/portal/Region.h"
+#include "dpengine/texture/Texture.h"
+
+namespace DreadedPE
+{
 
 ShadowRenderer::ShadowRenderer(SceneManager& scene_manager, unsigned int depth_texture_size, GLenum cull_mode, GLint texture_compare_mode, GLint texture_compare_function)
 	: scene_manager_(&scene_manager), depth_texture_size_(depth_texture_size), cull_mode_(cull_mode), texture_compare_mode_(texture_compare_mode), texture_compare_function_(texture_compare_function)
@@ -151,8 +153,6 @@ void ShadowRenderer::render(const FrustumCaster& cam)
 	active_entities_.clear();
 
 	// Gather all the leaf nodes.
-	// TODO: Make this process quicker. The scene manager should know about all the leaf nodes.
-	//scene_manager_->visitLeafs(*this);
 	unsigned int pre_rendered_objects_ = 0;
 
 	glCullFace(cull_mode_);
@@ -161,7 +161,7 @@ void ShadowRenderer::render(const FrustumCaster& cam)
 
 	glClear(GL_DEPTH_BUFFER_BIT);
 	
-	glm::vec3 camera_location = cam.getLocation();
+	//glm::vec3 camera_location = cam.getLocation();
 	glm::mat4 view_matrix = cam.getViewMatrix();
 	glm::mat4 perspective_matrix = cam.getPerspectiveMatrix();
 
@@ -173,13 +173,8 @@ void ShadowRenderer::render(const FrustumCaster& cam)
 	Region* region = Region::findRegionGlobal(cam.getLocation());
 	if (region != NULL)
 	{
-		std::stringstream ss;
 		std::vector<const Portal*> processed_portals;
-		region->preRender(*frustum_, cam.getLocation(), *this, false, pre_rendered_objects_, 0, processed_portals, ss);
-		for (std::vector<SceneNode*>::const_iterator ci = scene_manager_->getPlayers().begin(); ci != scene_manager_->getPlayers().end(); ++ci)
-		{
-			(*ci)->preRender(*frustum_, cam.getLocation(), *this, false, pre_rendered_objects_);
-		}
+		region->preRender(*frustum_, cam.getLocation(), *this, false, pre_rendered_objects_, 0, processed_portals);
 	}
 	// If we cannot find a region we fall back on the true and tested... Although this
 	// is more a debuf feature and should be removed in future versions of this rendering
@@ -190,7 +185,7 @@ void ShadowRenderer::render(const FrustumCaster& cam)
 		root.preRender(*frustum_, cam.getLocation(), *this, false, pre_rendered_objects_);
 	}
 
-	bool cull_face_enabled = true;
+	//bool cull_face_enabled = true;
 	glEnable(GL_CULL_FACE);
 	for (std::vector<const RenderableSceneLeaf*>::const_iterator ci = active_entities_.begin(); ci != active_entities_.end(); ++ci)
 	{
@@ -204,12 +199,12 @@ void ShadowRenderer::render(const FrustumCaster& cam)
 		if (leaf->isDoubleSided())// && cull_face_enabled)
 		{
 			glDisable(GL_CULL_FACE);
-			cull_face_enabled = false;
+			//cull_face_enabled = false;
 		}
 		else// if (!cull_face_enabled)
 		{
 			glEnable(GL_CULL_FACE);
-			cull_face_enabled = true;
+			//cull_face_enabled = true;
 		}
 		switch (leaf->getShadowType())
 		{
@@ -219,8 +214,11 @@ void ShadowRenderer::render(const FrustumCaster& cam)
 		case ShadowRenderer::STATIC_SHADOW:
 			leaf->draw(view_matrix, perspective_matrix, active_lights_, &shader);
 			break;
+		default:
+			break;
 		}
 	}
+	ShaderInterface::allRender();
 	/*
 	if (active_entities_.size() == 0)
 	{
@@ -234,8 +232,11 @@ void ShadowRenderer::render(const FrustumCaster& cam)
 	//glBindTexture(GL_TEXTURE_2D, 0);
 
 	// Reset viewport.
+	Window* window = Window::getActiveWindow();
 	int orgWidth, orgHeight;
-	glfwGetWindowSize(&orgWidth, &orgHeight);
+	window->getSize(orgWidth, orgHeight);
+	//int orgWidth, orgHeight;
+	//glfwGetWindowSize(&orgWidth, &orgHeight);
 	glViewport(0, 0, orgWidth, orgHeight);
 }
 
@@ -256,3 +257,5 @@ void ShadowRenderer::onResize(int width, int height)
 {
 	
 }
+
+};

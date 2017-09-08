@@ -2,7 +2,7 @@
 #define GLFW_NO_GLU // Do not allow GL/glfw to include the gl.h header
 
 #include "GL/glew.h"
-#include "GL/glfw.h"
+#include "GLFW/glfw3.h"
 
 #define _USE_MATH_DEFINES
 #include <cmath>

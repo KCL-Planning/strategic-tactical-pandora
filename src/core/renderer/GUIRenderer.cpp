@@ -2,18 +2,21 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #ifdef _WIN32
+#define NOMINMAX
 #include <Windows.h>
 #endif
 
-#include "GUIRenderer.h"
+#include "dpengine/renderer/GUIRenderer.h"
+#include "dpengine/renderer/Window.h"
+#include "dpengine/gui/GUIManager.h"
 
-#include "../gui/GUIManager.h"
+namespace DreadedPE
+{
 
 GUIRenderer::GUIRenderer(unsigned int fbo_id)
 	: fbo_id_(fbo_id)
 {
-	width_ = 1024;
-	height_ = 768;
+	Window::getActiveWindow()->getSize(width_, height_);
 }
 
 void GUIRenderer::render(const GUIManager& gui_manager)
@@ -22,7 +25,7 @@ void GUIRenderer::render(const GUIManager& gui_manager)
 	
 	//glPolygonMode( GL_FRONT_AND_BACK, GL_FILL);
 	
-	glm::mat4 perspective_matrix = glm::ortho(0.0f, width_, 0.0f, height_, -1.0f, 1.0f);
+	glm::mat4 perspective_matrix = glm::ortho(0.0f, (float)width_, 0.0f, (float)height_, -1.0f, 1.0f);
 
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
@@ -44,3 +47,5 @@ void GUIRenderer::onResize(int width, int height)
 	width_ = width;
 	height_ = height;
 }
+
+};

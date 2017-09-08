@@ -3,18 +3,21 @@
 
 #include "glm/glm.hpp"
 
-#include "../../../core/entities/Entity.h"
+#include "dpengine/entities/Entity.h"
 
-class SceneManager;
-class SceneNode;
+namespace DreadedPE
+{
+	class SceneManager;
+	class SceneNode;
+};
 
 /**
  * Mimic a robot hand that can turn a valve.
  */
-class RobotHand : public Entity
+class RobotHand : public DreadedPE::Entity
 {
 public:
-	RobotHand(SceneManager& scene_manager, SceneNode* parent, const glm::mat4& transformation);
+	RobotHand(DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, const glm::mat4& transformation);
 	
 	void prepare(float dt);
 	
@@ -24,13 +27,13 @@ public:
 	
 	bool isArmUnfolded() { return arm_is_unfolded_; }
 private:
-	SceneNode* first_half_;
-	SceneNode* second_half_;
-	SceneNode* hand_;
+	DreadedPE::SceneNode* first_half_;
+	DreadedPE::SceneNode* second_half_;
+	DreadedPE::SceneNode* hand_;
 	
 	float fold_;
-	float hand_angle_;
 	bool unfold_arm_;
+	float hand_angle_;
 	bool arm_is_unfolded_;
 };
 

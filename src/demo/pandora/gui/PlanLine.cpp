@@ -4,19 +4,19 @@
 
 #include <stdlib.h> 
 
-#include "../../../core/gui/GUIManager.h"
-#include "../../../core/gui/Frame.h"
-#include "../../../core/gui/Container.h"
+#include "dpengine/gui/GUIManager.h"
+#include "dpengine/gui/Frame.h"
+#include "dpengine/gui/Container.h"
 #include "ActionLabel.h"
-#include "../../../core/gui/Button.h"
-#include "../../../core/gui/Label.h"
-#include "../../../core/gui/Scrollbar.h"
+#include "dpengine/gui/Button.h"
+#include "dpengine/gui/Label.h"
+#include "dpengine/gui/Scrollbar.h"
 #ifndef _WIN32
 #include "../controllers/PlannerAction.h"
 #endif
-#include "../../../core/gui/fonts/Font.h"
-#include "../../../core/gui/Canvas.h"
-#include "../../../core/texture/TargaTexture.h"
+#include "dpengine/gui/fonts/Font.h"
+#include "dpengine/gui/Canvas.h"
+#include "dpengine/texture/TargaTexture.h"
 #include "../AUV.h"
 #include "PlanGraph.h"
 #include "AUVStatusIcon.h"
@@ -27,8 +27,8 @@ int PlanLine::INVALID_ACTION_ID_ = -123456;
  * Visualiser the abstract plan and the expanded plan. The user is able to click though logs and see previous executions
  * of plans and eximine their contents. We also visualise the 'free time' built up during execution.
  */
-PlanLine::PlanLine(ros::NodeHandle& ros_node, AUV* auv, float pixels_per_second, const Theme& theme, Font& font, float x, float y, float size_x, float size_y)
-	: Container(theme, font, x, y, size_x, size_y, false), auv_(auv), pixels_per_second_(pixels_per_second), font_(&font), total_time_(0.0f), start_time_current_action_(0.0f)
+PlanLine::PlanLine(ros::NodeHandle& ros_node, AUV* auv, float pixels_per_second, const DreadedPE::Theme& theme, DreadedPE::Font& font, float x, float y, float size_x, float size_y)
+	: DreadedPE::Container(theme, font, x, y, size_x, size_y, false), auv_(auv), font_(&font), total_time_(0.0f), start_time_current_action_(0.0f), pixels_per_second_(pixels_per_second)
 {
 	//GUIManager& gui_manager = GUIManager::getInstance();
 	//gui_manager.addFrame(*this);
@@ -47,7 +47,7 @@ PlanLine::PlanLine(ros::NodeHandle& ros_node, AUV* auv, float pixels_per_second,
 	addElement(*label, (total_time_ + 10) * pixels_per_second_, -2.5f);
 	action_labels_.push_back(label);
 	*/
-	icon_texture_ = TargaTexture::loadTexture("data/textures/icons.tga");
+	icon_texture_ = DreadedPE::TargaTexture::loadTexture("data/textures/icons.tga");
 }
 
 #ifndef _WIN32
@@ -69,6 +69,7 @@ void PlanLine::actionExecutionStarted(const PlannerAction& action)
 		{
 			std::cout << "Set the start of the execution of this action at: " << time << std::endl;
 			action_label->setPosition(time * pixels_per_second_, -2.5f);
+			action_label->updateBuffers();
 			post_label = true;
 		}
 		
@@ -91,6 +92,7 @@ void PlanLine::actionExecutionStarted(const PlannerAction& action)
 			}
 			
 			action_label->setPosition(time * pixels_per_second_, -2.5f);
+			action_label->updateBuffers();
 			time += action_label->getAction().duration + delta;
 			action_label->setStartTime(time);
 		}
@@ -114,6 +116,7 @@ void PlanLine::actionExecutionFailed(const PlannerAction& action)
 			//action_label->setDimensions(size_x_ / 2.0f - 2.5f, (total_time_ - start_time_current_action_) * pixels_per_second_);
 			action_label->setDimensions((total_time_ - start_time_current_action_) * pixels_per_second_, size_y_);
 			action_label->setDuration(total_time_ - start_time_current_action_);
+			action_label->updateBuffers();
 			post_failed_action = true;
 		}
 	}
@@ -128,7 +131,7 @@ void PlanLine::actionExecutionSucceeded(const PlannerAction& action)
 	for (unsigned int i = 0; i < action_labels_.size(); ++i)
 	{
 		ActionLabel* action_label = action_labels_[i];
-		/*
+		
 		if (post_label)
 		{
 			// Calculate the "gap" between this action and the next action.
@@ -141,15 +144,19 @@ void PlanLine::actionExecutionSucceeded(const PlannerAction& action)
 			//action_label->setPosition(2.5f, -time * pixels_per_second_);
 			action_label->setPosition(time * pixels_per_second_, -2.5f);
 			action_label->setStartTime(time);
+			action_label->updateBuffers();
+			action_label->markForUpdate();
 			time += action_label->getAction().duration + delta;
 		}
-		*/
+		
 		if (action_label->getAction().action_id == action.getActionMsg().action_id)
 		{
 			std::cout << "Found the action that has been completed." << std::endl;
 			//action_label->setDimensions(size_x_ / 2.0f - 2.5f, (total_time_ - start_time_current_action_) * pixels_per_second_);
 			action_label->setDimensions((total_time_ - start_time_current_action_) * pixels_per_second_, size_y_);
 			action_label->setDuration(total_time_ - start_time_current_action_);
+			action_label->updateBuffers();
+			action_label->markForUpdate();
 			post_label = true;
 			break;
 		}
@@ -178,6 +185,7 @@ void PlanLine::update(float dt)
 				}
 				
 				action_label->setPosition(time * pixels_per_second_, -2.5f);
+				//action_label->updateBuffers();
 				time += action_label->getAction().duration;
 			}
 			
@@ -186,12 +194,15 @@ void PlanLine::update(float dt)
 				//action_label->setDimensions(size_x_ / 2.0f - 2.5f, (total_time_ - start_time_current_action_) * pixels_per_second_);
 				action_label->setDimensions((total_time_ - start_time_current_action_) * pixels_per_second_, size_y_);
 				action_label->setDuration(total_time_ - start_time_current_action_);
+				//action_label->updateBuffers();
 				post_label = true;
 			}
+			action_label->updateBuffers();
+			action_label->markForUpdate();
 		}
 	}
-	Container::update(dt);
-	
+	DreadedPE::Container::update(dt);
+	markForUpdate();
 	//std::cout << getGlobalY() << "-" << getLocalY() << " >=>> " << std::endl;
 }
 
@@ -207,10 +218,10 @@ void PlanLine::onResize(float width, float height)
 	}
 	
 	updateTransformations();
-	Container::onResize(width, height);
+	DreadedPE::Container::onResize(width, height);
 }
 
-void PlanLine::buttonPressed(const Button& source)
+void PlanLine::buttonPressed(const DreadedPE::Button& source)
 {
 	/*
 	if (&source == decrease_button_ && pixels_per_second_ > 1)
@@ -332,7 +343,7 @@ void PlanLine::setCurrentPlan(const planning_msgs::CompletePlan& msg)
 		std::cout << "L"<<pixels_per_second_<<std::endl;
 		std::cout << "New action: " << label->getAction().name << ": " << label->getStartTime() << "(d=" << label->getDuration() << ")" << std::endl;
 		
-		Canvas* icon_gui = new Canvas(*theme_, font_->clone(), 0, 0, 50, label->getHeight(), *icon_texture_);
+		DreadedPE::Canvas* icon_gui = new DreadedPE::Canvas(*theme_, font_->clone(), 0, 0, 50, label->getHeight(), *icon_texture_);
 		icon_gui->setTextureUVMapping(uv_mapping);
 		
 		label->addElement(*icon_gui, 0, 0);

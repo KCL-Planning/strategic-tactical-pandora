@@ -1,21 +1,25 @@
-#include "DynamicCamera.h"
+#include "dpengine/entities/camera/DynamicCamera.h"
 
 #ifdef _WIN32
+#define NOMINMAX
 #include <windows.h>
 #endif
 
 #include <math.h>
 #include <iostream>
-
-#include "GL/glfw.h"
+#include <algorithm>
 
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/matrix_transform.hpp> 
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 
-#include "Camera.h"
-#include "../../math/Math.h"
+#include "dpengine/entities/camera/Camera.h"
+#include "dpengine/renderer/Window.h"
+#include "dpengine/math/Math.h"
+
+namespace DreadedPE
+{
 
 DynamicCamera::DynamicCamera(SceneNode& to_follow, SceneManager& scene_manager, SceneNode* parent, const glm::mat4& transformation, float fov, float width, float height, float near_plane, float far_plane)
 	: Camera(scene_manager, parent, transformation, fov, width, height, near_plane, far_plane), to_follow_(&to_follow), prefered_transformation_(glm::vec3(transformation[3][0], transformation[3][1], transformation[3][2])), moved_camera_last_frame_(false)
@@ -38,18 +42,21 @@ DynamicCamera::~DynamicCamera()
 
 void DynamicCamera::prepare(float dt)
 {
+	Window* window = Window::getActiveWindow();
+
 	// Capture input to control the mouse.
 	//if (glfwGetKey(GLFW_KEY_LALT) != GLFW_PRESS)
-	if (glfwGetMouseButton(GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+	if (window->isMouseButtonPressed(GLFW_MOUSE_BUTTON_RIGHT))
 	{
-		int width, height;
-		glfwGetWindowSize(&width, &height);
 		
-		int mouseX, mouseY;
-		glfwGetMousePos(&mouseX, &mouseY);
+		int width, height;
+		window->getSize(width, height);
+
+		double mouseX, mouseY;
+		window->getMouseCursor(mouseX, mouseY);
 		
 		// Reset mouse pointer.
-		glfwSetMousePos(width / 2, height / 2);
+		//glfwSetMousePos(width / 2, height / 2);
 		
 		// Wait for the mouse to be reset before moving the camera. Otherwise we get very 
 		// sporatic and sudden movements.
@@ -75,14 +82,14 @@ void DynamicCamera::prepare(float dt)
 	else
 	{
 		moved_camera_last_frame_ = false;
-		SceneNode::prepare(dt);
+		Camera::prepare(dt);
 		return;
 	}
 
-	local_transformation_ = glm::rotate(glm::mat4(1.0f), roll_, glm::vec3(0.0f, 0.0f, 1.0f));
-	local_transformation_ = glm::rotate(local_transformation_, yaw_, glm::vec3(0.0f, 1.0f, 0.0f));
-	local_transformation_ = glm::rotate(local_transformation_, pitch_, glm::vec3(1.0f, 0.0f, 0.0f));
-	local_transformation_ = glm::translate(local_transformation_, glm::vec3(0.0f, 0.0f, std::max(4.0f, (glfwGetMouseWheel() + 8) * 0.5f)));
+	local_transformation_ = glm::rotate(glm::mat4(1.0f), glm::radians(roll_), glm::vec3(0.0f, 0.0f, 1.0f));
+	local_transformation_ = glm::rotate(local_transformation_, glm::radians(yaw_), glm::vec3(0.0f, 1.0f, 0.0f));
+	local_transformation_ = glm::rotate(local_transformation_, glm::radians(pitch_), glm::vec3(1.0f, 0.0f, 0.0f));
+	//local_transformation_ = glm::translate(local_transformation_, glm::vec3(0.0f, 0.0f, std::max(4.0f, (glfwGetMouseWheel() + 8) * 0.5f)));
 	
 	glm::vec3 local_location(local_transformation_[3][0], local_transformation_[3][1], local_transformation_[3][2]);
 
@@ -122,24 +129,16 @@ void DynamicCamera::prepare(float dt)
 
 	// Construct local translation.
 	local_transformation_ = glm::translate(glm::mat4(1.0f), local_location);
-	local_transformation_ = glm::rotate(local_transformation_, roll, glm::vec3(0.0f, 0.0f, 1.0f));
-	local_transformation_ = glm::rotate(local_transformation_, yaw, glm::vec3(0.0f, 1.0f, 0.0f));
-	local_transformation_ = glm::rotate(local_transformation_, pitch, glm::vec3(1.0f, 0.0f, 0.0f));
+	local_transformation_ = glm::rotate(local_transformation_, glm::radians(roll), glm::vec3(0.0f, 0.0f, 1.0f));
+	local_transformation_ = glm::rotate(local_transformation_, glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f));
+	local_transformation_ = glm::rotate(local_transformation_, glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f));
 
-	/*
-	local_transformation_ = glm::rotate(glm::mat4(1.0f), roll_, glm::vec3(0.0f, 0.0f, 1.0f));
-	local_transformation_ = glm::rotate(local_transformation_, yaw_, glm::vec3(0.0f, 1.0f, 0.0f));
-	local_transformation_ = glm::rotate(local_transformation_, pitch_, glm::vec3(1.0f, 0.0f, 0.0f));
-	local_transformation_ = glm::translate(local_transformation_, glm::vec3(0.0f, 0.0f, std::max(4.0f, (glfwGetMouseWheel() + 8) * 0.5f)));
-	*/
-
-	//camera_->setRotation(pitch, yaw, roll);
-
-	SceneNode::prepare(dt);
-	//Camera::prepare(dt);
+	Camera::prepare(dt);
 	
 	//std::cout << "(" << getGlobalLocation().x << ", " << getGlobalLocation().y << ", " << getGlobalLocation().z << ")" << std::endl;
 	//std::cout << "yaw: " << glm::yaw(getGlobalRotation()) << ", " << glm::pitch(getGlobalRotation()) << ", " << glm::roll(getGlobalRotation()) << std::endl;
 	// Move the camera to the prefered position -- if possible.
 	//camera_->setPosition(getGlobalLocation().x, getGlobalLocation().y, getGlobalLocation().z);
 }
+
+};

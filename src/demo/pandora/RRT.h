@@ -1,24 +1,28 @@
 #ifndef DEMO_PANDORA_RRT_H
 #define DEMO_PANDORA_RRT_H
-
+#include <memory>
 #include <ros/ros.h>
 #include <knowledge_msgs/RoadmapRefresh.h>
 
 #include <vector>
 #include <glm/glm.hpp>
 
-#include "../../core/scene/SceneLeafModel.h"
-#include "../../shapes/Line.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/shapes/Line.h"
 
 #include "RRTUpdateListener.h"
 
 #include "Waypoint.h"
 
-class SceneManager;
-class Entity;
+namespace DreadedPE
+{
+	class SceneManager;
+	class Entity;
+	class Material;
+};
+
 class OctomapBuilder;
 class OntologyInterface;
-class Material;
 
 struct CloseWaypointCompare
 {
@@ -69,12 +73,12 @@ struct SearchNode
 /**
  * Class that creates and publishes waypoints for the AUV to follow.
  */
-class RRT : public SceneLeafModel
+class RRT : public DreadedPE::SceneLeafModel
 {
 public:
-	RRT(ros::NodeHandle& ros_node, SceneManager& scene_manager, Entity& entity, SceneNode& parent, OctomapBuilder& octomap, OntologyInterface& ontology, Material& material);
+	RRT(ros::NodeHandle& ros_node, DreadedPE::SceneManager& scene_manager, DreadedPE::Entity& entity, DreadedPE::SceneNode& parent, OctomapBuilder& octomap, OntologyInterface& ontology, std::shared_ptr<DreadedPE::Material> material);
 	
-	RRT(ros::NodeHandle& ros_node, SceneManager& scene_manager, std::vector<Entity*>& entities, SceneNode& parent, OctomapBuilder& octomap, OntologyInterface& ontology, Material& material);
+	RRT(ros::NodeHandle& ros_node, DreadedPE::SceneManager& scene_manager, std::vector<DreadedPE::Entity*>& entities, DreadedPE::SceneNode& parent, OctomapBuilder& octomap, OntologyInterface& ontology, std::shared_ptr<DreadedPE::Material> material);
 
 	~RRT();
 
@@ -85,7 +89,7 @@ public:
 	const std::vector<Waypoint*>& getPath() const { return path_; }
 	const std::vector<glm::vec3>& getPathLocations() const { return path_buffer_; }
 
-	void draw(const glm::mat4& view_matrix, const glm::mat4& projection_matrix, const std::vector<const SceneLeafLight*>& lights, ShaderInterface* shader = NULL) const;
+	void draw(const glm::mat4& view_matrix, const glm::mat4& projection_matrix, const std::vector<const DreadedPE::SceneLeafLight*>& lights, DreadedPE::ShaderInterface* shader = NULL) const;
 
 	void clear();
 	
@@ -116,8 +120,8 @@ private:
 	// Servies.
 	ros::ServiceServer roadmap_refresh_service_;
 	
-	SceneManager* scene_manager_;
-	std::vector<Entity*> entities_;
+	DreadedPE::SceneManager* scene_manager_;
+	std::vector<DreadedPE::Entity*> entities_;
 
 	std::vector<Waypoint*> points_;
 	std::vector<Waypoint*> path_;

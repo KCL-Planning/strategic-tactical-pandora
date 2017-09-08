@@ -1,4 +1,4 @@
-tex //atlas/ColourAtlas.tga
+tex data/models/Pandora/misc/atlas/ColourAtlas.tga
 v -1.21 0.08 -1.09
 v -0.4 0.08 -1.5
 v -0.31 5.11 -1.15

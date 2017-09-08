@@ -13,215 +13,21 @@
 #include <string>
 #include <iostream>
 
-#include "core/collision/BoxCollision.h"
 #include "GL/glew.h"
-#include "GL/glfw.h"
-#include "core/entities/camera/Camera.h"
-#include "core/entities/camera/DynamicCamera.h"
-
-#include "core/entities/Player.h"
-#include "core/entities/Bridge.h"
-
-#include "core/renderer/SimpleRenderer.h"
-#include "core/scene/frustum/Frustum.h"
-
-#include "core/scene/SceneLeaf.h"
-#include "core/scene/frustum/SphereCheck.h"
-
-#include "core/shaders/UnderWaterShader.h"
+#include <dpengine/game/Game.h>
+#include <dpengine/gui/GUIManager.h>
+#include <dpengine/renderer/Window.h>
+#include <dpengine/renderer/CameraRenderer.h>
+#include <dpengine/scene/SceneManager.h>
+#include <dpengine/texture/Texture.h>
 
 #include <time.h>
-#ifdef _WIN32
-#include <windows.h>
-#endif
-#ifdef __linux
 #include <unistd.h>
-#endif
-
-#ifdef HORROR_GAME_ENABLE_DEBUG
-// Debug callback function for OpenGL.
-void APIENTRY DebugCallbackFunction(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, GLvoid *userParam)
-{
-	std::stringstream ss;
-	ss << message << std::endl;
-#ifdef _WIN32
-	OutputDebugString(ss.str().c_str());
-#else
-	std::cout << ss.str() << std::endl;
-#endif
-}
-#endif
-
-
-void sleepMain(int ms)
-{
-#ifdef __linux
-    usleep(ms * 1000);   // usleep takes sleep time in us (1 millionth of a second)
-#endif
-#ifdef _WIN32
-    Sleep(ms);
-#endif
-}
-
-#include "demo/TestScene1.h"
-#include "demo/FlatDemo.h"
-#include "demo/LoaderExample.h"
-#include "demo/PLFDemo.h"
-#include "demo/FBXLoaderDemo.h"
-#include "demo/GUITester.h"
-#include "demo/VolumetricLightDemo.h"
-#include "demo/ParticleTest.h"
-#include "demo/ZombieHorde.h"
-#include "demo/AnimationTest.h"
-#include "demo/FallingBlock.h"
 
 #include "demo/Pandora.h"
-//#include "demo/PandoraPillarExperiment.h"
-#include "demo/pandora/AUV.h"
-#include "demo/pandora/OpportunityGenerator.h"
-#include "demo/RegionTest/RegionWorld.h"
 
-#include "demo/shooter/ArmedPlayer.h"
-#include "core/light/Light.h"
-#include "core/scene/frustum/Frustum.h"
-#include "core/scene/portal/Portal.h"
-
-#include <glm/gtx/rotate_vector.hpp>
-#include <glm/gtc/matrix_transform.hpp> 
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/quaternion.hpp>
-
-#include "core/entities/Player.h"
-
-#include "core/scene/SceneManager.h"
-#include "core/models/AnimatedModel.h"
-#include "core/models/Animation.h"
-
-#include "core/math/BoundedBox.h"
-#include "core/math/Plane.h"
-
-#include "core/entities/Monster.h"
-#include "core/texture/Texture.h"
-
-///
-// GUI stuff.
-///
-#include "core/gui/Frame.h"
-#include "core/gui/Button.h"
-#include "core/gui/GUIElement.h"
-#include "core/renderer/GUIRenderer.h"
-#include "core/texture/TargaTexture.h"
-#include "core/gui/themes/MyGUITheme.h"
-#include "core/gui/GUIManager.h"
-#include "core/math/Math.h"
-
-#include "demo/ApplicationInterface.h"
-
-float speedup = 1.0f;
-bool is_planning = false;
-
-#ifdef _WIN32
-double getWallTime()
-{
-    LARGE_INTEGER time,freq;
-    if (!QueryPerformanceFrequency(&freq))
-    {
-        //  Handle error
-        return 0;
-    }
-    if (!QueryPerformanceCounter(&time))
-    {
-        //  Handle error
-        return 0;
-    }
-    return (double)time.QuadPart / freq.QuadPart;
-}
-
-double getCPUTime()
-{
-    FILETIME a,b,c,d;
-    if (GetProcessTimes(GetCurrentProcess(),&a,&b,&c,&d) != 0)
-    {
-        //  Returns total user time.
-        //  Can be tweaked to include kernel times as well.
-        return
-            (double)(d.dwLowDateTime |
-            ((unsigned long long)d.dwHighDateTime << 32)) * 0.0000001;
-    }
-    else
-    {
-        //  Handle error
-        return 0;
-    }
-}
-//  Posix/Linux
-#else
-#include <sys/time.h>
-double getWallTime()
-{
-    struct timeval time;
-    if (gettimeofday(&time,NULL))
-    {
-        //  Handle error
-        return 0;
-    }
-    return (double)time.tv_sec + (double)time.tv_usec * .000001;
-}
-
-double getCPUTime()
-{
-    return (double)clock() / CLOCKS_PER_SEC;
-}
-#endif
-
-ApplicationInterface* example_ = NULL;
-SimpleRenderer* renderer_ = NULL;
-GUIRenderer* gui_renderer_ = NULL;
-int width_ = 0;
-int height_ = 0;
-
-void GLFWCALL onResize(int width, int height)
-{
-	width_ = width;
-	height_ = height;
-	glViewport(0, 0, width_, height_);
-	if (example_ != NULL)
-	{
-		example_->onResize(width, height);
-	}
-	if (renderer_ != NULL)
-	{
-		renderer_->onResize(width, height);
-	}
-	if (gui_renderer_ != NULL)
-	{
-		gui_renderer_->onResize(width, height);
-	}
-	GUIManager::getInstance().onResize(width, height);
-}
-
-void receiveStatus(const std_msgs::StringConstPtr& msg)
-{
-	is_planning = "planning" == msg->data;
-}
-
-#ifdef _WIN32
-int WINAPI WinMain(HINSTANCE hInstance,
-                   HINSTANCE hPrevInstance,
-                   LPSTR cmdLine,
-                   int cmdShow)
-{
-	int argc = 0;
-	char** argv = NULL;
-#else
 int main(int argc, char** argv)
 {
-	ros::init(argc, argv, "PlannerVisualisation");
-	ros::NodeHandle ros_nh;
-	
-	ros::Subscriber sub = ros_nh.subscribe("/planning_system/state", 1, &receiveStatus);
-	
-#endif
 	if (!glfwInit())
 	{
 #ifdef _WIN32
@@ -231,100 +37,42 @@ int main(int argc, char** argv)
 	}
 	std::cout << "GLFW loaded!" << std::endl;
 
-#ifdef HORROR_GAME_ENABLE_DEBUG
-	// Enable debuging.
-	glfwOpenWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
-#endif
+	int width = 1024;
+	int height = 768;
+	DreadedPE::Window* window = DreadedPE::Window::createWindow(width, height, "PANDORA", false);
 	
-	if (!glfwOpenWindow(1024, 768, 16, 16, 16, 32, 24, 8, GLFW_WINDOW))
+	if (window == NULL)
 	{
-#ifdef _WIN32
-        	MessageBox(NULL, "Could not open window.", "An error occurred", MB_ICONERROR | MB_OK);
-#endif
+		std::cerr << "Failed to open the window. Check that your GPU supports OpenGL 4.3." << std::endl;
 		glfwTerminate();
 		return 1;
 	}
 	{
 		std::stringstream ss;
 		ss << glGetString(GL_VERSION);
-		glfwSetWindowTitle(ss.str().c_str());
+		window->setTitle(ss.str());
 	}
-	std::cout << "Opened the screen!" << std::endl;
-	std::cout << "Stencil: " << glfwGetWindowParam(GLFW_STENCIL_BITS) << std::endl;
-
-	glfwSetWindowSizeCallback(onResize);
-	//glfwDisable(GLFW_MOUSE_CURSOR);
 
 	// Initialise the extention library.
 	GLenum err = glewInit();
 	if (err != GLEW_OK)
 	{
-		std::stringstream ss;
-		ss << glewGetErrorString(err);
-#ifdef _WIN32
-		MessageBox(NULL, ss.str().c_str(), "An error occurred", MB_ICONERROR | MB_OK);
-#endif
-		fprintf(stderr, "Error %s\n", glewGetErrorString(err));
+		std::cerr << "Failed to initialise GLEW: " << glewGetErrorString(err) << std::endl;
 		exit(1);
 	}
 	std::cout << "GLEW loaded!" << std::endl;
 
 	// Initialise the texture framework.
-	Texture::initialise();
-
-#ifdef HORROR_GAME_ENABLE_DEBUG
-	if (glewIsSupported("GL_ARB_debug_output"))
-	{
-		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-		glEnable(GL_DEBUG_OUTPUT);
-
-		if (glDebugMessageCallback != 0)
-		{
-			glDebugMessageCallback(DebugCallbackFunction, NULL);
-		}
-		else if (glDebugMessageCallbackARB != 0)
-		{
-			glDebugMessageCallbackARB(DebugCallbackFunction, NULL);
-		}
-		else
-		{
-#ifdef _WIN32
-			MessageBox(NULL, "NO DEBUG :(!", "An error occurred", MB_ICONERROR | MB_OK);
-#else
-			std::cout << "No debug :(!" << std::endl;
-#endif
-		}
-		// Enable all messages.
-		glDebugMessageControlARB(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_HIGH, 0, NULL, GL_TRUE);
-	}
-	else
-	{
-#ifdef _WIN32
-		MessageBox(NULL, "NO DEBUG :(!", "An error occurred", MB_ICONERROR | MB_OK);
-#else
-		std::cout << "NO DEBUG :(!" << std::endl;
-#endif
-	}
-#endif
-
-	SceneManager scene_manager;
-	renderer_ = new SimpleRenderer(scene_manager);
-	//example_ = new TestScene(scene_manager);
-	//example_ = new FlatDemo(scene_manager);
-	//example_ = new AnimationTest(scene_manager);
-	//example_ = new PLFDemo(scene_manager);
-	//example_ = new FallingBlock(scene_manager);
-	//example_ = new RegionWorld(scene_manager);
-	//example_ = new FBXLoaderDemo(scene_manager);
-	example_ = new Pandora(scene_manager);
-	//example_ = new OpportunityGenerator(scene_manager);
-	//example_ = new PandoraPillarExperiment(scene_manager);
-	//example_ = new VolumetricLightDemo(scene_manager);
-	//example_ = new GUITester(scene_manager);
-	//example_ = new ParticleTest(scene_manager);
-	//example_ = new ZombieHorde(scene_manager);
+	DreadedPE::Texture::initialise();
+	DreadedPE::SceneManager scene_manager;
 	
-	if (!example_->init(argc, argv)) //Initialize our example
+	// Initialise the frustrum culling geometries.
+	std::vector<const DreadedPE::SceneNode*> excluded_nodes;
+	scene_manager.getRoot().initialiseBoundedBoxes(excluded_nodes);
+	
+	Pandora* pandora = new Pandora(scene_manager);
+	
+	if (!pandora->init(argc, argv))
 	{
 #ifdef _WIN32
 		MessageBox(NULL, "Could not initialize the application", "An error occurred", MB_ICONERROR | MB_OK);
@@ -334,10 +82,9 @@ int main(int argc, char** argv)
 	}
 	std::cout << "Example initialised!" << std::endl;
 
-	std::vector<const SceneNode*> excluded_nodes;
 	scene_manager.getRoot().initialiseBoundedBoxes(excluded_nodes);
 
-	if (!example_->postInit())
+	if (!pandora->postInit())
 	{
 #ifdef _WIN32
         MessageBox(NULL, "Could not post initialize the application", "An error occurred", MB_ICONERROR | MB_OK);
@@ -346,14 +93,16 @@ int main(int argc, char** argv)
 		return 1;
 	}
 	std::cout << "Example post initialised!" << std::endl;
-
 	
-	// Initialise the frustrum culling geometries.
-	//std::vector<const SceneNode*> excluded_nodes;
-	scene_manager.getRoot().initialiseBoundedBoxes(excluded_nodes);
+	DreadedPE::Game game(0.15f);
+	
+	game.addGameComponent(*pandora);
+	game.addGameComponent(DreadedPE::GUIManager::getInstance());
+	game.addGameComponent(scene_manager);
+	game.run();
+	return EXIT_SUCCESS;
 
-	scene_manager.getRoot().compress();
-
+	/*
 	bool running = true;
 
 	double m_lastTime = getWallTime();
@@ -365,8 +114,8 @@ int main(int argc, char** argv)
 	float player_prepare_time = 0;
 	float player_detection_time = 0;
 
-	glfwGetWindowSize(&width_, &height_);
-	glfwSetMousePos(width_ / 2, height_ / 2);
+	//glfwGetWindowSize(window, &width_, &height_);
+	//glfwSetCursorPos(window, width_ / 2, height_ / 2);
 
 	double last_time = getWallTime();
 	double last_fps_time = getWallTime();
@@ -379,52 +128,40 @@ int main(int argc, char** argv)
 	bool enable_post_processing = false;
 	
 	// Initialise the GUI.
-	Texture* frame_texture = TargaTexture::loadTexture("data/textures/gui.tga");
+	DreadedPE::Texture* frame_texture = DreadedPE::TargaTexture::loadTexture("data/textures/gui.tga");
 
-	GUIManager& gui_manager = GUIManager::getInstance();
-	gui_renderer_ = new GUIRenderer(renderer_->getFramebufferId());
+	DreadedPE::GUIManager& gui_manager = DreadedPE::GUIManager::getInstance();
+	gui_renderer_ = new DreadedPE::GUIRenderer(renderer_->getFramebufferId());
 	
 	//glm::mat4 perspective_matrix = glm::ortho(0.0f, 1024.0f, 0.0f, 768.0f, -1.0f, 1.0f);
 	
 	while (running)
 	{
-		if (glfwGetKey('P') == GLFW_PRESS)
+		if (window->isKeyPressed(GLFW_KEY_P))
 		{
 			paused = !paused;
 		}
-		if (glfwGetKey('C') == GLFW_PRESS)
+		if (window->isKeyPressed(GLFW_KEY_C))
 		{
 			show_collision_boxes = !show_collision_boxes;
 			renderer_->setShowCollisionBoxes(show_collision_boxes);
 		}
-		if (glfwGetKey('H') == GLFW_PRESS)
+		if (window->isKeyPressed(GLFW_KEY_H))
 		{
 			renderer_->setRenderMode(GL_LINE);
 		}
-		if (glfwGetKey('F') == GLFW_PRESS)
+		if (window->isKeyPressed(GLFW_KEY_F))
 		{
 			renderer_->setRenderMode(GL_FILL);
 		}
-		if (glfwGetKey('K') == GLFW_PRESS)
+		if (window->isKeyPressed(GLFW_KEY_K))
 		{
 			enable_post_processing = true;
 		}
-		if (glfwGetKey('L') == GLFW_PRESS)
+		if (window->isKeyPressed(GLFW_KEY_L))
 		{
 			enable_post_processing = false;
 		}
-		
-		/*
-		if (glfwGetKey(GLFW_KEY_LALT) == GLFW_PRESS)
-		{
-			glfwEnable(GLFW_MOUSE_CURSOR);
-		}
-		else
-		{
-			// Reset mouse pointer.
-			glfwDisable(GLFW_MOUSE_CURSOR);
-		}
-		*/
 
 ///		mPlatform->getRenderManagerPtr()->drawOneFrame();
 
@@ -456,39 +193,39 @@ int main(int argc, char** argv)
 				example_->tick(std::min(0.15f, delta));
 				delta -= 0.15f;
 				
-				if (glfwGetKey('1') == GLFW_PRESS)
+				if (window->isKeyPressed(GLFW_KEY_1))
 				{
 					speedup = 1;
 				}
-				if (glfwGetKey('2') == GLFW_PRESS)
+				if (window->isKeyPressed(GLFW_KEY_2))
 				{
 					speedup = 2;
 				}
-				if (glfwGetKey('3') == GLFW_PRESS)
+				if (window->isKeyPressed(GLFW_KEY_3))
 				{
 					speedup = 4;
 				}
-				if (glfwGetKey('4') == GLFW_PRESS)
+				if (window->isKeyPressed(GLFW_KEY_4))
 				{
 					speedup = 8;
 				}
-				if (glfwGetKey('5') == GLFW_PRESS)
+				if (window->isKeyPressed(GLFW_KEY_5))
 				{
 					speedup = 16;
 				}
-				if (glfwGetKey('6') == GLFW_PRESS)
+				if (window->isKeyPressed(GLFW_KEY_6))
 				{
 					speedup = 32;
 				}
-				if (glfwGetKey('7') == GLFW_PRESS)
+				if (window->isKeyPressed(GLFW_KEY_7))
 				{
 					speedup = 64;
 				}
-				if (glfwGetKey('8') == GLFW_PRESS)
+				if (window->isKeyPressed(GLFW_KEY_8))
 				{
 					speedup = 128;
 				}
-				if (glfwGetKey('9') == GLFW_PRESS)
+				if (window->isKeyPressed(GLFW_KEY_9))
 				{
 					speedup = 256;
 				}
@@ -507,18 +244,8 @@ int main(int argc, char** argv)
 
 		pre_render_time += getWallTime() - time;
 		time = getWallTime();
-/*
-		// Test the picking module.
-		Entity* picked_entity = NULL;
-		if (glfwGetMouseButton(GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-		{
-			int mouseX, mouseY;
-			glfwGetMousePos(&mouseX, &mouseY);
 
-			picked_entity = scene_manager.pickEntity(example_->getCamera(), mouseX, mouseY);
-		}
-*/
-		const Camera& camera = example_->getCamera();
+		const DreadedPE::Camera& camera = example_->getCamera();
 		renderer_->render(camera);
 		render_time = getWallTime() - time;
 		
@@ -556,30 +283,11 @@ int main(int argc, char** argv)
 			render_time = 0;
 		}
 		++frame_rendered;
-		/*
-		if (picked_entity != NULL)
-		{
-			ss << "Picked entity: " << picked_entity->getName() << "|";
-		}
-		else
-		{
-			ss << "No picked entity." << std::endl;
-		}
-		*/
 
-		/*
-		ss << last_frames_rendered;// << "|";
-		ss << std::endl;
-#ifdef _WIN32
-		OutputDebugString(ss.str().c_str());
-#else
-		std::cout << ss.str() << std::endl;
-#endif
-		*/
-		glfwSwapBuffers();
-		running = !glfwGetKey( GLFW_KEY_ESC ) && glfwGetWindowParam( GLFW_OPENED );
+		glfwSwapBuffers(window);
+		running = !glfwWindowShouldClose(window) && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS;
+		//running = !glfwGetKey( GLFW_KEY_ESC ) && glfwGetWindowParam( GLFW_OPENED );
 	}
-
 	glfwTerminate();
-	return EXIT_SUCCESS;
+	*/
 }

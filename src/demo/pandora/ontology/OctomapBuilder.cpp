@@ -13,14 +13,14 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
 
-#include "../../../core/scene/SceneNode.h"
+#include "dpengine/scene/SceneNode.h"
 
-#include "../../../core/entities/Entity.h"
+#include "dpengine/entities/Entity.h"
 
 #include "OctomapBuilder.h"
 #include "OctomapUpdateListener.h"
 
-OctomapBuilder::OctomapBuilder(ros::NodeHandle& node, const Entity& source)
+OctomapBuilder::OctomapBuilder(ros::NodeHandle& node, const DreadedPE::Entity& source)
 	: node_(&node), source_(&source), occupancy_map_(new octomap::OcTree(0.25)), enabled_(true)
 {
 	occupancy_map_->enableChangeDetection(false);
@@ -32,7 +32,7 @@ OctomapBuilder::OctomapBuilder(ros::NodeHandle& node, const Entity& source)
 	octomap_pub_ = node_->advertise<sensor_msgs::PointCloud>("/engine3d/octomap/cloud", 1);
 }
 
-OctomapBuilder::OctomapBuilder(ros::NodeHandle& node, const Entity& source1, const Entity& source2)
+OctomapBuilder::OctomapBuilder(ros::NodeHandle& node, const DreadedPE::Entity& source1, const DreadedPE::Entity& source2)
 	: node_(&node), source_(&source1), source2_(&source2), occupancy_map_(new octomap::OcTree(0.25)), enabled_(true)
 {
 	occupancy_map_->enableChangeDetection(false);

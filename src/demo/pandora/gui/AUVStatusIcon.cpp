@@ -1,13 +1,13 @@
 #include "AUVStatusIcon.h"
 
-#include "../../../core/texture/TargaTexture.h"
+#include "dpengine/texture/TargaTexture.h"
 
 AUVStatusIcon* AUVStatusIcon::instance_ = NULL;
-Texture* AUVStatusIcon::icons_texture_ = NULL;
+DreadedPE::Texture* AUVStatusIcon::icons_texture_ = NULL;
 
 AUVStatusIcon::AUVStatusIcon()
 {
-	icons_texture_ = TargaTexture::loadTexture("data/textures/icons.tga");
+	icons_texture_ = DreadedPE::TargaTexture::loadTexture("data/textures/icons.tga");
 	
 	// Goto icon.
 	goto_icon_.push_back(glm::vec2(0.75f, 0.75f));

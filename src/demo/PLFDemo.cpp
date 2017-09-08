@@ -41,7 +41,7 @@
 #include "../core/animation/BouncingBox.h"
 #include "../core/entities/WavingWater.h"
 #include "../core/entities/Player.h"
-#include "../core/collision/BoxCollision.h"
+#include "../core/collision/ConvexPolygon.h"
 #include "../core/entities/Lever.h"
 #include "../core/entities/Bridge.h"
 #include "../core/scene/frustum/SphereCheck.h"
@@ -264,7 +264,7 @@ bool PLFDemo::init(int argc, char** argv)
 
 	Cube* rotating_cube = new Cube(2, 0.5, 2);
 	Entity* rotating_cube_entity = new Entity(*scene_manager_, terrain_node_, glm::translate(glm::mat4(1.0), glm::vec3(50.0f, 1.0f, 0.0f)), OBSTACLE, "Rotating Cube");
-	BoxCollision* stair_step_bc = new BoxCollision(*rotating_cube_entity, 2.0f, 0.5f, 2.0f);
+	ConvexPolygon* stair_step_bc = new ConvexPolygon(*rotating_cube_entity, 2.0f, 0.5f, 2.0f);
 	rotating_cube_entity->addCollision(*stair_step_bc);
 	Behaviour* behaviour = new RotateBehaviour(*rotating_cube_entity, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 0, 180, 90, 10);
 	rotating_cube_entity->addBehaviour(*behaviour);

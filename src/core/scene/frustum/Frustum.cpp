@@ -1,4 +1,7 @@
-#include "Frustum.h"
+#include "dpengine/scene/frustum/Frustum.h"
+
+namespace DreadedPE
+{
 
 Frustum::Frustum(const glm::mat4& model_view_projection_matrix)
 {
@@ -35,3 +38,5 @@ void Frustum::finalise(unsigned int i)
 	float d = sqrt(planes_[i].x * planes_[i].x + planes_[i].y * planes_[i].y + planes_[i].z * planes_[i].z);
 	planes_[i] = glm::vec4(planes_[i].x / d, planes_[i].y / d, planes_[i].z / d, planes_[i].w / d);
 }
+
+};

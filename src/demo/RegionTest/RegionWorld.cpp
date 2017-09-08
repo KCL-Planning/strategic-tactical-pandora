@@ -18,7 +18,7 @@
 #include "../../core/shaders/TerrainShader.h"
 #include "../../core/shaders/BasicShadowShader.h"
 #include "../../core/texture/TargaTexture.h"
-#include "../../core/collision/BoxCollision.h"
+#include "../../core/collision/ConvexPolygon.h"
 #include "../../shapes/Cube.h"
 #include "../../shapes/terrain.h"
 #include "../../shapes/SkyBox.h"
@@ -330,7 +330,7 @@ bool RegionWorld::init(int argc, char** argv)
 	FrustumEntity* frustum_entity = new FrustumEntity(*scene_manager_, *camera_);
 	scene_manager_->addUpdateableEntity(*frustum_entity);
 	
-	BoxCollision* bounded_box = new BoxCollision(*movable_node_, 3, 1, 2);
+	ConvexPolygon* bounded_box = new ConvexPolygon(*movable_node_, 3, 1, 2);
 	movable_node_->addCollision(*bounded_box);
 
 	cube_ = new PhysicsCube(*scene_manager_, terrain_node_, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 5.0f, 0.0f)));

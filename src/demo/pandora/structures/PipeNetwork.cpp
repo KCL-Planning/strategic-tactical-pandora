@@ -3,21 +3,21 @@
 #include "Structure.h"
 #include "../level/MissionSite.h"
 #include "../ontology/InspectionPoint.h"
-#include "../../../core/scene/SceneManager.h"
-#include "../../../core/texture/TargaTexture.h"
-#include "../../../core/scene/Material.h"
-#include "../../../core/scene/SceneLeafModel.h"
-#include "../../../core/shaders/BasicShadowShader.h"
-#include "../../../core/shaders/LineShader.h"
-#include "../../../shapes/Cube.h"
-#include "../../../shapes/Line.h"
+#include "dpengine/scene/SceneManager.h"
+#include "dpengine/texture/TargaTexture.h"
+#include "dpengine/scene/Material.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/shaders/BasicShadowShader.h"
+#include "dpengine/shaders/LineShader.h"
+#include "dpengine/shapes/Cube.h"
+#include "dpengine/shapes/Line.h"
 #include <queue>
 
 float PipeNetworkNode::pipe_direction_cost[] = { 1, sqrt(2), 1, sqrt(2), 1, sqrt(2), 1, sqrt(2) };
 glm::vec2 PipeNetworkNode::pipe_direction[] = { glm::vec2(0, 1), glm::vec2(1, 1), glm::vec2(1, 0), glm::vec2(1, -1), glm::vec2(0, -1), glm::vec2(-1, -1), glm::vec2(-1, 0), glm::vec2(-1, 1) };
 
-PipeNetwork::PipeNetwork(SceneManager& scene_manager, SceneNode* parent, const std::vector< MissionSite* >& mission_sites, float grid_size)
-	: Entity(scene_manager, parent, glm::translate(glm::mat4(1.0f), glm::vec3(0, 1, 0)), OBSTACLE, "Pipenetwork")
+PipeNetwork::PipeNetwork(DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, const std::vector< MissionSite* >& mission_sites, float grid_size)
+	: DreadedPE::Entity(scene_manager, parent, glm::translate(glm::mat4(1.0f), glm::vec3(0, 1, 0)), DreadedPE::OBSTACLE, "Pipenetwork")
 {
 	// Establish the size of the area we want to cover in piping.
 	float min_x = std::numeric_limits<float>::max();
@@ -67,24 +67,24 @@ PipeNetwork::PipeNetwork(SceneManager& scene_manager, SceneNode* parent, const s
 	std::vector<int> grid;
 	grid.resize((max_x - min_x) * (max_y - min_y), 0);
 	
-	Texture* grass_texture = TargaTexture::loadTexture("data/textures/grass.tga");
+	DreadedPE::Texture* grass_texture = DreadedPE::TargaTexture::loadTexture("data/textures/grass.tga");
 	
 	// Initialise a terrain to render.
-	MaterialLightProperty* terrain_ambient = new MaterialLightProperty(0.7f, 0.7f, 0.7f, 1.0f);
-	MaterialLightProperty* terrain_diffuse = new MaterialLightProperty(0.8f, 0.8f, 0.8f, 1.0f);
-	MaterialLightProperty* terrain_specular = new MaterialLightProperty(0.0f, 0.0f, 0.0f, 1.0f);
-	MaterialLightProperty* terrain_emmisive = new MaterialLightProperty(1.0f, 1.0f, 0.0f, 1.0f);
+	DreadedPE::MaterialLightProperty terrain_ambient(0.7f, 0.7f, 0.7f, 1.0f);
+	DreadedPE::MaterialLightProperty terrain_diffuse(0.8f, 0.8f, 0.8f, 1.0f);
+	DreadedPE::MaterialLightProperty terrain_specular(0.0f, 0.0f, 0.0f, 1.0f);
+	DreadedPE::MaterialLightProperty terrain_emmisive(1.0f, 1.0f, 0.0f, 1.0f);
 
-	Material* terrain_material_ = new Material(*terrain_ambient, *terrain_diffuse, *terrain_specular, *terrain_emmisive);
-	terrain_material_->add2DTexture(*grass_texture);
+	std::shared_ptr<DreadedPE::Material> terrain_material(std::make_shared<DreadedPE::Material>(terrain_ambient, terrain_diffuse, terrain_specular, terrain_emmisive));
+	terrain_material->add2DTexture(*grass_texture);
 	
-	Texture* eroded_metal_texture = TargaTexture::loadTexture("data/textures/eroded_metal.tga");
-	MaterialLightProperty* eroded_metal_ambient = new MaterialLightProperty(0.7f, 0.7f, 0.7f, 1.0f);
-	MaterialLightProperty* eroded_metal_diffuse = new MaterialLightProperty(0.8f, 0.8f, 0.8f, 1.0f);
-	MaterialLightProperty* eroded_metal_specular = new MaterialLightProperty(0.2f, 0.2f, 0.2f, 1.0f);
-	MaterialLightProperty* eroded_metal_emmisive = new MaterialLightProperty(0.7f, 0.7f, 0.7f, 1.0f);
+	DreadedPE::Texture* eroded_metal_texture = DreadedPE::TargaTexture::loadTexture("data/textures/eroded_metal.tga");
+	DreadedPE::MaterialLightProperty eroded_metal_ambient(0.7f, 0.7f, 0.7f, 1.0f);
+	DreadedPE::MaterialLightProperty eroded_metal_diffuse(0.8f, 0.8f, 0.8f, 1.0f);
+	DreadedPE::MaterialLightProperty eroded_metal_specular(0.2f, 0.2f, 0.2f, 1.0f);
+	DreadedPE::MaterialLightProperty eroded_metal_emmisive(0.7f, 0.7f, 0.7f, 1.0f);
 
-	pipe_material_ = new Material(*eroded_metal_ambient, *eroded_metal_diffuse, *eroded_metal_specular, *eroded_metal_emmisive);
+	pipe_material_ = std::make_shared<DreadedPE::Material>(eroded_metal_ambient, eroded_metal_diffuse, eroded_metal_specular, eroded_metal_emmisive);
 	pipe_material_->add2DTexture(*eroded_metal_texture);
 	
 	
@@ -92,7 +92,7 @@ PipeNetwork::PipeNetwork(SceneManager& scene_manager, SceneNode* parent, const s
 	
 	std::cout << "Initialise grid." << std::endl;
 	// Find out which grid cells are actually free and which ones are blocked by obstacles.
-	for (int i = 0; i < grid.size(); ++i)
+	for (unsigned int i = 0; i < grid.size(); ++i)
 	{
 		glm::vec3 mid_point((i % grid_width_) * grid_size + min_x, 2.0f, (i / grid_width_) * grid_size + min_y);
 		
@@ -216,7 +216,7 @@ void PipeNetwork::findPath(const glm::vec3& from, const glm::vec3& to, PipeNetwo
 				std::cout << "Process: " << *node << std::endl;
 				if (grid_->grid_[node->grid_id_] == -1)
 				{
-					grid_->grid_[node->grid_id_] == 1;
+					grid_->grid_[node->grid_id_] = 1;
 				}
 				else
 				{
@@ -352,9 +352,9 @@ void PipeNetwork::findPath(const glm::vec3& from, const glm::vec3& to, PipeNetwo
 				std::cout << "(" << (*ci).x << ", " << (*ci).y << ", " << (*ci).z << ")" << std::endl;
 			}
 			//line->setVertexBuffer(path_vertexes);
-			Shape* shape = new Shape(path_vertexes, texture_uvs, indices, normals);
+			std::shared_ptr<DreadedPE::Shape> shape(std::make_shared<DreadedPE::Shape>(path_vertexes, texture_uvs, indices, normals));
 			
-			SceneLeafModel* scene_model = new SceneLeafModel(*this, NULL, *shape, *pipe_material_, BasicShadowShader::getShader(), false, false, OBJECT, ShadowRenderer::NO_SHADOW);
+			DreadedPE::SceneLeafModel* scene_model = new DreadedPE::SceneLeafModel(*this, NULL, shape, pipe_material_, DreadedPE::BasicShadowShader::getShader(), false, false, DreadedPE::OBJECT, DreadedPE::ShadowRenderer::NO_SHADOW);
 			
 			std::cout << "Found a solution! " << path_vertexes.size() << "; Checked nodes: " << checked_nodes << "; skipped: " << ignored_children << std::endl;
 			break;

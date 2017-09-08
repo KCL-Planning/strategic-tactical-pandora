@@ -3,34 +3,34 @@
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "../../../core/light/Light.h"
-#include "../../../core/light/DirectedLight.h"
-#include "../../../core/scene/Material.h"
-#include "../../../shapes/terrain.h"
-#include "../../../core/scene/SceneLeafModel.h"
-#include "../../../core/texture/Texture.h"
-#include "../../../core/texture/TargaTexture.h"
+#include "dpengine/light/Light.h"
+#include "dpengine/light/DirectedLight.h"
+#include "dpengine/scene/Material.h"
+#include "dpengine/shapes/terrain.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/texture/Texture.h"
+#include "dpengine/texture/TargaTexture.h"
 #include "CausticTexture.h"
 
 CausticTerrainShader* CausticTerrainShader::terrain_shader_ = NULL;
-DirectedLight* CausticTerrainShader::sun_ = NULL;
+DreadedPE::DirectedLight* CausticTerrainShader::sun_ = NULL;
 CausticTexture* CausticTerrainShader::caustic_texture_ = 0;
 
 CausticTerrainShader::CausticTerrainShader(const std::string& vertex_shader, const std::string& fragment_shader)
-	: LightShader(vertex_shader, fragment_shader)
+	: DreadedPE::LightShader(vertex_shader, fragment_shader)
 {
 
 }
 
-void CausticTerrainShader::initialiseSun(DirectedLight& sun, CausticTexture& caustic_texture)
+void CausticTerrainShader::initialiseSun(DreadedPE::DirectedLight& sun, CausticTexture& caustic_texture)
 {
 	sun_ = &sun;
 	caustic_texture_ = &caustic_texture;
 }
 
-void CausticTerrainShader::initialise(const SceneLeafModel& model_node, const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const SceneLeafLight*>& lights)
+void CausticTerrainShader::prepareToRender(const DreadedPE::SceneLeafModel& model_node, const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const DreadedPE::SceneLeafLight*>& lights)
 {
-	std::map<const Shape*, GLuint>::iterator mapped_i = shape_to_vbo_.find(&model_node.getModel());
+	std::map<const DreadedPE::Shape*, GLuint>::iterator mapped_i = shape_to_vbo_.find(model_node.getShape().get());
 	GLuint vbo_index;
 	if (mapped_i == shape_to_vbo_.end())
 	{
@@ -46,17 +46,17 @@ void CausticTerrainShader::initialise(const SceneLeafModel& model_node, const gl
 		glDisableVertexAttribArray(6);
 		glDisableVertexAttribArray(7);
 
-		glBindBuffer(GL_ARRAY_BUFFER, model_node.getModel().getVertexBufferId());
+		glBindBuffer(GL_ARRAY_BUFFER, model_node.getShape()->getVertexBufferId());
 		glVertexAttribPointer((GLint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-		glBindBuffer(GL_ARRAY_BUFFER, model_node.getModel().getTexCoordBufferId());
+		glBindBuffer(GL_ARRAY_BUFFER, model_node.getShape()->getTexCoordBufferId());
 		glVertexAttribPointer((GLint)1, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-		glBindBuffer(GL_ARRAY_BUFFER, model_node.getModel().getNormalBufferId());
+		glBindBuffer(GL_ARRAY_BUFFER, model_node.getShape()->getNormalBufferId());
 		glVertexAttribPointer((GLint)2, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model_node.getModel().getIndexBufferId());
-		shape_to_vbo_[&model_node.getModel()] = vbo_index;
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model_node.getShape()->getIndexBufferId());
+		shape_to_vbo_[model_node.getShape().get()] = vbo_index;
 	}
 	else
 	{
@@ -78,9 +78,9 @@ void CausticTerrainShader::initialise(const SceneLeafModel& model_node, const gl
 */
 	}
 
-	LightShader::initialise(model_node, view_matrix, model_matrix, projection_matrix, lights);
+	DreadedPE::LightShader::prepareToRender(model_node, view_matrix, model_matrix, projection_matrix, lights);
 	glm::mat4 model_view_matrix = view_matrix * model_matrix;
-	glm::mat4 normal_matrix = glm::inverseTranspose(model_view_matrix);
+	//glm::mat4 normal_matrix = glm::inverseTranspose(model_view_matrix);
 
 	//Send the modelview and projection matrices to the shaders
 	glUniformMatrix4fv(modelview_matrix_loc_, 1, false, glm::value_ptr(model_view_matrix));
@@ -90,26 +90,27 @@ void CausticTerrainShader::initialise(const SceneLeafModel& model_node, const gl
 
 	glUniformMatrix4fv(sun_shadow_matrix_loc_, 1, false, glm::value_ptr(sun_->getShadowMatrix()));
 
-	assert (model_node.getMaterial().get1DTextures().size() == 1);
-	assert (model_node.getMaterial().get2DTextures().size() == 1);
+	assert (model_node.getMaterial()->get1DTextures().size() == 1);
+	assert (model_node.getMaterial()->get2DTextures().size() == 1);
 
-	glUniform1i(texture0_loc_, model_node.getMaterial().get2DTextures()[0]->getActiveTextureId());
-	glUniform1i(texture1_loc_, model_node.getMaterial().get1DTextures()[0]->getActiveTextureId());
+	glUniform1i(texture0_loc_, model_node.getMaterial()->get2DTextures()[0]->getActiveTextureId());
+	glUniform1i(texture1_loc_, model_node.getMaterial()->get1DTextures()[0]->getActiveTextureId());
 	glUniform1i(caustic_texture_loc_, caustic_texture_->getActiveTextureId());
 	glUniform1i(caustic_texture_index_loc_, caustic_texture_->getTextureToDisplayIndex());
-	glUniform1i(caustic_depth_texture_loc_, sun_->getShadowRenderer().getTexture().getActiveTextureId());
+	glUniform1i(caustic_depth_texture_loc_, sun_->getShadowRendererTextureID());
 
-	const MaterialLightProperty& material_ambient = model_node.getMaterial().getAmbient();
-	const MaterialLightProperty& material_diffuse = model_node.getMaterial().getDiffuse();
-	const MaterialLightProperty& material_specular = model_node.getMaterial().getSpecular();
-	const MaterialLightProperty& material_emissive = model_node.getMaterial().getEmissive();
+	const DreadedPE::MaterialLightProperty& material_ambient = model_node.getMaterial()->getAmbient();
+	const DreadedPE::MaterialLightProperty& material_diffuse = model_node.getMaterial()->getDiffuse();
+	const DreadedPE::MaterialLightProperty& material_specular = model_node.getMaterial()->getSpecular();
+	const DreadedPE::MaterialLightProperty& material_emissive = model_node.getMaterial()->getEmissive();
 
 	glUniform4f(material_ambient_loc_, material_ambient.red_, material_ambient.green_, material_ambient.blue_, material_ambient.alpha_);
 	glUniform4f(material_diffuse_loc_, material_diffuse.red_, material_diffuse.green_, material_diffuse.blue_, material_diffuse.alpha_);
 	glUniform4f(material_specular_loc_, material_specular.red_, material_specular.green_, material_specular.blue_, material_specular.alpha_);
 	glUniform4f(material_emissive_loc_, material_emissive.red_, material_emissive.green_, material_emissive.blue_, material_emissive.alpha_);
 
-	model_node.getModel().render();
+	glDrawElements(model_node.getShape()->getRenderingMode(), model_node.getShape()->getIndices().size(), GL_UNSIGNED_INT, 0);
+	//model_node.getModel().render();
 	glBindVertexArray(0);
 }
 

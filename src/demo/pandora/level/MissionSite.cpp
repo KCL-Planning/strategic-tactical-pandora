@@ -2,13 +2,13 @@
 
 #include <stdlib.h>
 
-#include "../../../core/loaders/PortalLevelFormatLoader.h"
-#include "../../../core/scene/SceneManager.h"
-#include "../../../core/scene/Material.h"
-#include "../../../core/shaders/ToonShader.h"
-#include "../../../core/shaders/BasicShadowShader.h"
-#include "../../../core/texture/FreeImageLoader.h"
-#include "../../../core/texture/TargaTexture.h"
+#include "dpengine/loaders/PortalLevelFormatLoader.h"
+#include "dpengine/scene/SceneManager.h"
+#include "dpengine/scene/Material.h"
+#include "dpengine/shaders/ToonShader.h"
+#include "dpengine/shaders/BasicShadowShader.h"
+#include "dpengine/texture/FreeImageLoader.h"
+#include "dpengine/texture/TargaTexture.h"
 
 #include "../Waypoint.h"
 #include "../shaders/CausticShader.h"
@@ -17,8 +17,8 @@
 
 int MissionSite::global_mission_site_id_ = 0;
 
-MissionSite::MissionSite(SceneManager& scene_manager, SceneNode* parent, const glm::mat4& transformation, const glm::vec3& start_point, OntologyInterface& ontology)
-	: Entity(scene_manager, parent, transformation, OBSTACLE, "Mission Site"), can_recharge_(false), ontology_(&ontology)
+MissionSite::MissionSite(DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, const glm::mat4& transformation, const glm::vec3& start_point, OntologyInterface& ontology)
+	: DreadedPE::Entity(scene_manager, parent, transformation, DreadedPE::OBSTACLE, "Mission Site"), can_recharge_(false), ontology_(&ontology)
 {
 	std::stringstream ss;
 	ss << "mission_site_" << global_mission_site_id_;

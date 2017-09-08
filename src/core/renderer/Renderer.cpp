@@ -1,8 +1,11 @@
-#include "Renderer.h"
-#include "../scene/portal/Region.h"
-#include "../entities/camera/Camera.h"
-#include "../scene/SceneManager.h"
-#include "../scene/SceneNode.h"
+#include "dpengine/renderer/Renderer.h"
+#include "dpengine/scene/portal/Region.h"
+#include "dpengine/entities/camera/Camera.h"
+#include "dpengine/scene/SceneManager.h"
+#include "dpengine/scene/SceneNode.h"
+
+namespace DreadedPE
+{
 
 Renderer::Renderer()
 	: last_region_(NULL)
@@ -23,3 +26,5 @@ Region* Renderer::getRegionToRenderFrom(const glm::vec3& render_location, const 
 	}
 	return last_region_;
 }
+
+};

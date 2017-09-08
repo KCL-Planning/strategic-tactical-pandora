@@ -14,11 +14,11 @@
 
 #include <glm/gtx/quaternion.hpp>
 
-#include "../../core/shaders/LineShader.h"
-#include "../../core/scene/SceneManager.h"
-#include "../../core/scene/SceneNode.h"
-#include "../../core/collision/CollisionInfo.h"
-#include "../../core/entities/Entity.h"
+#include "dpengine/shaders/LineShader.h"
+#include "dpengine/scene/SceneManager.h"
+#include "dpengine/scene/SceneNode.h"
+#include "dpengine/collision/CollisionInfo.h"
+#include "dpengine/entities/Entity.h"
 
 #include "ontology/OntologyInterface.h"
 #include "ontology/OctomapBuilder.h"
@@ -31,16 +31,16 @@
 #include "level/MissionSite.h"
 #include "level/Mission.h"
 
-RRT::RRT(ros::NodeHandle& ros_node, SceneManager& scene_manager, Entity& entity, SceneNode& parent, OctomapBuilder& octomap, OntologyInterface& ontology, Material& material)
-	: SceneLeafModel(parent, NULL, *(new Line(false)), material, LineShader::getShader(), false, false, OBJECT, ShadowRenderer::NO_SHADOW),  ros_node_(&ros_node), scene_manager_(&scene_manager), octomap_(&octomap), ontology_(&ontology)
+RRT::RRT(ros::NodeHandle& ros_node, DreadedPE::SceneManager& scene_manager, DreadedPE::Entity& entity, DreadedPE::SceneNode& parent, OctomapBuilder& octomap, OntologyInterface& ontology, std::shared_ptr<DreadedPE::Material> material)
+	: DreadedPE::SceneLeafModel(parent, NULL, std::make_shared<DreadedPE::Line>(false), material, DreadedPE::LineShader::getShader(), false, false, DreadedPE::OBJECT, DreadedPE::ShadowRenderer::NO_SHADOW),  ros_node_(&ros_node), scene_manager_(&scene_manager), octomap_(&octomap), ontology_(&ontology)
 {
 	entities_.push_back(&entity);
 	// Launch the ROS services.
 	roadmap_refresh_service_ = ros_node.advertiseService("/roadmap_server/refresh", &RRT::refreshRoadmaps, this);
 }
 
-RRT::RRT(ros::NodeHandle& ros_node, SceneManager& scene_manager, std::vector<Entity*>& entities, SceneNode& parent, OctomapBuilder& octomap, OntologyInterface& ontology, Material& material)
-	: SceneLeafModel(parent, NULL, *(new Line(false)), material, LineShader::getShader(), false, false, OBJECT, ShadowRenderer::NO_SHADOW),  ros_node_(&ros_node), scene_manager_(&scene_manager), octomap_(&octomap), ontology_(&ontology)
+RRT::RRT(ros::NodeHandle& ros_node, DreadedPE::SceneManager& scene_manager, std::vector<DreadedPE::Entity*>& entities, DreadedPE::SceneNode& parent, OctomapBuilder& octomap, OntologyInterface& ontology, std::shared_ptr<DreadedPE::Material> material)
+	: DreadedPE::SceneLeafModel(parent, NULL, std::make_shared<DreadedPE::Line>(false), material, DreadedPE::LineShader::getShader(), false, false, DreadedPE::OBJECT, DreadedPE::ShadowRenderer::NO_SHADOW),  ros_node_(&ros_node), scene_manager_(&scene_manager), octomap_(&octomap), ontology_(&ontology)
 {
 	entities_ = entities;
 	// Launch the ROS services.
@@ -106,7 +106,7 @@ bool RRT::refreshRoadmaps(knowledge_msgs::RoadmapRefresh::Request& req, knowledg
 	//ROS_INFO("refreshRoadmaps");
 	//createRRT(entity_->getGlobalLocation(), ontology_->getInspectionPoints(), -15, 15, 0, 15, -5, 15);
 	std::vector<glm::vec3> auv_locations;
-	for (std::vector<Entity*>::const_iterator ci = entities_.begin(); ci != entities_.end(); ++ci)
+	for (std::vector<DreadedPE::Entity*>::const_iterator ci = entities_.begin(); ci != entities_.end(); ++ci)
 	{
 		auv_locations.push_back((*ci)->getGlobalLocation());
 		std::cout << "(" << (*ci)->getGlobalLocation().x << ", " << (*ci)->getGlobalLocation().y << ", "  << (*ci)->getGlobalLocation().z << ")" << std::endl;
@@ -220,7 +220,7 @@ void RRT::createRRT(const std::vector<glm::vec3>& begin, std::set<Waypoint*>& go
 	std::vector<Waypoint*> starting_waypoints;
 
 	unsigned int max_connections = 10;
-	CollisionInfo collision;
+	DreadedPE::CollisionInfo collision;
 
 	for (unsigned int i = 0; i < begin.size(); ++i)
 	{
@@ -352,7 +352,7 @@ void RRT::createRRT(const std::vector<glm::vec3>& begin, std::set<Waypoint*>& go
 				continue;
 			}*/
 
-			if (!canConnect(point, other_wp->position_, 1.5f, false))
+			if (!canConnect(point, other_wp->position_, 1.5f, true))
 			{
 				continue;
 			}
@@ -404,7 +404,7 @@ void RRT::createRRT(const std::vector<glm::vec3>& begin, std::set<Waypoint*>& go
 		for (std::set<Waypoint*>::const_iterator ci = goals.begin(); ci != goals.end(); ++ci)
 		{
 			Waypoint* goal_waypoint = *ci;
-			if (canConnect(point, goal_waypoint->position_, 1.5f, false))
+			if (canConnect(point, goal_waypoint->position_, 1.5f, true))
 			{
 				wp->edges_.push_back(std::make_pair(goal_waypoint, glm::distance(point, goal_waypoint->position_)));
 				goal_waypoint->edges_.push_back(std::make_pair(wp, glm::distance(point, goal_waypoint->position_)));
@@ -576,12 +576,11 @@ void RRT::findPath(Waypoint& start, Waypoint& end)
 	}
 }
 
-void RRT::draw(const glm::mat4& view_matrix, const glm::mat4& projection_matrix, const std::vector<const SceneLeafLight*>& lights, ShaderInterface* shader) const
+void RRT::draw(const glm::mat4& view_matrix, const glm::mat4& projection_matrix, const std::vector<const DreadedPE::SceneLeafLight*>& lights, DreadedPE::ShaderInterface* shader) const
 {
 	return;
 	//void initialise(const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const SceneLeafLight*>& lights);
-	shader_->initialise(*this, view_matrix,  glm::mat4(1.0f), projection_matrix, lights);
-	shape_->render();
+	shader_->prepareToRender(*this, view_matrix,  glm::mat4(1.0f), projection_matrix, lights);
 }
 
 void RRT::clear()

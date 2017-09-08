@@ -2,7 +2,6 @@
 #define CORE_SHAPE_SKY_BOX_H
 
 #include "GL/glew.h"
-#include "GL/glfw.h"
 
 #include <glm/glm.hpp>
 

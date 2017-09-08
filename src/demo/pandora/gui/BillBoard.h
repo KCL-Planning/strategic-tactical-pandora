@@ -4,20 +4,23 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-#include "../../../core/gui/Container.h"
+#include "dpengine/gui/Container.h"
 
-class Camera;
-class Theme;
-class SceneNode;
-class Font;
+namespace DreadedPE
+{
+	class Camera;
+	class Theme;
+	class SceneNode;
+	class Font;
+}
 
 /**
  * Create a shape that will always face a camera.
  */
-class BillBoard : public Container
+class BillBoard : public DreadedPE::Container
 {
 public:
-	BillBoard(const Theme& theme, Font& font, SceneNode& to_follow, Camera& camera, const glm::vec3& offset, float width, float height, const std::vector<glm::vec2>& tex_coords);
+	BillBoard(const DreadedPE::Theme& theme, DreadedPE::Font& font, DreadedPE::SceneNode& to_follow, DreadedPE::Camera& camera, const glm::vec3& offset, float width, float height, const std::vector<glm::vec2>& tex_coords);
 	
 	/**
 	 * Update the textures of this billboard.
@@ -40,8 +43,8 @@ private:
 	bool blink_visible_;
 	float time_to_next_blink_;
 	glm::vec3 location_;
-	SceneNode* to_follow_;
-	Camera* camera_;
+	DreadedPE::SceneNode* to_follow_;
+	DreadedPE::Camera* camera_;
 	glm::vec3 offset_;
 };
 

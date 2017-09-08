@@ -1,21 +1,23 @@
-#include "SceneLeafModel.h"
+#include "dpengine/scene/SceneLeafModel.h"
 
-#include "SceneNode.h"
-#include "../renderer/Renderer.h"
-#include "../shaders/ShaderInterface.h"
-#include "../../shapes/Shape.h"
-#include "../math/BoundedBox.h"
-//#include "frustum/BoxCheck.h"
+#include "dpengine/scene/SceneNode.h"
+#include "dpengine/renderer/Renderer.h"
+#include "dpengine/shaders/ShaderInterface.h"
+#include "dpengine/shapes/Shape.h"
+#include "dpengine/collision/ConvexPolygon.h"
 
-SceneLeafModel::SceneLeafModel(SceneNode& parent, InFrustumCheck* frustum_checker, Shape& shape, const Material& material, ShaderInterface& shader, bool is_transparent, bool is_double_sided, MODEL_TYPE type, ShadowRenderer::SHADOW_TYPE shadow_type)
-	: RenderableSceneLeaf(parent, is_transparent, is_double_sided, type, shadow_type, frustum_checker), shape_(&shape), material_(&material), shader_(&shader)
+namespace DreadedPE
+{
+
+SceneLeafModel::SceneLeafModel(SceneNode& parent, InFrustumCheck* frustum_checker, std::shared_ptr<Shape> shape, std::shared_ptr<const Material> material, ShaderInterface& shader, bool is_transparent, bool is_double_sided, MODEL_TYPE type, ShadowRenderer::SHADOW_TYPE shadow_type)
+	: RenderableSceneLeaf(parent, is_transparent, is_double_sided, type, shadow_type, frustum_checker), shape_(shape), material_(material), shader_(&shader)
 {
 	
 }
 
 SceneLeafModel::~SceneLeafModel()
 {
-
+	delete frustum_checker_;
 }
 
 void SceneLeafModel::prepare(float dt)
@@ -43,9 +45,7 @@ void SceneLeafModel::draw(const glm::mat4& view_matrix, const glm::mat4& project
 {
 	ShaderInterface* shader_to_use = shader == NULL ? shader_ : shader;
 
-	shader_to_use->initialise(*this, view_matrix, parent_->getCompleteTransformation(), projection_matrix, lights);
-
-	//shape_->render();
+	shader_to_use->prepareToRender(*this, view_matrix, parent_->getInterpolatedMatrix(), projection_matrix, lights);
 }
 
 void SceneLeafModel::initialiseFrustrumChecker()
@@ -54,5 +54,7 @@ void SceneLeafModel::initialiseFrustrumChecker()
 	{
 		delete frustum_checker_;
 	}
-	frustum_checker_ = new BoundedBox(*this);
+	frustum_checker_ = new ConvexPolygon(*this);
 }
+
+};

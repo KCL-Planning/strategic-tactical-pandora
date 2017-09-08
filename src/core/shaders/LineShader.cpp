@@ -1,10 +1,13 @@
-#include "LineShader.h"
+#include "dpengine/shaders/LineShader.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
-#include "../scene/SceneLeafModel.h"
-#include "../scene/Material.h"
-#include "../../shapes/Shape.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/scene/Material.h"
+#include "dpengine/shapes/Shape.h"
+
+namespace DreadedPE
+{
 
 LineShader* LineShader::shader_ = NULL;
 GLuint LineShader::modelview_matrix_loc_ = 0;
@@ -17,14 +20,9 @@ LineShader::LineShader(const std::string& vertex_shader, const std::string& frag
 
 }
 
-void LineShader::initialise(const SceneLeafLight& light_node, const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const SceneLeafLight*>& lights)
+void LineShader::prepareToRender(const SceneLeafModel& model_node, const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const SceneLeafLight*>& lights)
 {
-
-}
-
-void LineShader::initialise(const SceneLeafModel& model_node, const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const SceneLeafLight*>& lights)
-{
-	std::map<const Shape*, GLuint>::iterator mapped_i = shape_to_vbo_.find(&model_node.getModel());
+	std::map<const Shape*, GLuint>::iterator mapped_i = shape_to_vbo_.find(model_node.getShape().get());
 	GLuint vbo_index;
 	if (mapped_i == shape_to_vbo_.end())
 	{
@@ -41,11 +39,12 @@ void LineShader::initialise(const SceneLeafModel& model_node, const glm::mat4& v
 		glDisableVertexAttribArray(7);
 
 		//Bind the vertex array and set the vertex pointer to point at it
-		glBindBuffer(GL_ARRAY_BUFFER, model_node.getModel().getVertexBufferId());
+		glBindBuffer(GL_ARRAY_BUFFER, model_node.getShape()->getVertexBufferId());
 		glVertexAttribPointer((GLint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 		
 		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model_node.getModel().getIndexBufferId());
-		shape_to_vbo_[&model_node.getModel()] = vbo_index;
+		shape_to_vbo_[model_node.getShape().get()] = vbo_index;
+		model_node.getShape()->addDestructionListener(*this);
 	}
 	else
 	{
@@ -55,16 +54,6 @@ void LineShader::initialise(const SceneLeafModel& model_node, const glm::mat4& v
 	if (last_used_shader_ != this)
 	{
 		bindShader();
-/*
-		glEnableVertexAttribArray(0);
-		glDisableVertexAttribArray(1);
-		glDisableVertexAttribArray(2);
-		glDisableVertexAttribArray(3);
-		glDisableVertexAttribArray(4);
-		glDisableVertexAttribArray(5);
-		glDisableVertexAttribArray(6);
-		glDisableVertexAttribArray(7);
-*/
 	}
 
 	glm::mat4 model_view_matrix = view_matrix * model_matrix;
@@ -74,17 +63,13 @@ void LineShader::initialise(const SceneLeafModel& model_node, const glm::mat4& v
 	glUniformMatrix4fv(projection_matrix_loc_, 1, false, glm::value_ptr(projection_matrix));
 	
 	// Send the colour in which the line should be drawn.
-	glUniform4f(colour_loc_, model_node.getMaterial().getEmissive().red_, model_node.getMaterial().getEmissive().green_, model_node.getMaterial().getEmissive().blue_, model_node.getMaterial().getEmissive().alpha_);
+	glUniform4f(colour_loc_, model_node.getMaterial()->getEmissive().red_, model_node.getMaterial()->getEmissive().green_, model_node.getMaterial()->getEmissive().blue_, model_node.getMaterial()->getEmissive().alpha_);
 	
-	//Bind the vertex array and set the vertex pointer to point at it
-	//glBindBuffer(GL_ARRAY_BUFFER, model_node.getModel().getVertexBufferId());
-	//glVertexAttribPointer((GLint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-	model_node.getModel().render();
+	glDrawArrays(model_node.getShape()->getRenderingMode(), 0, model_node.getShape()->getVertices().size());
 
 	glBindVertexArray(0);
 }
-
+/*
 void LineShader::initialise(const glm::vec4& colour, const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, GLuint vertex_buffer_id)
 {
 	bindShader();
@@ -111,7 +96,7 @@ void LineShader::initialise(const glm::vec4& colour, const glm::mat4& view_matri
 	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id);
 	glVertexAttribPointer((GLint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 }
-
+*/
 LineShader& LineShader::getShader()
 {
 	if (shader_ == NULL)
@@ -136,6 +121,9 @@ LineShader& LineShader::getShader()
 		
 		modelview_matrix_loc_ = shader_->getUniformLocation("modelview_matrix");
 		projection_matrix_loc_ = shader_->getUniformLocation("projection_matrix");
+		colour_loc_ = shader_->getUniformLocation("colour");
 	}
 	return *shader_;
 }
+
+};

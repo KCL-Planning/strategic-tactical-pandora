@@ -1,17 +1,21 @@
 #ifdef _WIN32
+#define NOMINMAX
 #include <Windows.h>
 #endif
 
 #include <algorithm>
 #include <iostream>
 
-#include "Portal.h"
+#include "dpengine/scene/portal/Portal.h"
 
-#include "Region.h"
-#include "../frustum/Frustum.h"
-#include "../../renderer/Renderer.h"
-#include "../SceneNode.h"
-#include "../../math/Plane.h"
+#include "dpengine/scene/portal/Region.h"
+#include "dpengine/scene/frustum/Frustum.h"
+#include "dpengine/renderer/Renderer.h"
+#include "dpengine/scene/SceneNode.h"
+#include "dpengine/math/Plane.h"
+
+namespace DreadedPE
+{
 
 //#define HORROR_GAME_ENABLE_DEBUG
 
@@ -30,30 +34,26 @@ Portal::Portal(const std::vector<glm::vec3>& points, Region& from, Region& to)
 	}
 }
 
-bool Portal::preRender(const Frustum& frustum, const glm::vec3& camera_position, Renderer& renderer, bool process_lights, unsigned int& nr_calls, unsigned int portal_depth, std::vector<const Portal*>& processed_portals, std::stringstream& ss)
+bool Portal::preRender(const Frustum& frustum, const glm::vec3& camera_position, Renderer& renderer, bool process_lights, unsigned int& nr_calls, unsigned int portal_depth, std::vector<const Portal*>& processed_portals)
 {
+#ifdef HORROR_GAME_ENABLE_DEBUG
+	std::stringstream ss;
+#endif
 	if (std::find(processed_portals.begin(), processed_portals.end(), this) != processed_portals.end())
 	{
-		/*
-		std::cout << "Ignore: ";
+#ifdef HORROR_GAME_ENABLE_DEBUG
+		ss << "Ignore: ";
 		for (std::vector<const Portal*>::const_iterator ci = processed_portals.begin(); ci != processed_portals.end(); ++ci)
 		{
-			std::cout << (*ci)->from_->getName() << " -> ";
+			ss << (*ci)->from_->getName() << " -> ";
 		}
-		std::cout << std::endl;
-		*/
+		ss << std::endl;
+		OutputDebugString(ss.str().c_str());
+#endif
+
 		return false;
 	}
-	/*
-	std::stringstream ss2;
-	ss2 << "Process: ";
-	for (std::vector<const Portal*>::const_iterator ci = processed_portals.begin(); ci != processed_portals.end(); ++ci)
-	{
-		ss2 << (*ci)->from_->getName() << " -> " << (*ci)->to_->getName() << " *** ";
-	}
-	ss2 << from_->getName() << " -> " << to_->getName();
-	ss2 << std::endl;
-	*/
+
 	// Check each of the planes of the frustum and cull them accordingly.
 	std::vector<glm::vec4> culled_planes;
 
@@ -61,16 +61,25 @@ bool Portal::preRender(const Frustum& frustum, const glm::vec3& camera_position,
 	for (std::vector<glm::vec3>::const_iterator ci = points_.begin(); ci != points_.end(); ++ci)
 	{
 		transformed_points.push_back(from_->getSceneNode().getCompleteTransformation() * glm::vec4(*ci, 1.0f));
-	}
 
+	}
 #ifdef HORROR_GAME_ENABLE_DEBUG
-	std::cout << "Frustum:|";
+	ss << "Updated portal:";
+	for (const glm::vec4& p : transformed_points)
+	{
+		ss << "\t(" << p.x << ", " << p.y << ", " << p.z << ", " << p.w << ")" << std::endl;
+	}
+	OutputDebugString(ss.str().c_str());
+	ss.str(std::string());
+
+	ss << "Frustum:";
 	for (std::vector<glm::vec4>::const_iterator ci = frustum.getPlanes().begin(); ci != frustum.getPlanes().end(); ++ci)
 	{
 		float distance_to_cam = glm::dot(*ci, glm::vec4(camera_position, 1));
-		std::cout << "(" << (*ci).x << ", " << (*ci).y << ", " << (*ci).z << ", " << (*ci).w << ") Distance: " << distance_to_cam << "|";
+		ss << "\t(" << (*ci).x << ", " << (*ci).y << ", " << (*ci).z << ", " << (*ci).w << ") Distance: " << distance_to_cam << std::endl;
 	}
-	std::cout << std::endl;
+	OutputDebugString(ss.str().c_str());
+	ss.str(std::string());
 #endif
 
 	std::vector<glm::vec4> final_points;
@@ -91,14 +100,15 @@ bool Portal::preRender(const Frustum& frustum, const glm::vec3& camera_position,
 		}
 		
 		final_points.clear();
-		/*
-		ss2 << "Process the " << plane_index << "th plane. " << "(" << transformed_points.size() << ")" << std::endl;
+#ifdef HORROR_GAME_ENABLE_DEBUG
+		ss << "Process the " << plane_index << "th plane. " << "(" << transformed_points.size() << ")" << std::endl;
 		for (unsigned int i = 0; i < transformed_points.size(); ++i)
 		{
 			const glm::vec4& from_point = transformed_points[i];
-			ss2 << "- (" << from_point.x << ", " << from_point.y << ", " << from_point.z << ")" << std::endl;
+			ss << "- (" << from_point.x << ", " << from_point.y << ", " << from_point.z << ")" << std::endl;
 		}
-		*/
+#endif
+		
 		//const glm::vec4& plane = *ci;
 		const glm::vec4& plane = frustum.getPlanes()[plane_index];
 		for (unsigned int i = 0; i < transformed_points.size(); ++i)
@@ -111,13 +121,13 @@ bool Portal::preRender(const Frustum& frustum, const glm::vec3& camera_position,
 			// Point lies on or inside the frustum, check if the connecting point lies outside.
 			// If this is the point then we need to cull the point.
 			float distance_to_plane = glm::dot(to_point, plane);
-			/*
-//#ifdef HORROR_GAME_ENABLE_DEBUG
-			ss2 << "From: " << from_point.x << "," << from_point.y << "," << from_point.z << "(" << distance_from_plane << ") - ";
-			ss2 << "To: " << to_point.x << "," << to_point.y << "," << to_point.z << " (" << distance_to_plane << ").";
-			ss2 << std::endl;
-//#endif
-			*/
+			
+#ifdef HORROR_GAME_ENABLE_DEBUG
+			ss << "\tFrom: " << from_point.x << "," << from_point.y << "," << from_point.z << "(" << distance_from_plane << ") - ";
+			ss << "\tTo: " << to_point.x << "," << to_point.y << "," << to_point.z << " (" << distance_to_plane << ").";
+			ss << std::endl;
+#endif
+			
 			// Solve the solution: (from_point + (to_point - from_point) * x) DOT plane = 0.
 			// This is solved as: x = (from_point DOT plane) / ((from_point - to_point) DOT plane).
 
@@ -128,9 +138,9 @@ bool Portal::preRender(const Frustum& frustum, const glm::vec3& camera_position,
 				float x = glm::dot(from_point, plane) / glm::dot((from_point - to_point), plane);
 				glm::vec4 intermediate_point = from_point + x * (to_point - from_point);
 				final_points.push_back(intermediate_point);
-//#ifdef HORROR_GAME_ENABLE_DEBUG
-				//ss2 << "Split1: (" << intermediate_point.x << ", " << intermediate_point.y << ", " << intermediate_point.z << ")";
-//#endif
+#ifdef HORROR_GAME_ENABLE_DEBUG
+				ss << "\tSplit1: (" << intermediate_point.x << ", " << intermediate_point.y << ", " << intermediate_point.z << ")";
+#endif
 			}
 
 			// The to point is inside the plane and the from point is outside. This means that we store the point that 
@@ -141,56 +151,75 @@ bool Portal::preRender(const Frustum& frustum, const glm::vec3& camera_position,
 				glm::vec4 intermediate_point = from_point + x * (to_point - from_point);
 				final_points.push_back(intermediate_point);
 				final_points.push_back(to_point);
-//#ifdef HORROR_GAME_ENABLE_DEBUG
-				//ss2 << "Split2: (" << intermediate_point.x << ", " << intermediate_point.y << ", " << intermediate_point.z << ")" << std::endl;
-//#endif
+#ifdef HORROR_GAME_ENABLE_DEBUG
+				ss << "\tSplit2: (" << intermediate_point.x << ", " << intermediate_point.y << ", " << intermediate_point.z << ")" << std::endl;
+#endif
 			}
 			// If both points lie on the possive side of the plane then we do not have to split the
 			// line and we can leave the end point as it is.
 			else if (distance_from_plane >= -EPSILON && distance_to_plane >= -EPSILON)
 			{
-//#ifdef HORROR_GAME_ENABLE_DEBUG
-				//ss2 << "Keep: (" << to_point.x << ", " << to_point.y << ", " << to_point.z << ")" << std::endl;
-//#endif
+#ifdef HORROR_GAME_ENABLE_DEBUG
+				ss << "\tKeep: (" << to_point.x << ", " << to_point.y << ", " << to_point.z << ")" << std::endl;
+#endif
 				final_points.push_back(to_point);
 			}
-//#ifdef HORROR_GAME_ENABLE_DEBUG2
+#ifdef HORROR_GAME_ENABLE_DEBUG
 			// If both points lie on the negative side of the plane then we can ignore the to point.
 			// The from point might be part of a line that intersects with the plane (i.e. with the line
 			// (i - 1)).
 			else //if (distance_from_plane < -EPSILON && distance_to_plane < -EPSILON)
 			{
-				//ss2 << "Remove: (" << to_point.x << ", " << to_point.y << ", " << to_point.z << ")" << std::endl;
+				ss << "\tRemove: (" << to_point.x << ", " << to_point.y << ", " << to_point.z << ")" << std::endl;
 				// Ignore it.
 			}
-			//ss2 << "|";
-//#endif
+#endif
 		}
 
 		transformed_points.clear();
+
+#ifdef HORROR_GAME_ENABLE_DEBUG
+		ss << "\tNew points:";
+		for (const glm::vec4& p : final_points)
+		{
+			ss << "\t(" << p.x << ", " << p.y << ", " << p.z << ", " << p.w << ")" << std::endl;
+		}
+#endif
 		
 		if (final_points.empty())
 		{
-			//ss << "No go!";
+#ifdef HORROR_GAME_ENABLE_DEBUG
+			ss << "\tNo go!" << std::endl;
+#endif
 			break;
 		}
 		transformed_points.insert(transformed_points.end(), final_points.begin(), final_points.end());
+
 #ifdef HORROR_GAME_ENABLE_DEBUG
-		ss << "|";
+		ss << "\tUpdated portal:";
+		for (const glm::vec4& p : transformed_points)
+		{
+			ss << "\t(" << p.x << ", " << p.y << ", " << p.z << ", " << p.w << ")" << std::endl;
+		}
 #endif
 	}
 
-	//OutputDebugString(ss2.str().c_str());
+#ifdef HORROR_GAME_ENABLE_DEBUG
+	OutputDebugString(ss.str().c_str());
+	ss.str(std::string());
+#endif
 
 	// Create a new frustum and render the region on the other side of the portal -- if there is a frustum left!
 	if (transformed_points.size() > 0)
 	{
 #ifdef HORROR_GAME_ENABLE_DEBUG
-		ss2 << "Portal enabled!";
+		ss << "Portal enabled!";
 		for (std::vector<glm::vec4>::const_iterator ci = transformed_points.begin(); ci != transformed_points.end(); ++ci)
 		{
-			ss2 << (*ci).x << ", " << (*ci).y << ", " << (*ci).z << "|";
+			ss << (*ci).x << ", " << (*ci).y << ", " << (*ci).z << "|";
 		}
+		OutputDebugString(ss.str().c_str());
+		ss.str(std::string());
 #endif
 		//ss << "Lets go!";
 		std::vector<glm::vec4> planes;
@@ -210,6 +239,8 @@ bool Portal::preRender(const Frustum& frustum, const glm::vec3& camera_position,
 			planes.push_back(glm::vec4(N, -glm::dot(N, camera_position)));
 #ifdef HORROR_GAME_ENABLE_DEBUG
 			ss << N.x << ", " << N.y << ", " << N.z << ", " << -glm::dot(N, camera_position) << "|";
+			OutputDebugString(ss.str().c_str());
+			ss.str(std::string());
 #endif
 		}
 		
@@ -235,13 +266,9 @@ bool Portal::preRender(const Frustum& frustum, const glm::vec3& camera_position,
 		{
 			processed_portals_copy.push_back(mirror_portal_);
 		}
-		/*
-		std::stringstream ss3;
-		ss3 << "Enable portal: " << from_->getName() << " -> " << to_->getName() << std::endl;
-		OutputDebugString(ss3.str().c_str());
-		*/
+		
 		Frustum culled_frustum(planes);
-		to_->preRender(culled_frustum, camera_position, renderer, process_lights, nr_calls, portal_depth + 1, processed_portals_copy, ss);
+		to_->preRender(culled_frustum, camera_position, renderer, process_lights, nr_calls, portal_depth + 1, processed_portals_copy);
 		return true;
 	}
 	//std::cout << "Outside of the frustum!" << std::endl;
@@ -440,11 +467,14 @@ void Portal::getRenderingPortals(const Frustum& frustum, const glm::vec3& camera
 	if (transformed_points.size() > 0)
 	{
 #ifdef HORROR_GAME_ENABLE_DEBUG
-		ss2 << "Portal enabled!";
+		std::stringstream ss;
+		ss << "Portal enabled!";
 		for (std::vector<glm::vec4>::const_iterator ci = transformed_points.begin(); ci != transformed_points.end(); ++ci)
 		{
-			ss2 << (*ci).x << ", " << (*ci).y << ", " << (*ci).z << "|";
+			ss << (*ci).x << ", " << (*ci).y << ", " << (*ci).z << "|";
 		}
+		OutputDebugString(ss.str().c_str());
+		ss.str(std::string());
 #endif
 		//ss << "Lets go!";
 		std::vector<glm::vec4> planes;
@@ -491,3 +521,5 @@ std::ostream& operator<<(std::ostream& os, const Portal& portal)
 	os << "; Normal: (" << portal.normal_.x << ", " << portal.normal_.y << ", " << portal.normal_.z << ")";
 	return os;
 }
+
+};

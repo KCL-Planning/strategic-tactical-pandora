@@ -11,18 +11,22 @@
 
 class AUV;
 class Chain;
-class Line;
-class SceneManager;
-class SceneNode;
-class SceneLeafModel;
+
+namespace DreadedPE
+{
+	class Line;
+	class SceneManager;
+	class SceneNode;
+	class SceneLeafModel;
+	class HeightMap;
+};
 class OntologyInterface;
-class HeightMap;
 
 class ChainFollowController : public PlannerAction
 {
 public:
 	
-	ChainFollowController(SceneManager& scene_manager, AUV& auv, OntologyInterface& ontology, ros::Publisher& action_feedback_pub, HeightMap& height_map);
+	ChainFollowController(DreadedPE::SceneManager& scene_manager, AUV& auv, OntologyInterface& ontology, ros::Publisher& action_feedback_pub, DreadedPE::HeightMap& height_map);
 	
 	void followChain(Chain& chain, float max_time);
 	
@@ -33,20 +37,20 @@ public:
 	PlannerAction::PLANNER_ACTION_STATUS getStatus();
 
 private:
-	SceneManager* scene_manager_;
+	DreadedPE::SceneManager* scene_manager_;
 	AUV* auv_;
 	Chain* chain_;
 	glm::vec3 latest_discovered_chain_loc_;
 	glm::vec3 general_heading_;
 
-	std::set<SceneNode*> observed_chain_links_;
+	std::set<DreadedPE::SceneNode*> observed_chain_links_;
 	float time_, max_time_;
 	
-	SceneLeafModel* path_;
-	Line* line_;
-	Line* colliding_line_;
-	Line* grid_line_;
-	HeightMap* height_map_;
+	DreadedPE::SceneLeafModel* path_;
+	std::shared_ptr<DreadedPE::Line> line_;
+	std::shared_ptr<DreadedPE::Line> colliding_line_;
+	std::shared_ptr<DreadedPE::Line> grid_line_;
+	DreadedPE::HeightMap* height_map_;
 	
 	bool turn_left_;
 	float turning_time_;

@@ -1,25 +1,32 @@
-#include <string>
+#ifdef _WIN32
+#define NOMINMAX
+#include <Windows.h>
+#endif
 
-#include <GL/glew.h>
-#include <GL/glfw.h>
+#include <string>
 
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "fonts/Font.h"
-#include "Button.h"
-#include "../shaders/GUIShader.h"
-#include "fonts/TexturedFont.h"
-#include "Container.h"
+#include "dpengine/gui/fonts/Font.h"
+#include "dpengine/gui/Button.h"
+#include "dpengine/shaders/GUIShader.h"
+#include "dpengine/gui/fonts/TexturedFont.h"
+#include "dpengine/gui/Container.h"
+#include "dpengine/renderer/Window.h"
 
 //#include "FreeTypeFont.h"
-#include "events/ButtonPressedListener.h"
-#include "themes/Theme.h"
+#include "dpengine/gui/events/ButtonPressedListener.h"
+#include "dpengine/gui/themes/Theme.h"
+
+namespace DreadedPE
+{
 
 Button::Button(Theme& theme, float size_x, float size_y, const std::string& label, float font_size)
-	: FontRenderingGUIElement(theme, 0, 0, size_x, size_y), label_(label), is_pressed_(false), font_size_(font_size)
+	: FontRenderingGUIElement(theme, 0, 0, size_x, size_y), label_(label), font_size_(font_size), is_pressed_(false)
 {
+	Window* window = Window::getActiveWindow();
 	int width, height;
-	glfwGetWindowSize(&width, &height);
+	window->getSize(width, height);
 
 	// Test data.
 	m_vertices_.push_back(glm::vec3(0, height, 0));
@@ -40,10 +47,11 @@ Button::Button(Theme& theme, float size_x, float size_y, const std::string& labe
 }
 
 Button::Button(Theme& theme, float size_x, float size_y, const std::string& label, float font_size, const std::vector<glm::vec2>& uv_mapping)
-	: FontRenderingGUIElement(theme, 0, 0, size_x, size_y), label_(label), is_pressed_(false), font_size_(font_size)
+	: FontRenderingGUIElement(theme, 0, 0, size_x, size_y), label_(label), font_size_(font_size), is_pressed_(false)
 {
+	Window* window = Window::getActiveWindow();
 	int width, height;
-	glfwGetWindowSize(&width, &height);
+	window->getSize(width, height);
 
 	// Test data.
 	m_vertices_.push_back(glm::vec3(0, height, 0));
@@ -65,6 +73,7 @@ Button::Button(Theme& theme, float size_x, float size_y, const std::string& labe
 
 GUIElement* Button::processMousePressEvent(int x, int y)
 {
+	markForUpdate();
 	if (is_pressed_)
 	{
 		return this;
@@ -96,6 +105,7 @@ GUIElement* Button::processMousePressEvent(int x, int y)
 
 void Button::processMouseReleasedEvent(int x, int y)
 {
+	markForUpdate();
 	if (!is_pressed_)
 	{
 		return;
@@ -131,9 +141,12 @@ void Button::removeListener(ButtonPressedListener& listener)
 
 void Button::onResize(int width, int height)
 {
+	markForUpdate();
 	m_vertices_.clear();
 	m_vertices_.push_back(glm::vec3(0, height, 0));
 	m_vertices_.push_back(glm::vec3(size_x_, height, 0));
 	m_vertices_.push_back(glm::vec3(0, height - size_y_, 0));
 	m_vertices_.push_back(glm::vec3(size_x_, height - size_y_, 0));
 }
+
+};

@@ -1,12 +1,16 @@
-#include <GL/glew.h>
-#include <GL/glfw.h>
+#define NOMINMAX
+#include <algorithm>
 
-#include "../shaders/GUIShader.h"
+#include "dpengine/shaders/GUIShader.h"
 
-#include "ScrollbarUnit.h"
-#include "Scrollbar.h"
-#include "Container.h"
-#include "themes/Theme.h"
+#include "dpengine/gui/ScrollbarUnit.h"
+#include "dpengine/gui/Scrollbar.h"
+#include "dpengine/gui/Container.h"
+#include "dpengine/gui/themes/Theme.h"
+#include "dpengine/renderer/Window.h"
+
+namespace DreadedPE
+{
 
 ScrollbarUnit::ScrollbarUnit(Theme& theme, float x, float y, float size_x, float size_y, Scrollbar& scrollbar)
 	: GUIElement(theme, x, y, size_x, size_y), scrollbar_(&scrollbar), scroll_unit_size_(scrollbar.isVertical() ? size_y : size_x), is_grapped_(false), grap_location_(0), org_location_(0)
@@ -27,8 +31,10 @@ ScrollbarUnit::ScrollbarUnit(Theme& theme, float x, float y, float size_x, float
 
 GUIElement* ScrollbarUnit::processMousePressEvent(int x, int y)
 {
+	Window* window = Window::getActiveWindow();
+
 	// Check if the frame was clicked.
-	if (glfwGetMouseButton(GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS &&
+	if (window->isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT) &&
 	    x >= global_transformation_[3][0] && x <= global_transformation_[3][0] + scroll_unit_size_ &&
 	    y >= -global_transformation_[3][1] && y <= -global_transformation_[3][1] + scroll_unit_size_)
 	{
@@ -52,6 +58,7 @@ GUIElement* ScrollbarUnit::processMousePressEvent(int x, int y)
 				parent_->updateBuffers();
 			}
 		}
+		markForUpdate();
 		return this;
 	}
 	return NULL;
@@ -60,15 +67,17 @@ GUIElement* ScrollbarUnit::processMousePressEvent(int x, int y)
 void ScrollbarUnit::processMouseReleasedEvent(int x, int y)
 {
 	is_grapped_ = false;
+	markForUpdate();
 }
 
 void ScrollbarUnit::setContentSize(float size_x, float size_y)
 {
 	m_vertices_.clear();
 	
+	Window* window = Window::getActiveWindow();
 	int width, height;
-	glfwGetWindowSize(&width, &height);
-	
+	window->getSize(width, height);
+		
 	if (scrollbar_->isVertical())
 	{
 		// Determine the size of the scroll unit.
@@ -121,12 +130,14 @@ void ScrollbarUnit::setContentSize(float size_x, float size_y)
 	{
 		parent_->updateBuffers();
 	}
+	markForUpdate();
 }
 
 void ScrollbarUnit::update(float dt)
 {
-	int mouse_x, mouse_y;
-	glfwGetMousePos(&mouse_x, &mouse_y);
+	Window* window = Window::getActiveWindow();
+	double mouse_x, mouse_y;
+	window->getMouseCursor(mouse_x, mouse_y);
 	
 	// Move the container relative to the scroll unit :).
 	if (is_grapped_)
@@ -194,4 +205,7 @@ void ScrollbarUnit::onResize(int width, int height)
 		m_vertices_.push_back(glm::vec3(scroll_unit_size_, height - size_y_, 0));
 		size_x_ = width;
 	}
+	markForUpdate();
 }
+
+};

@@ -4,7 +4,10 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-class Texture;
+namespace DreadedPE
+{
+	class Texture;
+};
 
 class AUVStatusIcon
 {
@@ -35,7 +38,7 @@ private:
 	
 	
 	static AUVStatusIcon* instance_;
-	static Texture* icons_texture_;
+	static DreadedPE::Texture* icons_texture_;
 };
 
 #endif

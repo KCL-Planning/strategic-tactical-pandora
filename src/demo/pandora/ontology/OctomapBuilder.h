@@ -17,8 +17,11 @@
 
 #include <glm/glm.hpp>
 
-class SceneNode;
-class Entity;
+namespace DreadedPE
+{
+	class SceneNode;
+	class Entity;
+};
 class OctomapUpdateListener;
 
 /**
@@ -33,7 +36,7 @@ public:
 	 * @param node The ROS node used to publish topics.
 	 * @param source The entity from where the sensor is creating the octomap.
 	 */
-	OctomapBuilder(ros::NodeHandle& node, const Entity& source);
+	OctomapBuilder(ros::NodeHandle& node, const DreadedPE::Entity& source);
 	
 	/**
 	 * Special case for two auvs.
@@ -41,7 +44,7 @@ public:
 	 * @param source1 The entity from where the sensor is creating the octomap.
 	 * @param source2 The entity from where the sensor is creating the octomap.
 	 */
-	OctomapBuilder(ros::NodeHandle& node, const Entity& source1, const Entity& source2);
+	OctomapBuilder(ros::NodeHandle& node, const DreadedPE::Entity& source1, const DreadedPE::Entity& source2);
 	
 	/**
 	 * Destroy the octomap.
@@ -84,8 +87,8 @@ public:
 private:
 	
 	ros::NodeHandle* node_;
-	const Entity* source_;
-	const Entity* source2_;
+	const DreadedPE::Entity* source_;
+	const DreadedPE::Entity* source2_;
 	void receivedPointCloud(const sensor_msgs::PointCloudPtr& msg);
 	void receivedPointCloud2(const sensor_msgs::PointCloudPtr& msg);
 	

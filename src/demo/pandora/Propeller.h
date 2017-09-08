@@ -1,12 +1,18 @@
 #ifndef DEMO_PANDORA_PROPELLER_H
 #define DEMO_PANDORA_PROPELLER_H
 
-#include "../../core/scene/SceneNode.h"
+#include <glm/glm.hpp>
+#include <dpengine/scene/SceneNode.h>
 
-class Propeller : public SceneNode
+namespace DreadedPE
+{
+	class SceneManager;
+};
+
+class Propeller : public DreadedPE::SceneNode
 {
 public:
-	Propeller(SceneManager& scene_manager, SceneNode* parent, const glm::mat4& transformation);
+	Propeller(DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, const glm::mat4& transformation);
 	void prepare(float dt);
 
 	float getRotationSpeed() const { return rotation_speed_; }

@@ -4,26 +4,29 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-#include "../../../core/entities/Entity.h"
+#include "dpengine/entities/Entity.h"
 
-class Texture;
-class GPUParticleEmitter;
+namespace DreadedPE
+{
+	class Texture;
+	class GPUParticleEmitter;
+};
 
 /**
  * A model that emits particles into the water that are affected by its vector field. This simulates
  * the current of the water and visualises the underwater currents.
  */
-class UnderWaterVolcano : public Entity
+class UnderWaterVolcano : public DreadedPE::Entity
 {
 public:
-	UnderWaterVolcano(SceneManager& scene_manager, SceneNode* parent, const glm::mat4& transformation, const std::vector<glm::vec3>& under_water_volcano_locations);
+	UnderWaterVolcano(DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, const glm::mat4& transformation, const std::vector<glm::vec3>& under_water_volcano_locations);
 	
 	void prepare(float dt);
 private:
 	float total_time_;
 	
-	Texture* smoke_texture_; // The texture of the particles.
-	GPUParticleEmitter* particle_emitter_; // The particle system.
+	DreadedPE::Texture* smoke_texture_; // The texture of the particles.
+	DreadedPE::GPUParticleEmitter* particle_emitter_; // The particle system.
 };
 
 #endif

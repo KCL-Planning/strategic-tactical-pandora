@@ -1,13 +1,14 @@
 #include <iostream>
 
-#include <GL/glew.h>
-#include <GL/glfw.h>
+#include "dpengine/gui/fonts/TexturedFont.h"
 
-#include "TexturedFont.h"
+#include "dpengine/texture/Texture.h"
+#include "dpengine/texture/TargaTexture.h"
+#include "dpengine/shaders/GUIShader.h"
+#include "dpengine/renderer/Window.h"
 
-#include "../../../core/texture/Texture.h"
-#include "../../../core/texture/TargaTexture.h"
-#include "../../../core/shaders/GUIShader.h"
+namespace DreadedPE
+{
 
 TexturedFont::TexturedFont(Texture& texture)
 	: Font(texture)
@@ -19,7 +20,13 @@ void TexturedFont::setString(const std::string& string, float font_size)
 {
 	//std::cout << "[TexturedFont::setString]" << std::endl;
 	clearText();
-	
+	all_text_.clear();
+	model_translations_.clear();
+	font_sizes_.clear();
+	m_vertices_.clear();
+	m_normals_.clear();
+	m_indices_.clear();
+
 	glm::mat4 identity_matrix(1.0f);
 	appendString(identity_matrix, string, font_size);
 }
@@ -31,8 +38,9 @@ void TexturedFont::appendString(const glm::mat4& model_translation, const std::s
 	model_translations_.push_back(model_translation);
 	font_sizes_.push_back(font_size);
 
+	Window* window = Window::getActiveWindow();
 	int width, height;
-	glfwGetWindowSize(&width, &height);
+	window->getSize(width, height);
 	
 	unsigned int index_offset = m_vertices_.size();
 	for (unsigned int i = 0; i < text.size(); ++i)
@@ -180,3 +188,5 @@ Font& TexturedFont::clone()
 	TexturedFont* clone = new TexturedFont(*font_texture_);
 	return *clone;
 }
+
+};

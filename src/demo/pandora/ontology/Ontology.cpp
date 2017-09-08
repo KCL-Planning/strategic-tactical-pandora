@@ -140,9 +140,7 @@ Waypoint* Ontology::getWaypoint(const std::string& waypoint_name) const
 bool Ontology::GetInstancesOfType(knowledge_msgs::KnowledgeInterface::Request& req, knowledge_msgs::KnowledgeInterface::Response& res)
 {
 #ifdef ONTOLOGY_DEBUG_ENABLED
-	std::stringstream ss;
-	ss << "GetInstancesOfType: " << req.type_name << "; Mission ID: " << req.mission_id;
-	ROS_INFO(ss.str().c_str());
+	std::cout << "GetInstancesOfType: " << req.type_name << "; Mission ID: " << req.mission_id << std::endl;
 #endif
 	Mission* mission = missions_[req.mission_id];
 	
@@ -442,7 +440,7 @@ bool Ontology::GetAttributesOfInstance(knowledge_msgs::KnowledgeInterface::Reque
 		for (std::vector<MissionSite*>::const_iterator ci = mission_sites_.begin(); ci != mission_sites_.end(); ++ci)
 		{
 			MissionSite* mission_site = *ci;
-			bool has_goal = false;
+			//bool has_goal = false;
 			
 			std::cout << "Consider mission: " << mission_site->getId() << std::endl;
 			
@@ -464,7 +462,7 @@ bool Ontology::GetAttributesOfInstance(knowledge_msgs::KnowledgeInterface::Reque
 						std::cout << "Process the goal: " << goal->getId() << " - is enabled? " << goal->isEnabled() << std::endl;
 						if (goal->isEnabled())
 						{
-							has_goal = true;
+							//has_goal = true;
 							mission_has_active_goal = true;
 							break;
 						}

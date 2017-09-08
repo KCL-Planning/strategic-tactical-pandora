@@ -1,16 +1,18 @@
 #include "BillBoard.h"
 
-#include <GL/glfw.h>
+#include <GLFW/glfw3.h>
 
-#include "../../../core/entities/camera/Camera.h"
-#include "../../../core/shaders/GUIShader.h"
-#include "../../../core/texture/TargaTexture.h"
+#include "dpengine/entities/camera/Camera.h"
+#include "dpengine/shaders/GUIShader.h"
+#include "dpengine/texture/TargaTexture.h"
+#include <dpengine/renderer/Window.h>
 
-BillBoard::BillBoard(const Theme& theme, Font& font, SceneNode& to_follow, Camera& camera, const glm::vec3& offset, float width, float height, const std::vector<glm::vec2>& tex_coords)
-	: Container(theme, font, 0, 0, width, height, true), blink_(false), blink_visible_(true), time_to_next_blink_(0), to_follow_(&to_follow), camera_(&camera), offset_(offset)
+BillBoard::BillBoard(const DreadedPE::Theme& theme, DreadedPE::Font& font, DreadedPE::SceneNode& to_follow, DreadedPE::Camera& camera, const glm::vec3& offset, float width, float height, const std::vector<glm::vec2>& tex_coords)
+	: DreadedPE::Container(theme, font, 0, 0, width, height, true), blink_(false), blink_visible_(true), time_to_next_blink_(0), to_follow_(&to_follow), camera_(&camera), offset_(offset)
 {
 	int screen_width, screen_height;
-	glfwGetWindowSize(&screen_width, &screen_height);
+	DreadedPE::Window* window = DreadedPE::Window::getActiveWindow();
+	window->getSize(screen_width, screen_height);
 /*
 	m_vertices_.push_back(glm::vec3(0, screen_height, 0));
 	m_vertices_.push_back(glm::vec3(width, screen_height, 0));
@@ -32,7 +34,7 @@ BillBoard::BillBoard(const Theme& theme, Font& font, SceneNode& to_follow, Camer
 	m_indices_.push_back(2);
 	m_indices_.push_back(3);
 	
-	texture_ = TargaTexture::loadTexture("data/textures/icons.tga");
+	texture_ = DreadedPE::TargaTexture::loadTexture("data/textures/icons.tga");
 }
 
 void BillBoard::setUVMapping(const std::vector<glm::vec2>& uv)
@@ -43,8 +45,8 @@ void BillBoard::setUVMapping(const std::vector<glm::vec2>& uv)
 
 void BillBoard::update(float dt)
 {
-	Container::update(dt);
-	
+	DreadedPE::Container::update(dt);
+	markForUpdate();
 	if (blink_)
 	{
 		time_to_next_blink_ -= dt;
@@ -63,9 +65,10 @@ void BillBoard::update(float dt)
 			blink_visible_ = true;
 		}
 	}
-	
+	/*
 	int width, height;
-	glfwGetWindowSize(&width, &height);
+	DreadedPE::Window* window = DreadedPE::Window::getActiveWindow();
+	window->getSize(width, height);
 	
 	float scale = 1.0f;
 	// Transform the location of the scene node to screen coordinates. This will yield values between -1 and 1.
@@ -88,12 +91,6 @@ void BillBoard::update(float dt)
 	location_ = location_on_screen_3d;
 	
 	combined_vertices_.clear();
-	/*
-	for (std::vector<glm::vec3>::const_iterator ci = m_vertices_.begin(); ci != m_vertices_.end(); ++ci)
-	{
-		combined_vertices_.push_back(glm::vec3((*ci).x * scale, height - (*ci).y * scale, (*ci).z * scale));
-	}
-	*/
 	
 	float scale_x_offset = (size_x_- size_x_ * scale) / 2.0f;
 	float scale_y_offset = (size_y_- size_y_ * scale) / 2.0f;
@@ -103,18 +100,17 @@ void BillBoard::update(float dt)
 	combined_vertices_.push_back(glm::vec3(scale_x_offset + size_x_ * scale, height - (size_y_ * scale) - scale_y_offset, 0));
 	glBindBuffer(GL_ARRAY_BUFFER, combined_vertex_buffer_);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 3 * combined_vertices_.size(), &combined_vertices_[0], GL_DYNAMIC_DRAW);
+	*/
 }
 
 void BillBoard::draw(const glm::mat4& perspective_matrix, int level) const
 {
 	if (!is_visible_) return;
 	if (blink_ && !blink_visible_) return;
-	//Container::draw(perspective_matrix, level);
-	//GUIShader& shader = GUIShader::getShader();
-	//shader.renderContainer(*this, global_transformation_, perspective_matrix);
-	/*
+	
 	int width, height;
-	glfwGetWindowSize(&width, &height);
+	DreadedPE::Window* window = DreadedPE::Window::getActiveWindow();
+	window->getSize(width, height);
 	
 	float scale = 1.0f;
 	// Transform the location of the scene node to screen coordinates. This will yield values between -1 and 1.
@@ -125,7 +121,7 @@ void BillBoard::draw(const glm::mat4& perspective_matrix, int level) const
 	if (scale > 1.0f) scale = 1.0f;
 	
 	location_on_screen /= location_on_screen.w;
-	std::cout << "(" << to_follow_->getGlobalLocation().x << ", " << to_follow_->getGlobalLocation().y << ", " << to_follow_->getGlobalLocation().z << ") >>>=====> (" << location_on_screen.x << ", " << location_on_screen.y << ", " << location_on_screen.z << ", " << location_on_screen.w << ")" << std::endl;
+	//std::cout << "(" << to_follow_->getGlobalLocation().x << ", " << to_follow_->getGlobalLocation().y << ", " << to_follow_->getGlobalLocation().z << ") >>>=====> (" << location_on_screen.x << ", " << location_on_screen.y << ", " << location_on_screen.z << ", " << location_on_screen.w << ")" << std::endl;
 	
 	// Don't draw icons for billboards that are behind the camera.
 	if (location_on_screen.z < -1 || location_on_screen.z > 1)
@@ -134,21 +130,21 @@ void BillBoard::draw(const glm::mat4& perspective_matrix, int level) const
 	}
 	
 	glm::vec3 location_on_screen_3d((location_on_screen.x * 0.5f + 0.5f) * width - size_x_ / 2.0f, -(1 - (location_on_screen.y * 0.5f + 0.5f)) * height + size_y_ / 2.0f, 0.0f);
-	//glm::vec3 location_on_screen_3d(50, -30, 0);
 	
-	glm::mat4 scale_matrix = glm::scale(glm::mat4(1.0f), glm::vec3(scale, scale, scale));
+	std::vector<glm::vec3> vertices;
 	
-	combined_vertices_.clear();
-	for (std::vector<glm::vec3>::const_iterator ci = m_vertices_.begin(); ci != m_vertices_.end(); ++ci)
-	{
-		combined_vertices_.push_back(*ci * scale);
-	}
+	float scale_x_offset = (size_x_- size_x_ * scale) / 2.0f;
+	float scale_y_offset = (size_y_- size_y_ * scale) / 2.0f;
+	vertices.push_back(glm::vec3(scale_x_offset, height - scale_y_offset, 0));
+	vertices.push_back(glm::vec3(scale_x_offset + size_x_ * scale, height - scale_y_offset, 0));
+	vertices.push_back(glm::vec3(scale_x_offset, height - (size_y_ * scale) - scale_y_offset, 0));
+	vertices.push_back(glm::vec3(scale_x_offset + size_x_ * scale, height - (size_y_ * scale) - scale_y_offset, 0));
 	glBindBuffer(GL_ARRAY_BUFFER, combined_vertex_buffer_);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 3 * combined_vertices_.size(), &combined_vertices_[0], GL_DYNAMIC_DRAW);
-	*/
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 3 * vertices.size(), &vertices[0], GL_DYNAMIC_DRAW);
+	
 	// Draw the container and its contents.	
-	GUIShader& shader = GUIShader::getShader();
-	shader.renderContainer(*this, glm::translate(glm::mat4(1.0f), location_), perspective_matrix);
+	DreadedPE::GUIShader& shader = DreadedPE::GUIShader::getShader();
+	shader.renderContainer(*this, glm::translate(glm::mat4(1.0f), location_on_screen_3d), perspective_matrix);
 }
 
 void BillBoard::onResize(int width, int height)

@@ -1,12 +1,15 @@
 #ifndef DEMO_GUI_DEMO_FPS_LABEL_H
 #define DEMO_GUI_DEMO_FPS_LABEL_H
 
-class Label;
+namespace DreadedPE
+{
+	class Label;
+};
 
 class FPSLabel
 {
 public:
-	FPSLabel(Label& label);
+	FPSLabel(DreadedPE::Label& label);
 
 	void frameRendered();
 
@@ -15,7 +18,7 @@ private:
 	double getWallTime();
 	double getCPUTime();
 
-	Label* label_;
+	DreadedPE::Label* label_;
 	double current_time_;
 
 	double frames_rendered_;

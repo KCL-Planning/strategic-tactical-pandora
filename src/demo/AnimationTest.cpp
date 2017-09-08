@@ -41,7 +41,7 @@
 #include "../core/animation/BouncingBox.h"
 #include "../core/entities/WavingWater.h"
 #include "../core/entities/Player.h"
-#include "../core/collision/BoxCollision.h"
+#include "../core/collision/ConvexPolygon.h"
 #include "../core/entities/Lever.h"
 #include "../core/entities/Bridge.h"
 #include "../core/scene/frustum/SphereCheck.h"

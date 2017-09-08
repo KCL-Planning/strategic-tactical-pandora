@@ -1,21 +1,23 @@
-#include <GL/glew.h>
-#include <GL/glfw.h>
-
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "Label.h"
-#include "../shaders/GUIShader.h"
+#include "dpengine/gui/Label.h"
+#include "dpengine/shaders/GUIShader.h"
 
 //#include "FreeTypeFont.h"
-#include "events/ButtonPressedListener.h"
-#include "themes/Theme.h"
-#include "fonts/Font.h"
+#include "dpengine/gui/events/ButtonPressedListener.h"
+#include "dpengine/gui/themes/Theme.h"
+#include "dpengine/gui/fonts/Font.h"
+#include "dpengine/renderer/Window.h"
+
+namespace DreadedPE
+{
 
 Label::Label(const Theme& theme, float size_x, float size_y, const std::string& label, float font_size)
 	: FontRenderingGUIElement(theme, 0, 0, size_x, size_y), label_(label), font_size_(font_size)
 {
+	Window* window = Window::getActiveWindow();
 	int width, height;
-	glfwGetWindowSize(&width, &height);
+	window->getSize(width, height);
 
 	// Test data.
 	m_vertices_.push_back(glm::vec3(0, height, 0));
@@ -37,8 +39,9 @@ Label::Label(const Theme& theme, float size_x, float size_y, const std::string& 
 Label::Label(const Theme& theme, float size_x, float size_y, const std::string& label, float font_size, const std::vector<glm::vec2>& uv_mapping)
 	: FontRenderingGUIElement(theme, 0, 0, size_x, size_y), label_(label), font_size_(font_size)
 {
+	Window* window = Window::getActiveWindow();
 	int width, height;
-	glfwGetWindowSize(&width, &height);
+	window->getSize(width, height);
 
 	// Test data.
 	m_vertices_.push_back(glm::vec3(0, height, 0));
@@ -61,6 +64,7 @@ void Label::setLabel(const std::string& label)
 {
 	label_ = label;
 	need_to_update_font_ = true;
+	markForUpdate();
 }
 
 void Label::onResize(int width, int height)
@@ -70,4 +74,7 @@ void Label::onResize(int width, int height)
 	m_vertices_.push_back(glm::vec3(size_x_, height, 0));
 	m_vertices_.push_back(glm::vec3(0, height - size_y_, 0));
 	m_vertices_.push_back(glm::vec3(size_x_, height - size_y_, 0));
+	markForUpdate();
 }
+
+};

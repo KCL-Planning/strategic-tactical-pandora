@@ -7,22 +7,26 @@
 #include <planning_msgs/ActionDispatch.h>
 #include <planning_msgs/CompletePlan.h>
 
-#include "../../../core/gui/Container.h"
+#include "dpengine/gui/Container.h"
 
 #include "../controllers/PlannerAction.h"
 
 class AUV;
-class Theme;
-class Font;
-class Line;
-class PlanGraph;
-class Scrollbar;
-class PlanLine;
 
-class StrategicPlanGUIElement : public Container
+namespace DreadedPE
+{
+	class Theme;
+	class Font;
+	class Line;
+	class Scrollbar;
+}
+class PlanLine;
+class PlanGraph;
+
+class StrategicPlanGUIElement : public DreadedPE::Container
 {
 public:
-	StrategicPlanGUIElement(ros::NodeHandle& ros_node, Theme& theme, Font& font, float x, float y, float size_x, float size_y, float pixels_per_seconds);
+	StrategicPlanGUIElement(ros::NodeHandle& ros_node, DreadedPE::Theme& theme, DreadedPE::Font& font, float x, float y, float size_x, float size_y, float pixels_per_seconds);
 	void update(float dt);
 	
 	void setPixelsPerSecond(float pixels_per_second) { pixels_per_second_ = pixels_per_second; }
@@ -39,13 +43,13 @@ public:
 private:
 	ros::NodeHandle* ros_node_;
 	
-	Line* time_markers_;
-	Line* current_time_line_;
-	Font* font_;
+	DreadedPE::Line* time_markers_;
+	DreadedPE::Line* current_time_line_;
+	DreadedPE::Font* font_;
 	float plan_line_heights_;
 	
 	PlanGraph* plan_graph_;
-	Scrollbar* scrollbar_;
+	DreadedPE::Scrollbar* scrollbar_;
 	
 	PlanLine* plan_line_;
 	

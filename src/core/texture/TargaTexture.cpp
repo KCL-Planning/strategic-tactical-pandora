@@ -1,12 +1,16 @@
-#include "TargaTexture.h"
-#include "Texture.h"
+#include "dpengine/texture/TargaTexture.h"
+#include "dpengine/texture/Texture.h"
 
 #ifdef _WIN32
+#define NOMINMAX
 #include <windows.h>
 #endif
 
 #include <iostream>
 #include <sstream>
+
+namespace DreadedPE
+{
 
 std::map<std::string, Texture*> TargaTexture::cached_images_ = std::map<std::string, Texture*>();
 
@@ -137,3 +141,4 @@ Texture* TargaTexture::loadTexture(const std::string& left, const std::string& r
 	return texture;
 }
 
+};

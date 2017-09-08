@@ -11,15 +11,15 @@
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/point_cloud_conversion.h>
 
-#include "../../../core/renderer/ShadowRenderer.h"
-#include "../../../core/entities/camera/Camera.h"
-#include "../../../core/texture/Texture.h"
+#include "dpengine/renderer/ShadowRenderer.h"
+#include "dpengine/entities/camera/Camera.h"
+#include "dpengine/texture/Texture.h"
 #include "../AUV.h"
 
-Sonar::Sonar(ros::NodeHandle& ros_node, SceneManager& scene_manager, SceneNode* parent, AUV& auv, const std::string& frame_id, const glm::mat4& transform, float min_range, float max_range, float angle)
-	: Entity(scene_manager, parent, transform, OBSTACLE, "Sonar"), ros_node_(&ros_node), auv_(&auv), min_range_(min_range), max_range_(max_range), angle_(angle), pitch_moving_up_(false), pitch_(0), time_since_last_message_(0), shadow_map_width_(128), shadow_map_height_(128)
+Sonar::Sonar(ros::NodeHandle& ros_node, DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, AUV& auv, const std::string& frame_id, const glm::mat4& transform, float min_range, float max_range, float angle)
+	: DreadedPE::Entity(scene_manager, parent, transform, DreadedPE::OBSTACLE, "Sonar"), ros_node_(&ros_node), auv_(&auv), min_range_(min_range), max_range_(max_range), angle_(angle), pitch_moving_up_(false), pitch_(0), time_since_last_message_(0), shadow_map_width_(128), shadow_map_height_(128)
 {
-	shadow_renderer_ = new ShadowRenderer(scene_manager, shadow_map_width_);
+	shadow_renderer_ = new DreadedPE::ShadowRenderer(scene_manager, shadow_map_width_);
 	shadow_renderer_->setCullMode(GL_BACK);
 	image_data_ = new float[shadow_map_width_ * shadow_map_height_];
 	memset(&image_data_[0], 0., sizeof(float) * shadow_map_width_ * shadow_map_height_);
@@ -57,7 +57,7 @@ Sonar::~Sonar()
 
 glm::mat4 Sonar::getPerspectiveMatrix() const
 {
-	return glm::perspective(angle_ * 2, 1.0f, min_range_, max_range_);
+	return glm::perspective(glm::radians(angle_ * 2), 1.0f, min_range_, max_range_);
 }
 
 glm::mat4 Sonar::getViewMatrix() const
@@ -80,20 +80,20 @@ void Sonar::prepare(float dt)
 	float max_angle = 80;
 	//float pitch = glm::pitch(getLocalRotation());
 	float turning_speed = dt * 5;
-	float pitch_dt = 0;
+	//float pitch_dt = 0;
 	if (pitch_moving_up_)
 	{
 		pitch_ += turning_speed;
 		if (pitch_ > max_angle)
 		{
 			pitch_moving_up_ = false;
-			pitch_dt = pitch_ - max_angle;
+			//pitch_dt = pitch_ - max_angle;
 			pitch_ = max_angle;
 			//std::cout << "Pitch: " << pitch_ << "; Swap direction, update pitch by: " << pitch_dt << "." << std::endl;
 		}
 		else
 		{
-			pitch_dt = turning_speed;
+			//pitch_dt = turning_speed;
 		}
 	}
 	else
@@ -102,13 +102,13 @@ void Sonar::prepare(float dt)
 		if (pitch_ < -max_angle)
 		{
 			pitch_moving_up_ = true;
-			pitch_dt = -(pitch_ + max_angle);
+			//pitch_dt = -(pitch_ + max_angle);
 			pitch_ = -max_angle;
 			//std::cout << "Pitch: " << pitch_ << "; Swap direction, update pitch by: " << pitch_dt << "." << std::endl;
 		}
 		else
 		{
-			pitch_dt = -turning_speed;
+			//pitch_dt = -turning_speed;
 		}
 	}
 	
@@ -123,13 +123,13 @@ void Sonar::prepare(float dt)
 	desired_direction = glm::normalize(desired_direction) * 1.5f;
 	
 	local_transformation_ = glm::translate(glm::mat4(1.0f), desired_direction);
-	local_transformation_ = glm::rotate(local_transformation_, desired_yaw, glm::vec3(0, 1, 0));
-	local_transformation_ = glm::rotate(local_transformation_, pitch_, glm::vec3(1, 0, 0));
+	local_transformation_ = glm::rotate(local_transformation_, glm::radians(desired_yaw), glm::vec3(0, 1, 0));
+	local_transformation_ = glm::rotate(local_transformation_, glm::radians(pitch_), glm::vec3(1, 0, 0));
 	
 	
 	updateTransformations();
 	
-	Entity::prepare(dt);
+	DreadedPE::Entity::prepare(dt);
 	shadow_renderer_->render(*this);
 
 	time_since_last_message_ += dt;
@@ -161,7 +161,7 @@ void Sonar::prepare(float dt)
 	float length_per_pixel_h = tan(angle_per_pixel_h * M_PI / 180.0f) * min_range_;
 
 	// Calculate the ray directions.
-	glm::mat4 view_matrix = getCompleteTransformation();
+	//glm::mat4 view_matrix = getCompleteTransformation();
 	glm::vec4 direction(0.0f, 0.0f, -1.0f, 0.0f);
 
 	for (int y = 0; y < shadow_map_height_; ++y)
@@ -177,8 +177,8 @@ void Sonar::prepare(float dt)
 			float d = sqrt(rx * rx + ry * ry);
 			float s = sqrt(d * d + min_range_ * min_range_) / min_range_;
 
-			glm::mat4 m_direction = glm::rotate(glm::mat4(1.0f), -((float)(x) - (shadow_map_width_ / 2.0f)) * angle_per_pixel_w, glm::vec3(0.0f, 1.0f, 0.0f));
-			m_direction = glm::rotate(m_direction, -((float)(y) - (shadow_map_height_ / 2.0f)) * angle_per_pixel_h, glm::vec3(1.0f, 0.0f, 0.0f));
+			glm::mat4 m_direction = glm::rotate(glm::mat4(1.0f), glm::radians(-((float)(x) - (shadow_map_width_ / 2.0f)) * angle_per_pixel_w), glm::vec3(0.0f, 1.0f, 0.0f));
+			m_direction = glm::rotate(m_direction, glm::radians(-((float)(y) - (shadow_map_height_ / 2.0f)) * angle_per_pixel_h), glm::vec3(1.0f, 0.0f, 0.0f));
 			glm::vec4 point = glm::normalize(m_direction * direction);
 			point = point * z_e * s;
 			

@@ -1,18 +1,20 @@
-#include "Scrollbar.h"
+#include "dpengine/gui/Scrollbar.h"
 
-#include "GL/glfw.h"
+#include "dpengine/gui/Container.h"
+#include "dpengine/gui/ScrollbarUnit.h"
+#include "dpengine/gui/themes/Theme.h"
+#include "dpengine/shaders/GUIShader.h"
+#include "dpengine/renderer/Window.h"
 
-#include "Container.h"
-#include "ScrollbarUnit.h"
-#include "themes/Theme.h"
-
-#include "../shaders/GUIShader.h"
+namespace DreadedPE
+{
 
 Scrollbar::Scrollbar(Theme& theme, Font& font, float x, float y, float size_x, float size_y, Container& scrollee, bool vertical)
 	: Container(theme, font, x, y, size_x, size_y, "Scrollbar"), scrollee_(&scrollee), is_vertical_(vertical)
 {
+	Window* window = Window::getActiveWindow();
 	int width, height;
-	glfwGetWindowSize(&width, &height);
+	window->getSize(width, height);
 
 	// Setup the scroll bar itself.
 	m_vertices_.push_back(glm::vec3(0, height, 0));
@@ -30,6 +32,7 @@ void Scrollbar::resizedEvent(const Container& container)
 {
 	// Change the size of the scrollbar and update the location of the unit.
 	scrollbar_unit_->setContentSize(container.getContentSizeX(), container.getContentSizeY());
+	markForUpdate();
 }
 /*
 void Scrollbar::onResize(int width, int height)
@@ -41,3 +44,4 @@ void Scrollbar::onResize(int width, int height)
 	m_vertices_.push_back(glm::vec3(size_x_, height - size_y_, 0));
 }
 */
+};

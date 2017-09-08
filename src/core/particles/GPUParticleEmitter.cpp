@@ -1,10 +1,13 @@
-#include "GPUParticleEmitter.h"
+#include "dpengine/particles/GPUParticleEmitter.h"
 
-#include "../texture/Texture.h"
-#include "../renderer/ShadowRenderer.h"
+#include "dpengine/texture/Texture.h"
+#include "dpengine/renderer/ShadowRenderer.h"
 
-#include "GPUParticleComputerShader.h"
-#include "GPUParticleDrawShader.h"
+#include "dpengine/particles/GPUParticleComputerShader.h"
+#include "dpengine/particles/GPUParticleDrawShader.h"
+
+namespace DreadedPE
+{
 
 GPUParticleEmitter::GPUParticleEmitter(SceneNode& scene_node, GPUParticleComputerShader& compute_shader, GPUParticleDrawShader& draw_shader)
 	: RenderableSceneLeaf(scene_node, true, true, OBJECT, ShadowRenderer::STATIC_SHADOW), compute_shader_(&compute_shader), draw_shader_(&draw_shader), dt_(0), camera_position_(glm::vec3(0, 0, 0))
@@ -15,8 +18,14 @@ GPUParticleEmitter::GPUParticleEmitter(SceneNode& scene_node, GPUParticleCompute
 void GPUParticleEmitter::prepare(float dt)
 {
 	dt_ = dt;
+	last_tick_ = dt;
 }
-	
+
+void GPUParticleEmitter::updateInterpolationMatrix(float p)
+{
+	dt_ = last_tick_ * p;
+}
+
 void GPUParticleEmitter::accept(SceneVisitor& visitor) const
 {
 	visitor.visit(*this);
@@ -42,3 +51,5 @@ void GPUParticleEmitter::draw(const glm::mat4& view_matrix, const glm::mat4& pro
 	compute_shader_->updateParticles(dt_);
 	draw_shader_->drawParticles(view_matrix, glm::mat4(1.0f), projection_matrix, lights, camera_position_);
 }
+
+};

@@ -1,13 +1,16 @@
-#include "GUIShader.h"
+#include "dpengine/shaders/GUIShader.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
-#include "../gui/GUIElement.h"
-#include "../gui/Container.h"
-#include "../gui/themes/Theme.h"
-#include "../scene/Material.h"
-#include "../texture/Texture.h"
-#include "../gui/fonts/Font.h"
+#include "dpengine/gui/GUIElement.h"
+#include "dpengine/gui/Container.h"
+#include "dpengine/gui/themes/Theme.h"
+#include "dpengine/scene/Material.h"
+#include "dpengine/texture/Texture.h"
+#include "dpengine/gui/fonts/Font.h"
+
+namespace DreadedPE
+{
 
 GUIShader* GUIShader::shader_ = NULL;
 
@@ -60,6 +63,7 @@ void GUIShader::renderOutline(const Container& container, const glm::mat4& model
 	//Send the modelview and projection matrices to the shaders
 	glUniformMatrix4fv(modelview_matrix_loc_, 1, false, glm::value_ptr(model_view_matrix));
 	glUniformMatrix4fv(projection_matrix_loc_, 1, false, glm::value_ptr(projection_matrix));
+	glUniform1f(transparency_loc_, 1.0f);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, container.getIndexBufferId());
 	glDrawElements(GL_TRIANGLES, container.getIndices().size(), GL_UNSIGNED_INT, 0);
@@ -113,6 +117,7 @@ void GUIShader::renderContainer(const Container& container, const glm::mat4& mod
 	//Send the modelview and projection matrices to the shaders
 	glUniformMatrix4fv(modelview_matrix_loc_, 1, false, glm::value_ptr(model_view_matrix));
 	glUniformMatrix4fv(projection_matrix_loc_, 1, false, glm::value_ptr(projection_matrix));
+	glUniform1f(transparency_loc_, container.getTransparency());
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, container.getCombinedIndexBufferId());
 	glDrawElements(GL_TRIANGLES, container.getCombinedIndices().size(), GL_UNSIGNED_INT, 0);
@@ -164,6 +169,7 @@ void GUIShader::renderFont(const Font& font, const glm::mat4& model_matrix, cons
 	//Send the modelview and projection matrices to the shaders
 	glUniformMatrix4fv(modelview_matrix_loc_, 1, false, glm::value_ptr(model_view_matrix));
 	glUniformMatrix4fv(projection_matrix_loc_, 1, false, glm::value_ptr(projection_matrix));
+	glUniform1f(transparency_loc_, 1.0f);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, font.getIndexBufferId());
 	glDrawElements(GL_TRIANGLES, font.getIndices().size(), GL_UNSIGNED_INT, 0);
@@ -195,6 +201,9 @@ GUIShader& GUIShader::getShader()
 		shader_->modelview_matrix_loc_ = shader_->getUniformLocation("modelview_matrix");
 		shader_->projection_matrix_loc_ = shader_->getUniformLocation("projection_matrix");
 		shader_->texture0_loc_ = shader_->getUniformLocation("texture0");
+		shader_->transparency_loc_ = shader_->getUniformLocation("transparency");
 	}
 	return *shader_;
 }
+
+};

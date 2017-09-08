@@ -1,27 +1,23 @@
 #include <GL/glew.h>
-#include <GL/glfw.h>
 
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "ActionLabel.h"
-#include "../../../core/shaders/LineShader.h"
+#include "dpengine/shaders/LineShader.h"
 
-#include "../../../core/gui/Label.h"
-//#include "../../../core/gui/FreeTypeFont.h"
-#include "../../../core/gui/events/ButtonPressedListener.h"
-#include "../../../core/gui/themes/Theme.h"
-#include "../../../core/gui/fonts/Font.h"
+#include "dpengine/gui/Label.h"
+#include "dpengine/gui/events/ButtonPressedListener.h"
+#include "dpengine/gui/themes/Theme.h"
+#include "dpengine/gui/fonts/Font.h"
+#include "dpengine/shapes/Shape.h"
+#include <dpengine/renderer/Window.h>
 
-#ifndef _WIN32
-ActionLabel::ActionLabel(const Theme& theme, Font& font, const glm::vec4& colour, float size_x, float size_y, const std::string& label, const planning_msgs::ActionDispatch& action)
-	: Container(theme, font, 0, 0, size_x, size_y, true), font_(&font), colour_(colour), label_(label), action_(action)
-#else
-ActionLabel::ActionLabel(const Theme& theme, Font& font, const glm::vec4& colour, float size_x, float size_y, const std::string& label)
-	: Container(theme, font, 0, 0, size_x, size_y, true), font_(&font), colour_(colour), label_(label)
-#endif
+ActionLabel::ActionLabel(const DreadedPE::Theme& theme, DreadedPE::Font& font, const glm::vec4& colour, float size_x, float size_y, const std::string& label, const planning_msgs::ActionDispatch& action)
+	: DreadedPE::Container(theme, font, 0, 0, size_x, size_y, true), font_(&font), colour_(colour), label_(label), action_(action)
 {
+	DreadedPE::Window* window = DreadedPE::Window::getActiveWindow();
 	int width, height;
-	glfwGetWindowSize(&width, &height);
+	window->getSize(width, height);
 
 	// Test data.
 	m_vertices_.clear();
@@ -29,6 +25,8 @@ ActionLabel::ActionLabel(const Theme& theme, Font& font, const glm::vec4& colour
 	m_vertices_.push_back(glm::vec3(size_x_, height, 0));
 	m_vertices_.push_back(glm::vec3(0, height - size_y_, 0));
 	m_vertices_.push_back(glm::vec3(size_x_, height - size_y_, 0));
+	
+	shape_ = new DreadedPE::Shape();
 	
 	//font_->appendString(glm::translate(getLocalTransformation(), glm::vec3(0, -size_y / 2.0f, 0)), "TEST123", 16);
 	font_->appendString(getLocalTransformation(), label, 12);
@@ -52,11 +50,12 @@ ActionLabel::ActionLabel(const Theme& theme, Font& font, const glm::vec4& colour
 void ActionLabel::draw(const glm::mat4& perspective_matrix, int level) const
 {
 	
+	DreadedPE::Window* window = DreadedPE::Window::getActiveWindow();
 	int width, height;
-	glfwGetWindowSize(&width, &height);
+	window->getSize(width, height);
 	
-	LineShader& shader = LineShader::getShader();
-
+	DreadedPE::LineShader& shader = DreadedPE::LineShader::getShader();
+	
 	shader.initialise(colour_, glm::mat4(1.0f), global_transformation_, perspective_matrix, getCombinedVertexBufferId());
 	
 	//Bind the index array
@@ -72,9 +71,11 @@ void ActionLabel::draw(const glm::mat4& perspective_matrix, int level) const
 
 void ActionLabel::setDimensions(float width, float height)
 {
-	//std::cout << "Set dimensions: " << width << ", " << height << std::endl;
+	std::cout << "[ActionLabel::setDimensions] Set dimensions: " << width << ", " << height << std::endl;
 	int screen_width, screen_height;
-	glfwGetWindowSize(&screen_width, &screen_height);
+	DreadedPE::Window* window = DreadedPE::Window::getActiveWindow();
+	window->getSize(screen_width, screen_height);
+//	glfwGetWindowSize(&screen_width, &screen_height);
 	
 	size_x_ = width;
 	size_y_ = height;
@@ -88,7 +89,7 @@ void ActionLabel::setDimensions(float width, float height)
 	updateBuffers();
 }
 
-GUIElement* ActionLabel::processMousePressEvent(int x, int y)
+DreadedPE::GUIElement* ActionLabel::processMousePressEvent(int x, int y)
 {
 	return this;
 	// When the mouse is pressed, show a hint tool with all the relevant action information.

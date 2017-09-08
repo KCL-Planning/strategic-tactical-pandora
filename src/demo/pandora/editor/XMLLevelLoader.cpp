@@ -3,7 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "XMLLevelLoader.h"
 
-#include "../../../core/scene/SceneManager.h"
+#include "dpengine/scene/SceneManager.h"
 
 #include "../ontology/InspectionPoint.h"
 #include "../ontology/ValveGoal.h"
@@ -27,7 +27,7 @@ std::ostream& operator<<(std::ostream& os, const StructureDescription& sd)
 }
 
 
-XMLLevelLoader::XMLLevelLoader(SceneManager& scene_manager, SceneNode& root, Ontology& ontology, HeightMap& height_map)
+XMLLevelLoader::XMLLevelLoader(DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode& root, Ontology& ontology, DreadedPE::HeightMap& height_map)
 	: scene_manager_(&scene_manager), root_(&root), ontology_(&ontology), height_map_(&height_map)
 {
 	
@@ -178,8 +178,8 @@ void XMLLevelLoader::loadWorld(const pugi::xml_node& node, bool separate_inspect
 			
 			auv_location_ = glm::mat4(1.0f);
 			auv_location_ = glm::translate(auv_location_, glm::vec3(auv_location_x, auv_location_y, auv_location_z));
-			auv_location_ = glm::rotate(auv_location_, auv_location_pitch, glm::vec3(1, 0, 0));
-			auv_location_ = glm::rotate(auv_location_, auv_location_yaw, glm::vec3(0, 1, 0));
+			auv_location_ = glm::rotate(auv_location_, glm::radians(auv_location_pitch), glm::vec3(1, 0, 0));
+			auv_location_ = glm::rotate(auv_location_, glm::radians(auv_location_yaw), glm::vec3(0, 1, 0));
 		}
 		
 		
@@ -217,8 +217,8 @@ void XMLLevelLoader::loadWorld(const pugi::xml_node& node, bool separate_inspect
 			
 			glm::mat4 mission_site_transformation(1.0f);
 			mission_site_transformation = glm::translate(mission_site_transformation, glm::vec3(location_x, location_y, location_z));
-			mission_site_transformation = glm::rotate(mission_site_transformation, location_pitch, glm::vec3(1, 0, 0));
-			mission_site_transformation = glm::rotate(mission_site_transformation, location_yaw, glm::vec3(0, 1, 0));	
+			mission_site_transformation = glm::rotate(mission_site_transformation, glm::radians(location_pitch), glm::vec3(1, 0, 0));
+			mission_site_transformation = glm::rotate(mission_site_transformation, glm::radians(location_yaw), glm::vec3(0, 1, 0));	
 			
 			float start_waypoint_x = start_waypoint_node.attribute("x").as_float();
 			float start_waypoint_y = start_waypoint_node.attribute("y").as_float();
@@ -227,8 +227,8 @@ void XMLLevelLoader::loadWorld(const pugi::xml_node& node, bool separate_inspect
 			
 			glm::mat4 mission_site_location(1.0f);
 			mission_site_location = glm::translate(mission_site_location, glm::vec3(location_x, location_y, location_z));
-			mission_site_location = glm::rotate(mission_site_location, location_pitch, glm::vec3(1, 0, 0));
-			mission_site_location = glm::rotate(mission_site_location, location_yaw, glm::vec3(0, 1, 0));
+			mission_site_location = glm::rotate(mission_site_location, glm::radians(location_pitch), glm::vec3(1, 0, 0));
+			mission_site_location = glm::rotate(mission_site_location, glm::radians(location_yaw), glm::vec3(0, 1, 0));
 			
 			MissionSite* mission_site = new MissionSite(*scene_manager_, root_, mission_site_location, start_waypoint, *ontology_);
 			
@@ -294,8 +294,8 @@ void XMLLevelLoader::loadWorld(const pugi::xml_node& node, bool separate_inspect
 					
 					glm::mat4 transformation(1.0f);
 					transformation = glm::translate(transformation, glm::vec3(structure_location_x, structure_location_y, structure_location_z));
-					transformation = glm::rotate(transformation, location_pitch, glm::vec3(1, 0, 0));
-					transformation = glm::rotate(transformation, location_yaw, glm::vec3(0, 1, 0));
+					transformation = glm::rotate(transformation, glm::radians(location_pitch), glm::vec3(1, 0, 0));
+					transformation = glm::rotate(transformation, glm::radians(location_yaw), glm::vec3(0, 1, 0));
 					
 					transformation = mission_site_transformation * transformation;
 					
@@ -363,8 +363,8 @@ void XMLLevelLoader::loadWorld(const pugi::xml_node& node, bool separate_inspect
 							
 							glm::mat4 valve_matrix(1.0f);
 							valve_matrix = glm::translate(valve_matrix, glm::vec3(valve_location_x, valve_location_y, valve_location_z));
-							valve_matrix = glm::rotate(valve_matrix, valve_location_pitch, glm::vec3(1, 0, 0));
-							valve_matrix = glm::rotate(valve_matrix, valve_location_yaw, glm::vec3(0, 1, 0));
+							valve_matrix = glm::rotate(valve_matrix, glm::radians(valve_location_pitch), glm::vec3(1, 0, 0));
+							valve_matrix = glm::rotate(valve_matrix, glm::radians(valve_location_yaw), glm::vec3(0, 1, 0));
 							
 							valve_matrix = valve_matrix;
 							
@@ -407,8 +407,8 @@ void XMLLevelLoader::loadWorld(const pugi::xml_node& node, bool separate_inspect
 				std::cout << "Chain location: " << chain_location << std::endl;
 				
 				glm::mat4 chain_matrix = glm::translate(glm::mat4(1.0f), glm::vec3(chain_location_x, chain_location_y, chain_location_z));
-				chain_matrix = glm::rotate(chain_matrix, chain_location_pitch, glm::vec3(1, 0, 0));
-				chain_matrix = glm::rotate(chain_matrix, chain_location_yaw, glm::vec3(0, 1, 0));
+				chain_matrix = glm::rotate(chain_matrix, glm::radians(chain_location_pitch), glm::vec3(1, 0, 0));
+				chain_matrix = glm::rotate(chain_matrix, glm::radians(chain_location_yaw), glm::vec3(0, 1, 0));
 				
 				chain_matrix = chain_matrix;
 				
@@ -585,8 +585,8 @@ void XMLLevelLoader::printXMLNode(const pugi::xml_node& node, unsigned int depth
 		std::cout << " " << attr.name() << "=" << attr.value();
 	}
 	std::cout << ">";// << node.value() << "(Child value: " << node.child_value() << ")";
-	
-	if (node.child_value() == "" && node.children().begin() != node.children().end())
+	const char* empty_string = PUGIXML_TEXT("");
+	if (node.child_value() == empty_string && node.children().begin() != node.children().end())
 	{
 		std::cout << std::endl;
 		

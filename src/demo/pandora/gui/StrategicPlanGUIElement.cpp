@@ -1,29 +1,31 @@
 #include "StrategicPlanGUIElement.h"
 
-#include <GL/glfw.h>
 #include <sstream>
 #include <math.h>
 
-#include "../../../shapes/Line.h"
-#include "../../../core/shaders/LineShader.h"
-#include "../../../core/gui/Label.h"
-#include "../../../core/gui/Button.h"
-#include "../../../core/gui/Scrollbar.h"
-#include "../../../core/gui/fonts/TexturedFont.h"
+#include <dpengine/renderer/Window.h>
+
+#include "dpengine/shapes/Line.h"
+#include "dpengine/shaders/LineShader.h"
+#include "dpengine/gui/Label.h"
+#include "dpengine/gui/Button.h"
+#include "dpengine/gui/Scrollbar.h"
+#include "dpengine/gui/fonts/TexturedFont.h"
 
 #include "PlanLine.h"
 #include "PlanGraph.h"
 
-StrategicPlanGUIElement::StrategicPlanGUIElement(ros::NodeHandle& ros_node, Theme& theme, Font& font, float x, float y, float size_x, float size_y, float pixels_per_second)
-	: Container(theme, font, x, y, size_x, size_y, true), ros_node_(&ros_node), font_(&font), plan_line_heights_(30), pixels_per_second_(pixels_per_second), start_time_(0), running_time_(0), total_planning_time_(0)
+StrategicPlanGUIElement::StrategicPlanGUIElement(ros::NodeHandle& ros_node, DreadedPE::Theme& theme, DreadedPE::Font& font, float x, float y, float size_x, float size_y, float pixels_per_second)
+	: DreadedPE::Container(theme, font, x, y, size_x, size_y, true), ros_node_(&ros_node), font_(&font), plan_line_heights_(30), pixels_per_second_(pixels_per_second), start_time_(0), running_time_(0), total_planning_time_(0)
 {
 	std::cout << pixels_per_second_ << std::endl;
 	int width, height;
-	glfwGetWindowSize(&width, &height);
+	DreadedPE::Window* window = DreadedPE::Window::getActiveWindow();
+	window->getSize(width, height);
 	
 	plan_graph_ = new PlanGraph(theme, font.clone(), 0, 0, size_x - 20, 60, pixels_per_second_);
 	addElement(*plan_graph_, 0, -size_y + 60);
-	scrollbar_ = new Scrollbar(theme, font.clone(), 0, 0, size_x, 10, *plan_graph_, false);
+	scrollbar_ = new DreadedPE::Scrollbar(theme, font.clone(), 0, 0, size_x, 10, *plan_graph_, false);
 	addElement(*scrollbar_, 10, -size_y + 10);
 	
 	//setPosition(0, -height + size_y);
@@ -105,7 +107,8 @@ void StrategicPlanGUIElement::update(float dt)
 		float time_in_pixels_in_middle = time_from_begining * pixels_per_second_ - size_x_ / 2.0f;
 		plan_graph_->setPosition(-time_in_pixels_in_middle, plan_graph_->getLocalY());
 	}
-	Container::update(dt);
+	DreadedPE::Container::update(dt);
+	markForUpdate();
 }
 
 void StrategicPlanGUIElement::setCurrentPlan(const planning_msgs::CompletePlan::ConstPtr& msg)

@@ -3,7 +3,10 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 
-#include "Light.h"
+#include "dpengine/light/Light.h"
+
+namespace DreadedPE
+{
 
 Light::Light(LIGHT_TYPE type, const glm::vec3& ambient, const glm::vec3& diffuse, const glm::vec3& specular, float constant_attenuation, float linear_attenuation, float quadratic_attenuation, float light_angle, float close_plane, float far_plane, GLuint shadow_map_dimension)
 	: type_(type), ambient_(ambient), diffuse_(diffuse), specular_(specular), constant_attenuation_(constant_attenuation), linear_attenuation_(linear_attenuation), quadratic_attenuation_(quadratic_attenuation), light_angle_(light_angle), close_plane_(close_plane), far_plane_(far_plane), shadow_map_dimension_(shadow_map_dimension)
@@ -39,3 +42,5 @@ glm::mat4 Light::getViewMatrix() const
 	view_matrix = glm::translate(view_matrix, camera_location);
 	return view_matrix;
 }
+
+};

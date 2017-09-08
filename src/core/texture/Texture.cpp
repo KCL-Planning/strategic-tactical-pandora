@@ -1,12 +1,16 @@
-#include "Texture.h"
+#include "dpengine/texture/Texture.h"
 
 #ifdef _WIN32
+#define NOMINMAX
 #include <windows.h>
 #endif
 
 #include <iostream>
 #include <sstream>
 #include <iostream>
+
+namespace DreadedPE
+{
 
 GLint Texture::max_active_texture_id_ = 0;
 std::vector<Texture*> Texture::loaded_textures_;
@@ -97,3 +101,5 @@ void Texture::releaseActiveTextureID()
 {
 	free_active_texture_ids_.push_back(getActiveTextureId());
 }
+
+};

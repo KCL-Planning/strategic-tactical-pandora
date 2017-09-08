@@ -1,4 +1,4 @@
-#include "WavefrontLoader.h"
+#include "dpengine/loaders/WavefrontLoader.h"
 
 #include <iostream>
 #include <fstream>
@@ -7,11 +7,15 @@
 #include <algorithm>
 #include <iterator>
 
-#include "../../shapes/Shape.h"
+#include "dpengine/shapes/Shape.h"
 
 #ifdef _WIN32
+#define NOMINMAX
 #include <windows.h>
 #endif
+
+namespace DreadedPE
+{
 
 std::ostream& operator<<(std::ostream& os, const Triangle& triangle)
 {
@@ -64,7 +68,7 @@ Face::Face(const std::string& string)
 	}
 }
 
-Shape* WavefrontLoader::importShape(const std::string& filename)
+std::shared_ptr<Shape> WavefrontLoader::importShape(const std::string& filename)
 {
 	std::ifstream mesh_file;
 	mesh_file.open(filename.c_str(), std::ios::in);
@@ -258,5 +262,7 @@ Shape* WavefrontLoader::importShape(const std::string& filename)
 	}
 
 	// Todo: If all the triangles vertex is part of have the same texture coordinate and normals then we can compress the mesh.
-	return new Shape(final_vertices, final_texture_coordinates, indices, final_normals);
+	return std::make_shared<Shape>(final_vertices, final_texture_coordinates, indices, final_normals);
 }
+
+};

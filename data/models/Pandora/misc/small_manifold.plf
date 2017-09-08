@@ -8,7 +8,7 @@
 # Collision! collision.007
 # Collision! collision.008
 # Mesh? Group
-tex C:/Users/Bram/projects/horror game/trunk/data/models/Pandora/misc/atlas/ColourAtlas.tga
+tex data/models/Pandora/misc/atlas/ColourAtlas.tga
 v -0.08 0.73 -2.88
 v -0.08 0.73 -2.91
 v -0.04 0.74 -2.91

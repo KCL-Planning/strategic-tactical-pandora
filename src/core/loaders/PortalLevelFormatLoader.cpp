@@ -1,8 +1,16 @@
-#include "PortalLevelFormatLoader.h"
+#define _CRT_SECURE_NO_WARNINGS // Get rid of stupid warnings regarding the use of printf functions under Visual Studio.
+
+#include <memory>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include "dpengine/loaders/PortalLevelFormatLoader.h"
 
 #ifdef _WIN32
+#define NOMINMAX
 #include <windows.h>
 #endif
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 #include <iostream>
 #include <fstream>
@@ -12,29 +20,34 @@
 #include <iterator>
 #include <limits>
 
-#include "../../shapes/Shape.h"
-#include "../../shapes/Cube.h"
-#include "../scene/SceneManager.h"
-#include "../scene/SceneNode.h"
-#include "../scene/SceneLeafModel.h"
-#include "../entities/Entity.h"
-#include "../scene/portal/Portal.h"
-#include "../scene/portal/Region.h"
-#include "../collision/BoxCollision.h"
-#include "../math/Math.h"
+#include "dpengine/light/SpotLight.h"
+#include "dpengine/shapes/Shape.h"
+#include "dpengine/shapes/Cube.h"
+#include "dpengine/shapes/Piramid.h"
+#include "dpengine/scene/SceneManager.h"
+#include "dpengine/scene/SceneNode.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/scene/SceneLeafLight.h"
+#include "dpengine/entities/Entity.h"
+#include "dpengine/scene/portal/Portal.h"
+#include "dpengine/scene/portal/Region.h"
+#include "dpengine/collision/ConvexPolygon.h"
+#include "dpengine/math/Math.h"
 
-#include "../texture/Texture.h"
-#include "../texture/TargaTexture.h"
-#include "../scene/Material.h"
+#include "dpengine/texture/Texture.h"
+#include "dpengine/texture/TargaTexture.h"
+#include "dpengine/scene/Material.h"
 
-#include "../shaders/BasicShadowShader.h"
-#include "../shaders/ToonShader.h"
-#include "../shaders/LineShader.h"
+#include "dpengine/shaders/BasicShadowShader.h"
+#include "dpengine/shaders/ToonShader.h"
 
-#include "../ai/pathfinding/ConvexNavigationArea.h"
-#include "../ai/pathfinding/NavigationMesh.h"
+#include "dpengine/ai/pathfinding/ConvexNavigationArea.h"
+#include "dpengine/ai/pathfinding/NavigationMesh.h"
 
-//#define PLF_LOADER_ENABLE_OUTPUT
+#define PLF_LOADER_ENABLE_OUTPUT
+
+namespace DreadedPE
+{
 
 std::vector<glm::vec3> PortalDef::findConvexShape(std::vector<glm::vec3> open_list, const std::vector<glm::vec3>& w, const std::vector<glm::vec3>& points)
 {
@@ -107,16 +120,26 @@ std::vector<glm::vec3> PortalDef::findConvexShape(std::vector<glm::vec3> open_li
 	return std::vector<glm::vec3>();
 }
 
-SceneNode* PortalLevelFormatLoader::importLevel(const std::string& filename, Material& material, ShaderInterface& shader, SceneManager& scene_manager, SceneNode& terrain_node, bool create_regions)
+SceneNode* PortalLevelFormatLoader::importLevel(const std::string& filename, std::shared_ptr<Material> material, ShaderInterface* shader, SceneManager& scene_manager, SceneNode& terrain_node, bool create_regions, bool load_lights, std::shared_ptr<Material> portal_material)
 {
-	std::cout << "[PortalLevelFormatLoader::importLevel] " << filename << std::endl;
+#ifdef PLF_LOADER_ENABLE_OUTPUT
+	std::stringstream ss;
+	ss << "[PortalLevelFormatLoader::importLevel] " << filename << std::endl;
+#endif
 	root_node_ = NULL;
 	std::ifstream mesh_file;
 	mesh_file.open(filename.c_str(), std::ios::in);
 
 	if (!mesh_file.is_open())
 	{
-		std::cerr << "Could not open: " << filename << std::endl;
+#ifdef PLF_LOADER_ENABLE_OUTPUT
+		ss << "Could not open: " << filename << std::endl;
+#ifdef _WIN32
+		OutputDebugString(ss.str().c_str());
+#else
+		std::cout << ss.str() << std::endl;
+#endif
+#endif
 		return NULL;
 	}
 
@@ -142,16 +165,214 @@ SceneNode* PortalLevelFormatLoader::importLevel(const std::string& filename, Mat
 			continue;
 		}
 
+		// Texture.
+		if ("tex" == tokens[0] && tokens.size() == 2)
+		{
+			// Load the texture.
+			if (material != NULL)
+			{
+				Texture* texture = TargaTexture::loadTexture(tokens[1]);
+				material->add2DTexture(*texture);
+			}
+		}
+
 		// Vertices.
-		if ("v" == tokens[0] && tokens.size() == 4)
+		else if ("v" == tokens[0] && tokens.size() == 4)
 		{
 			vertices_.push_back(glm::vec3(::atof(tokens[1].c_str()), ::atof(tokens[2].c_str()), ::atof(tokens[3].c_str())));
 		}
+
+		// Collisions.
+		else if ("c_id" == tokens[0] && tokens.size() == 2)
+		{
+			std::string collision_name = tokens[1];
+			tokens.clear();
+			{
+				std::getline(mesh_file, line);
+				std::istringstream iss(line);
+				std::copy(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>(), std::back_inserter<std::vector<std::string> >(tokens));
+			}
+
+			if ("cs" == tokens[0] && tokens.size() == 2)
+			{
+				unsigned int nr_planes = ::atoi(tokens[1].c_str());
+				std::vector<const Plane*>* planes = new std::vector<const Plane*>();
+				for (unsigned int i = 0; i < nr_planes; ++i)
+				{
+					std::vector<std::string> plane_tokens;
+					{
+						std::getline(mesh_file, line);
+						std::istringstream iss(line);
+						std::copy(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>(), std::back_inserter<std::vector<std::string> >(plane_tokens));
+					}
+					if ("cp" != plane_tokens[0] || plane_tokens.size() != 2)
+					{
+						std::stringstream ss;
+						ss << "Unknown line: " << line;
+#ifdef _WIN32
+						MessageBox(NULL, ss.str().c_str(), "An error occurred", MB_ICONERROR | MB_OK);
+#endif
+					}
+
+					// Next line is the normal.
+					std::vector<std::string> normal_tokens;
+					{
+						std::getline(mesh_file, line);
+						std::istringstream iss(line);
+						std::copy(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>(), std::back_inserter<std::vector<std::string> >(normal_tokens));
+					}
+					if ("cn" != normal_tokens[0] || normal_tokens.size() != 4)
+					{
+						std::stringstream ss;
+						ss << "Unknown line: " << line;
+#ifdef _WIN32
+						MessageBox(NULL, ss.str().c_str(), "An error occurred", MB_ICONERROR | MB_OK);
+#endif
+					}
+					glm::vec3 normal(::atof(normal_tokens[1].c_str()), ::atof(normal_tokens[2].c_str()), ::atof(normal_tokens[3].c_str()));
+
+					unsigned int nr_points = ::atoi(plane_tokens[1].c_str());
+					std::vector<glm::vec3> points;
+					for (unsigned int i = 0; i < nr_points; ++i)
+					{
+						std::vector<std::string> point_tokens;
+						{
+							std::getline(mesh_file, line);
+							std::istringstream iss(line);
+							std::copy(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>(), std::back_inserter<std::vector<std::string> >(point_tokens));
+						}
+
+						if ("cv" != point_tokens[0] || point_tokens.size() != 4)
+						{
+							std::stringstream ss;
+							ss << "Unknown line: " << line;
+#ifdef _WIN32
+							MessageBox(NULL, ss.str().c_str(), "An error occurred", MB_ICONERROR | MB_OK);
+#endif
+						}
+						assert("cv" == point_tokens[0] && point_tokens.size() == 4);
+						glm::vec3 point(::atof(point_tokens[1].c_str()), ::atof(point_tokens[2].c_str()), ::atof(point_tokens[3].c_str()));
+						points.push_back(point);
+						//ss2 << "p " << point.x << " " << point.y << " " << point.z << std::endl;
+					}
+					Plane* plane = new Plane(points, normal);
+					planes->push_back(plane);
+				}
+#ifdef PLF_LOADER_ENABLE_OUTPUT
+				ss << "Add a collision polygon of: " << planes->size() << " planes called " << collision_name << "." << std::endl;
+#endif
+				collision_mapping_[collision_name] = planes;
+			}
+		}
+		// Lights.
+		else if ("l" == tokens[0] && tokens.size() == 2 && load_lights)
+		{
+			unsigned int nr_lights = ::atoi(tokens[1].c_str());
+			glm::mat4 light_matrix;
+			glm::vec3 light_colour;
+			float angle;
+			std::string name;
+			for (unsigned int i = 0; i < nr_lights; ++i)
+			{
+				while (true)
+				{
+					tokens.clear();
+					{
+						std::getline(mesh_file, line);
+						std::istringstream iss(line);
+						std::copy(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>(), std::back_inserter<std::vector<std::string> >(tokens));
+					}
+
+					if ("lm0" == tokens[0] && tokens.size() == 5)
+					{
+						light_matrix[0][0] = ::atof(tokens[1].c_str());
+						light_matrix[1][0] = ::atof(tokens[2].c_str());
+						light_matrix[2][0] = ::atof(tokens[3].c_str());
+						light_matrix[3][0] = ::atof(tokens[4].c_str());
+					}
+					if ("lm1" == tokens[0] && tokens.size() == 5)
+					{
+						light_matrix[0][1] = ::atof(tokens[1].c_str());
+						light_matrix[1][1] = ::atof(tokens[2].c_str());
+						light_matrix[2][1] = ::atof(tokens[3].c_str());
+						light_matrix[3][1] = ::atof(tokens[4].c_str());
+					}
+					if ("lm2" == tokens[0] && tokens.size() == 5)
+					{
+						light_matrix[0][2] = ::atof(tokens[1].c_str());
+						light_matrix[1][2] = ::atof(tokens[2].c_str());
+						light_matrix[2][2] = ::atof(tokens[3].c_str());
+						light_matrix[3][2] = ::atof(tokens[4].c_str());
+					}
+					if ("lm3" == tokens[0] && tokens.size() == 5)
+					{
+						light_matrix[0][3] = ::atof(tokens[1].c_str());
+						light_matrix[1][3] = ::atof(tokens[2].c_str());
+						light_matrix[2][3] = ::atof(tokens[3].c_str());
+						light_matrix[3][3] = ::atof(tokens[4].c_str());
+					}
+					if ("lc" == tokens[0] && tokens.size() == 4)
+					{
+						light_colour.r = ::atof(tokens[1].c_str());
+						light_colour.g = ::atof(tokens[2].c_str());
+						light_colour.b = ::atof(tokens[3].c_str());
+					}
+					if ("la" == tokens[0] && tokens.size() == 2)
+					{
+						angle = ::atof(tokens[1].c_str());
+						break;
+					}
+					if ("ln" == tokens[0] && tokens.size() == 2)
+					{
+						name = tokens[1];
+					}
+				}
+				//std::stringstream ss;
+				//ss << "Before rotating: ( " << light_matrix[3][0] << ", " << light_matrix[3][1] << ", " << light_matrix[3][2] << ") -> ";
+				
+				// Need to flip the yaw.
+				// Given as Pitch, Yaw, Roll.
+				//light_matrix = glm::rotate(light_matrix, 180.0f, glm::vec3(0, 1, 0));
+				light_matrix = glm::rotate(light_matrix, glm::radians(90.0f), glm::vec3(-1, 0, 0));
+				
+				/*
+				glm::fquat fq = glm::toQuat(light_matrix);
+				glm::vec3 euler = glm::eulerAngles(fq);
+				
+				// Yaw, Pitch, Roll
+				glm::mat4 updated_light_matrix = glm::yawPitchRoll(euler.y, -euler.x, euler.z);
+				updated_light_matrix[3][0] = light_matrix[3][0];
+				updated_light_matrix[3][1] = light_matrix[3][1];
+				updated_light_matrix[3][2] = light_matrix[3][2];
+				
+				light_matrix = updated_light_matrix;
+				*/
+				// Get the yaw and invert it.
+				float yaw = glm::yaw(glm::toQuat(light_matrix));
+				float pitch = glm::pitch(glm::toQuat(light_matrix));
+				float roll = glm::roll(glm::toQuat(light_matrix));
+				
+				//ss << "Float: " << yaw << ", " << pitch << ", " << roll << std::endl;
+				//ss << " ( " << light_matrix[3][0] << ", " << light_matrix[3][1] << ", " << light_matrix[3][2] << ")" << std::endl;
+
+				SpotLight* light = new SpotLight(scene_manager, angle * 180.0f / M_PI, glm::vec3(0, 0, 0), light_colour, glm::vec3(0, 0, 0), 0.5f, 0.1f, 0.001f, 0.1f, 60.0f);
+				SceneNode* light_node = new SceneNode(scene_manager, NULL, light_matrix);
+				
+				new SceneLeafLight(*light_node, NULL, *light);
+
+				/**
+				* Store to be used later.
+				*/
+				light_mapping_[name] = light_node;
+			}
+		}
 	}
+		
 	mesh_file.close();
 	mesh_file.open(filename.c_str(), std::ios::in);
-	
-	std::cout << "Loaded: " << vertices_.size() << " vertices." << std::endl;
+#ifdef PLF_LOADER_ENABLE_OUTPUT	
+	ss << "Loaded: " << vertices_.size() << " vertices." << std::endl;
+#endif
 
 	// Once we have all the vertices, we can process the rest of the file.
 	normals_ = std::vector<glm::vec3>(vertices_.size(), glm::vec3(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()));
@@ -196,7 +417,7 @@ SceneNode* PortalLevelFormatLoader::importLevel(const std::string& filename, Mat
 			current_section = new Section(section_id);
 			sections_.push_back(current_section);
 #ifdef PLF_LOADER_ENABLE_OUTPUT
-			std::cout << "Process section #" << section_id << std::endl;
+			ss << "Process section #" << section_id << std::endl;
 #endif
 		}
 		else if ("i" == tokens[0] && tokens.size() == 4)
@@ -232,20 +453,18 @@ SceneNode* PortalLevelFormatLoader::importLevel(const std::string& filename, Mat
 			// Update the normals.
 			++vertex_index;
 		}
-		else if ("c" == tokens[0] && tokens.size() == 2)
+		else if ("c_nr" == tokens[0] && tokens.size() == 2)
 		{
-			unsigned int nr_points = ::atoi(tokens[1].c_str());
-			assert (nr_points == 8); // We only deal with cubes at the moment.
-			std::vector<glm::vec3> bb_points;
-			//std::stringstream ss2;
-			for (unsigned int i = 0; i < nr_points; ++i)
+			unsigned int nr_collisions = ::atoi(tokens[1].c_str());
+			for (unsigned int i = 0; i < nr_collisions; ++i)
 			{
-				std::getline(mesh_file, line);
-				std::vector<std::string> bb_tokens;
-				std::istringstream iss(line);
-				std::copy(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>(), std::back_inserter<std::vector<std::string> >(bb_tokens));
-
-				if ("cv" != bb_tokens[0] || bb_tokens.size() != 4)
+				std::vector<std::string> plane_tokens;
+				{
+					std::getline(mesh_file, line);
+					std::istringstream iss(line);
+					std::copy(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>(), std::back_inserter<std::vector<std::string> >(plane_tokens));
+				}
+				if ("c_ref" != plane_tokens[0] || plane_tokens.size() != 2)
 				{
 					std::stringstream ss;
 					ss << "Unknown line: " << line;
@@ -253,27 +472,44 @@ SceneNode* PortalLevelFormatLoader::importLevel(const std::string& filename, Mat
 					MessageBox(NULL, ss.str().c_str(), "An error occurred", MB_ICONERROR | MB_OK);
 #endif
 				}
-				assert ("cv" == bb_tokens[0] && bb_tokens.size() == 4);
-				glm::vec3 point(::atof(bb_tokens[1].c_str()), ::atof(bb_tokens[2].c_str()), ::atof(bb_tokens[3].c_str()));
-				bb_points.push_back(point);
-				//ss2 << "p " << point.x << " " << point.y << " " << point.z << std::endl;
+
+				current_section->addCollisionPlane(*collision_mapping_[plane_tokens[1]]);
 			}
-/*
-#ifdef _WIN32
-			MessageBox(NULL, ss2.str().c_str(), "An error occurred", MB_ICONERROR | MB_OK);
-#endif
-*/
-			std::cout << "Add a collision box of: " << bb_points.size() << " vertices." << std::endl;
-			current_section->addCollisionBox(bb_points);
 		}
-/*		else if ("v" != tokens[0] && "p" != tokens[0] && "pv" != tokens[0])
+		else if ("l_nr" == tokens[0] && tokens.size() == 2 && load_lights)
 		{
-			std::stringstream ss;
-			ss << "Unknown line: " << line;
+			unsigned int nr_lights = ::atoi(tokens[1].c_str());
+			for (unsigned int i = 0; i < nr_lights; ++i)
+			{
+				std::vector<std::string> light_tokens;
+				{
+					std::getline(mesh_file, line);
+					std::istringstream iss(line);
+					std::copy(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>(), std::back_inserter<std::vector<std::string> >(light_tokens));
+				}
+				if ("l_ref" != light_tokens[0] || light_tokens.size() != 2)
+				{
+					std::stringstream ss;
+					ss << "Unknown line: " << line;
 #ifdef _WIN32
-			MessageBox(NULL, ss.str().c_str(), "An error occurred", MB_ICONERROR | MB_OK);
+					MessageBox(NULL, ss.str().c_str(), "An error occurred", MB_ICONERROR | MB_OK);
 #endif
-		}*/
+				}
+
+				if (light_mapping_.find(light_tokens[1]) == light_mapping_.end())
+				{
+					std::stringstream ss;
+					ss << "Unknown light: " << light_tokens[1];
+#ifdef _WIN32
+					MessageBox(NULL, ss.str().c_str(), "An error occurred", MB_ICONERROR | MB_OK);
+#else
+					ss << ss.str() << std::endl;
+#endif
+					exit(1);
+				}
+				current_section->addLight(*light_mapping_[light_tokens[1]]);
+			}
+		}
 
 		// Complete face :).
 		if (vertex_index == 3)
@@ -319,92 +555,55 @@ SceneNode* PortalLevelFormatLoader::importLevel(const std::string& filename, Mat
 	}
 
 	mesh_file.close();
-/*
-	Texture* wfl_texture = TargaTexture::loadTexture("data/models/levels/modular/atlas.tga");
-	//Texture* wfl_texture = new Texture("data/textures/water.tga");
-
-	// Initialise the texture to use.
-	MaterialLightProperty* wfl_ambient = new MaterialLightProperty(0.4f, 0.4f, 0.4f, 1.0f);
-	MaterialLightProperty* wfl_diffuse = new MaterialLightProperty(0.8f, 0.8f, 0.8f, 1.0f);
-	MaterialLightProperty* wfl_specular = new MaterialLightProperty(0.3f, 0.3f, 0.3f, 1.0f);
-	MaterialLightProperty* wfl_emmisive = new MaterialLightProperty(0.6f, 0.6f, 0.6f, 1.0f);
-
-	Material* wfl_material_ = new Material(*wfl_ambient, *wfl_diffuse, *wfl_specular, *wfl_emmisive);
-	wfl_material_->add2DTexture(*wfl_texture);
-*/
 	// Build the sections of the level.
-
-	//std::stringstream ss;
-
-	//std::vector<Region*> regions;
+	
 	regions_.clear();
 	Entity* root_node = new Entity(scene_manager, &terrain_node, glm::mat4(1.0), OBSTACLE, "root");
 	for (std::vector<Section*>::const_iterator ci = sections_.begin(); ci != sections_.end(); ++ci)
 	{
-		std::cout << "load... " << vertices_.size() << std::endl;
+#ifdef PLF_LOADER_ENABLE_OUTPUT
+		ss << "load... " << vertices_.size() << std::endl;
+#endif
 		Section* section = *ci;
 		section->calculateCentre(vertices_);
 
-		//Section* section = sections[0];
-
-		//ss << section->getSectionId() << " " << section->getCentre().x << " " << section->getCentre().y << " " << section->getCentre().z << std::endl;
-
 		// TODO: Move to the centre of the actual section.
 		Entity* section_node = new Entity(scene_manager, root_node, glm::mat4(1.0), OBSTACLE, "section");
-		Shape* shape = new Shape(vertices_, texture_coordinates_, section->getIndices(), normals_);
-		
-		//Cube* shape = new Cube(5.0f);
-		//SceneLeafModel* floor_access_leaf_node = new SceneLeafModel(*section_node, NULL, *shape, *wfl_material_, ToonShader::getShader(), false, false);
-		SceneLeafModel* floor_access_leaf_node = new SceneLeafModel(*section_node, NULL, *shape, material, shader, false, false);
 
-		std::stringstream ss;
-		ss << "s" << section->getSectionId() << "; c=" << section->getCollisionBoxes().size();
+		if (material != NULL && shader != NULL)
+		{
+			std::shared_ptr<Shape> shape(std::make_shared<Shape>(vertices_, texture_coordinates_, section->getIndices(), normals_));
+			new SceneLeafModel(*section_node, NULL, shape, material, *shader, false, false);
+		}
 
+		std::stringstream region_name_ss;
+		region_name_ss << "s" << section->getSectionId() << "; c=" << section->getCollisionPlanes().size();
+
+		Region* region = NULL;
 		if (create_regions)
 		{
-			Region* region = new Region(*section_node, ss.str());
+			region = new Region(*section_node, region_name_ss.str());
 			section_node->setRegion(*region);
 			regions_.push_back(region);
+			region->addCollidableEntity(*section_node);
 		}
 
-		// Create the bounded boxes.
-		for (std::vector<PLF_Cube*>::const_iterator ci = section->getCollisionBoxes().begin(); ci != section->getCollisionBoxes().end(); ++ci)
+		// Created the bounded planes.
+		for (std::vector<std::vector<const Plane*> >::const_iterator ci = section->getCollisionPlanes().begin(); ci != section->getCollisionPlanes().end(); ++ci)
 		{
-			const PLF_Cube* cube = *ci;
-			BoxCollision* bc = new BoxCollision(*section_node,
-			                           cube->bottom_left_away_, cube->bottom_right_away_, 
-			                           cube->top_left_away_, cube->top_right_away_,                            
-			                           cube->bottom_left_close_, cube->bottom_right_close_, 
-			                           cube->top_left_close_, cube->top_right_close_);
+			ConvexPolygon* convex_polygon = new ConvexPolygon(*section_node, *ci);
+			section_node->addCollision(*convex_polygon);
+		}
 
-			section_node->addCollision(*bc, *SceneNode::bright_material_, BasicShadowShader::getShader());
-			//section_node->addCollision(*bc);
-/*
-#ifdef _WIN32
-			{
-			std::stringstream ss;
-			ss << "Bounding box: {";
-			for (unsigned int i = 0; i < 8; ++i)
-			{
-				ss << "(" << bc->getPoints()[i].x << ", " << bc->getPoints()[i].y << ", " << bc->getPoints()[i].z << "), ";
-			}
-			ss << "}" << std::endl;
-			OutputDebugString(ss.str().c_str());
-			}
-#endif
-*/
-			//section_node->addCollision(*bc);
-/*
-#ifdef _WIN32
-			std::stringstream ss2;
-			ss2 << cube << std::endl;
-			MessageBox(NULL, ss2.str().c_str(), "An error occurred", MB_ICONERROR | MB_OK);
-#endif
-*/
+		// Add the lights.
+		for (SceneNode* light : section->getLights())
+		{
+			section_node->addChild(*light);
 		}
 	}
-	
-	std::cout << "Process portals" << std::endl;
+#ifdef PLF_LOADER_ENABLE_OUTPUT
+	ss << "Process portals" << std::endl;
+#endif
 	//std::vector<PortalDef> portals;
 	portals_.clear();
 	if (create_regions)
@@ -429,7 +628,9 @@ SceneNode* PortalLevelFormatLoader::importLevel(const std::string& filename, Mat
 			{
 				if (section_id_1 != std::numeric_limits<unsigned int>::max())
 				{
-					std::cout << "Add a portal from " << section_id_1 << " to " << section_id_2 << std::endl;
+#ifdef PLF_LOADER_ENABLE_OUTPUT
+					ss << "Add a portal from " << section_id_1 << " to " << section_id_2 << std::endl;
+#endif
 					portals_.push_back(PortalDef(section_id_1, section_id_2, points));
 					section_id_1 = std::numeric_limits<unsigned int>::max();
 					section_id_2 = std::numeric_limits<unsigned int>::max();
@@ -437,8 +638,9 @@ SceneNode* PortalLevelFormatLoader::importLevel(const std::string& filename, Mat
 				points.clear();
 				section_id_1 = ::atoi(tokens[1].c_str());
 				section_id_2 = ::atoi(tokens[2].c_str());
-				
-				std::cout << "Potential portal from " << section_id_1 << " to " << section_id_2 << std::endl;
+#ifdef PLF_LOADER_ENABLE_OUTPUT		
+				ss << "Potential portal from " << section_id_1 << " to " << section_id_2 << std::endl;
+#endif
 			}
 			else if ("pv" == tokens[0] && tokens.size() == 4)
 			{
@@ -447,15 +649,119 @@ SceneNode* PortalLevelFormatLoader::importLevel(const std::string& filename, Mat
 		}
 		if (section_id_1 != std::numeric_limits<unsigned int>::max())
 		{
-			std::cout << "Add a portal from " << section_id_1 << " to " << section_id_2 << std::endl;
+#ifdef PLF_LOADER_ENABLE_OUTPUT
+			ss << "Add a portal from " << section_id_1 << " to " << section_id_2 << std::endl;
+#endif
 			portals_.push_back(PortalDef(section_id_1, section_id_2, points));
 		}
 		mesh_file.close();
 	}
 	
-	for (std::vector<PortalDef>::const_iterator ci = portals_.begin(); ci != portals_.end(); ++ci)
+	for (std::vector<PortalDef>::iterator ci = portals_.begin(); ci != portals_.end(); ++ci)
 	{
-		const PortalDef& portal = *ci;
+		PortalDef& portal = *ci;
+
+#ifdef PLF_LOADER_ENABLE_OUTPUT
+		ss << "Pre ordering portal: ";
+		for (std::vector<glm::vec3>::const_iterator ci = portal.points_.begin(); ci != portal.points_.end(); ++ci)
+		{
+			ss << "(" << (*ci).x << ", " << (*ci).y << ", " << (*ci).z << "), ";
+		}
+		ss << std::endl;
+#endif
+
+		// First thing to do is to make sure the points are such that any line sequence, created by
+		// linking any adjacent points, do not intersect. Blender is not consistent with its output...
+		std::vector<glm::vec3> points_to_process = portal.points_;
+		std::vector<glm::vec3> all_points = portal.points_;
+
+		if (points_to_process.size() > 0)
+		{
+			glm::vec3 current_point = points_to_process[0];
+			points_to_process.erase(points_to_process.begin());
+			portal.points_.clear();
+
+#ifdef PLF_LOADER_ENABLE_OUTPUT
+			ss << "# points: " << portal.points_.size() << std::endl;
+#endif
+
+			portal.points_.push_back(current_point);
+#ifdef PLF_LOADER_ENABLE_OUTPUT
+			ss << portal.points_.size() << std::endl;
+#endif
+
+			// Find the next point that does not intersect with any of the other points.
+			while (points_to_process.size() > 0)
+			{
+				for (std::vector<glm::vec3>::iterator i = points_to_process.begin(); i != points_to_process.end(); ++i)
+				{
+					const glm::vec3& next_point = *i;
+					bool is_valid_point = true;
+#ifdef PLF_LOADER_ENABLE_OUTPUT
+					ss << "Next point: (" << next_point.x << ", " << next_point.y << ", " << next_point.z << ")" << std::endl;
+#endif
+
+					// Check if the line formed by these points intersects with any other possible lines.
+					for (std::vector<glm::vec3>::const_iterator ci = all_points.begin(); ci != all_points.end(); ++ci)
+					{
+						const glm::vec3& control_point1 = *ci;
+						if (control_point1 == current_point || control_point1 == next_point) continue;
+
+#ifdef PLF_LOADER_ENABLE_OUTPUT
+						ss << "Control point1: (" << control_point1.x << ", " << control_point1.y << ", " << control_point1.z << ")" << std::endl;
+#endif
+
+						for (std::vector<glm::vec3>::const_iterator ci = all_points.begin(); ci != all_points.end(); ++ci)
+						{
+							const glm::vec3& control_point2 = *ci;
+							if (control_point2 == current_point || control_point2 == next_point || control_point2 == control_point1) continue;
+
+#ifdef PLF_LOADER_ENABLE_OUTPUT
+							ss << "Control point1: (" << control_point2.x << ", " << control_point2.y << ", " << control_point2.z << ")" << std::endl;
+#endif
+
+							float distance = Math::dist3D_Segment_to_Segment(current_point, next_point, control_point1, control_point2);
+
+#ifdef PLF_LOADER_ENABLE_OUTPUT
+							ss << "Compare: (" << current_point.x << ", " << current_point.y << ", " << current_point.z << ") -- (" << next_point.x << ", " << next_point.y << ", " << next_point.z << ") ***";
+							ss << " (" << control_point1.x << ", " << control_point1.y << ", " << control_point1.z << ") -- (" << control_point2.x << ", " << control_point2.y << ", " << control_point2.z << ")  = " << distance;
+							ss << " -- " << portal.points_.size() << std::endl;
+#endif
+
+
+							if (distance < 0.01f)
+							{
+								is_valid_point = false;
+								break;
+							}
+						}
+
+						if (!is_valid_point) break;
+					}
+
+					if (is_valid_point)
+					{
+#ifdef PLF_LOADER_ENABLE_OUTPUT
+						ss << "Add: (" << next_point.x << ", " << next_point.y << ", " << next_point.z << ") # points: " << portal.points_.size() << std::endl;
+#endif
+						portal.points_.push_back(next_point);
+						points_to_process.erase(i);
+						current_point = next_point;
+						break;
+					}
+				}
+			}
+		}
+
+#ifdef PLF_LOADER_ENABLE_OUTPUT
+		ss << "Post ordering portal: ";
+		for (std::vector<glm::vec3>::const_iterator ci = portal.points_.begin(); ci != portal.points_.end(); ++ci)
+		{
+			ss << "(" << (*ci).x << ", " << (*ci).y << ", " << (*ci).z << "), ";
+		}
+		ss << std::endl;
+#endif
+
 		std::vector<glm::vec3> reverse_points(portal.points_);
 		std::reverse(reverse_points.begin(), reverse_points.end());
 		
@@ -485,126 +791,68 @@ SceneNode* PortalLevelFormatLoader::importLevel(const std::string& filename, Mat
 		portal1.setMirrorPortal(portal2);
 		portal2.setMirrorPortal(portal1);
 
-		// Construct the portals (debug).
-		std::vector<glm::vec3> portal_vertices;
-		std::vector<glm::vec2> portal_texture_coordinates;
-		std::vector<GLuint> portal_indices;
-		std::vector<glm::vec3> portal_normals;
-
-		for (std::vector<glm::vec3>::const_iterator ci = reverse_points.begin(); ci != reverse_points.end(); ++ci)
+		if (portal_material != NULL)
 		{
-			portal_vertices.push_back(*ci);
-			portal_texture_coordinates.push_back(glm::vec2(0,0));
-			portal_normals.push_back(normal);
+			// Construct the portals (debug).
+			std::vector<glm::vec3> portal_vertices;
+			std::vector<glm::vec2> portal_texture_coordinates;
+			std::vector<GLuint> portal_indices;
+			std::vector<glm::vec3> portal_normals;
+
+			for (std::vector<glm::vec3>::const_iterator ci = reverse_points.begin(); ci != reverse_points.end(); ++ci)
+			{
+				portal_vertices.push_back(*ci);
+				portal_texture_coordinates.push_back(glm::vec2(0, 0));
+				portal_normals.push_back(normal);
+			}
+			portal_indices.push_back(0);
+			portal_indices.push_back(1);
+			portal_indices.push_back(2);
+			portal_indices.push_back(0);
+			portal_indices.push_back(2);
+			portal_indices.push_back(3);
+
+			SceneNode* section_node = new SceneNode(scene_manager, root_node, glm::rotate(glm::mat4(1.0), glm::radians(-0.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
+			std::shared_ptr<Shape> shape(std::make_shared<Shape>(portal_vertices, portal_texture_coordinates, portal_indices, portal_normals));
+			new SceneLeafModel(*section_node, NULL, shape, portal_material, BasicShadowShader::getShader(), true, true);
 		}
-		portal_indices.push_back(0);
-		portal_indices.push_back(1);
-		portal_indices.push_back(2);
-		portal_indices.push_back(0);
-		portal_indices.push_back(2);
-		portal_indices.push_back(3);
 
-		SceneNode* section_node = new SceneNode(scene_manager, root_node, glm::rotate(glm::mat4(1.0), -0.0f, glm::vec3(1.0f, 0.0f, 0.0f)));
-		Shape* shape = new Shape(portal_vertices, portal_texture_coordinates, portal_indices, portal_normals);
-		SceneLeafModel* floor_access_leaf_node = new SceneLeafModel(*section_node, NULL, *shape, *SceneNode::bright_material_, BasicShadowShader::getShader(), true, true);
-		
-		
-
-#ifdef _WIN32
-		std::stringstream ss;
+#ifdef PLF_LOADER_ENABLE_OUTPUT
 		ss << "Loaded portal: ";
-		for (std::vector<glm::vec3>::const_iterator ci = portal_vertices.begin(); ci != portal_vertices.end(); ++ci)
+		for (std::vector<glm::vec3>::const_iterator ci = points_to_use->begin(); ci != points_to_use->end(); ++ci)
 		{
 			ss << "(" << (*ci).x << ", " << (*ci).y << ", " << (*ci).z << "), ";
 		}
 		ss << std::endl;
-		OutputDebugString(ss.str().c_str());
-#else
-		std::cout << "Loaded portal: ";
-		for (std::vector<glm::vec3>::const_iterator ci = portal_vertices.begin(); ci != portal_vertices.end(); ++ci)
-		{
-			std::cout << "(" << (*ci).x << ", " << (*ci).y << ", " << (*ci).z << "), ";
-		}
-		std::cout << std::endl;
 #endif
-
 	}
 	root_node_ = root_node;
 	
-	// Visualise the collision boxes.
-	MaterialLightProperty* ambient = new MaterialLightProperty(1, 1, 0 , 1);
-	MaterialLightProperty* diffuse = new MaterialLightProperty(1, 1, 0 , 1);
-	MaterialLightProperty* specular = new MaterialLightProperty(1, 1, 0 , 1);
-	MaterialLightProperty* emissive = new MaterialLightProperty(1, 1, 0 , 1);
-	Material* collision_material = new Material(*ambient, *diffuse, *specular, *emissive);
-	Texture* grass_texture = TargaTexture::loadTexture("data/textures/grass.tga");
-	collision_material->add2DTexture(*grass_texture);
-	for (std::vector<Section*>::const_iterator ci = sections_.begin(); ci != sections_.end(); ++ci)
-	{
-		Section* section = *ci;
-		for (std::vector<PLF_Cube*>::const_iterator ci = section->getCollisionBoxes().begin(); ci != section->getCollisionBoxes().end(); ++ci)
-		{
-			PLF_Cube* cube = *ci;
-			SceneLeafModel* collision_box = new SceneLeafModel(terrain_node, NULL, *cube, *collision_material, BasicShadowShader::getShader(), false, false, COLLISION);
-		}
-		
-		std::cout << "Section: " << section->getSectionId() << " has " << section->getCollisionBoxes().size() << " collision boxes!" << std::endl;
-	}
-	
+#ifdef _WIN32
+	OutputDebugString(ss.str().c_str());
+#else
+	std::cout << ss.str() << std::endl;
+#endif
+
 	return root_node;
 }
 
-NavigationMesh* PortalLevelFormatLoader::createNavigationMesh(SceneManager* scene_manager)
+NavigationMesh* PortalLevelFormatLoader::createNavigationMesh(SceneManager* scene_manager, float max_distance)
 {
 	if (root_node_ == NULL)
 	{
 		return NULL;
 	}
 
-	std::vector<glm::vec3> collision_vertices;
-	std::vector<GLuint> collision_vertices_indexes;
-	std::vector<PLF_Cube*> processed_cubes;
-
 	// Create a list of vertices that make up the collision boxes.
-	unsigned int index_offset = 0;
-	for (std::vector<Section*>::const_iterator ci = sections_.begin(); ci != sections_.end(); ++ci)
+	std::vector<const ConvexPolygon*> convex_polygons;
+	for (const std::pair<std::string, std::vector<const Plane*>* >& mp : collision_mapping_)
 	{
-		Section* section = *ci;
-		
-		// Create the bounded boxes.
-		for (std::vector<PLF_Cube*>::const_iterator ci = section->getCollisionBoxes().begin(); ci != section->getCollisionBoxes().end(); ++ci)
-		{
-			PLF_Cube* cube = *ci;
-			bool is_already_processed = false;
-			for (std::vector<PLF_Cube*>::const_iterator ci = processed_cubes.begin(); ci != processed_cubes.end(); ++ci)
-			{
-				if (cube == *ci)
-				{
-					is_already_processed = true;
-					break;
-				}
-			}
-
-			if (is_already_processed)
-			{
-				continue;
-			}
-			
-			std::cout << "Add the plf cube: " << *cube << std::endl;
-			
-			collision_vertices.insert(collision_vertices.end(), cube->getVertices().begin(), cube->getVertices().end());
-			
-			for (std::vector<unsigned int>::const_iterator ci = cube->getIndices().begin(); ci != cube->getIndices().end(); ++ci)
-			{
-				collision_vertices_indexes.push_back(*ci + index_offset);
-			}
-			
-			processed_cubes.push_back(cube);
-			
-			index_offset += cube->getVertices().size();
-		}
+		convex_polygons.push_back(new ConvexPolygon(*root_node_, *mp.second));
 	}
 
-	NavigationMesh* navigation_mesh = new NavigationMesh(processed_cubes, collision_vertices, collision_vertices_indexes, glm::vec3(0.0f, 1.0f, 0.0f), 0.9f, 0.50f);
-	return navigation_mesh;
+	// Now we have our navigation mesh.
+	return new NavigationMesh(convex_polygons, glm::vec3(0, 1, 0), 45.0f * M_PI / 180.0f, max_distance, 3.0f);
 }
+
+};

@@ -1,32 +1,32 @@
 #include <sstream>
 #include <algorithm>
 
-#include <GL/glew.h>
-#include <GL/glfw.h>
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "SimpleRenderer.h"
-#include "../scene/SceneNode.h"
-#include "../scene/SceneManager.h"
-#include "../scene/SceneLeafLight.h"
-#include "../scene/SceneLeafModel.h"
-#include "../scene/RenderableSceneLeaf.h"
-#include "../entities/camera/Camera.h"
-#include "../light/PointLight.h"
-#include "../entities/Entity.h"
-#include "../shaders/ShadowShader.h"
-#include "../scene/frustum/Frustum.h"
-#include "../scene/portal/Region.h"
-#include "../shaders/LightShader.h"
-#include "../texture/Texture.h"
-//#include "../particles/ParticleSystem.h"
+#include "dpengine/renderer/SimpleRenderer.h"
+#include "dpengine/renderer/Window.h"
+#include "dpengine/scene/SceneNode.h"
+#include "dpengine/scene/SceneManager.h"
+#include "dpengine/scene/SceneLeafLight.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/scene/RenderableSceneLeaf.h"
+#include "dpengine/entities/camera/Camera.h"
+#include "dpengine/light/PointLight.h"
+#include "dpengine/entities/Entity.h"
+#include "dpengine/shaders/ShadowShader.h"
+#include "dpengine/scene/frustum/Frustum.h"
+#include "dpengine/scene/portal/Region.h"
+#include "dpengine/shaders/LightShader.h"
+#include "dpengine/texture/Texture.h"
 
 #ifdef _WIN32
+#define NOMINMAX
 #include <windows.h>
 #endif
 
+namespace DreadedPE
+{
 //#define HORROR_GAME_ENABLE_DEBUG
 
 SimpleRenderer::SimpleRenderer(SceneManager& scene_manager)
@@ -39,18 +39,21 @@ SimpleRenderer::SimpleRenderer(SceneManager& scene_manager)
 
 SimpleRenderer::~SimpleRenderer()
 {
-	
+	delete frustum_;
 }
 
 void SimpleRenderer::initialise()
 {
 	color_texture_ = new Texture(GL_TEXTURE_2D);
 	depth_texture_ = new Texture(GL_TEXTURE_2D);
+
+	int width;
+	int height;
+	Window::getActiveWindow()->getSize(width, height);
 	
 	// Initialise the off screen buffer we render to. This allows for post processing effects.
-	//glGenTextures(1, &texture_id_);
 	glBindTexture(GL_TEXTURE_2D, color_texture_->getTextureId());
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1024, 768, 0, GL_RGB, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_FLOAT, NULL);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -58,19 +61,15 @@ void SimpleRenderer::initialise()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	//glGenTextures(1, &depth_id_);
 	glBindTexture(GL_TEXTURE_2D, depth_texture_->getTextureId());
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, 1024, 768, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH32F_STENCIL8, 1024, 768, 0, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV, NULL);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH32F_STENCIL8, 1024, 768, 0, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV, NULL);
-
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH32F_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV, NULL);
+	
 	glGenFramebuffers(1, &fbo_id_);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo_id_);
 
 	// Attach the rgb texture to it.
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, color_texture_->getTextureId(), 0);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, depth_texture_->getTextureId(), 0);
-	//glFramebufferTexture(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, depth_id_, 0);
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
@@ -146,13 +145,12 @@ void SimpleRenderer::initialise()
 
 void SimpleRenderer::render(const FrustumCaster& cam)
 {
-	//glPolygonMode( GL_FRONT_AND_BACK, render_mode_);
 	culled_objects_ = 0;
 	rendered_objects_ = 0;
 	pre_rendered_objects_ = 0;
 	active_entities_.clear();
 	active_lights_.clear();
-	//ss_.str(std::string());
+	sky_box_ = NULL;
 
 	double_models_ = 0;
 	double_lights_ = 0;
@@ -163,33 +161,20 @@ void SimpleRenderer::render(const FrustumCaster& cam)
 	frustum_->setFrustum(perspective_matrix * view_matrix);
 
 #ifdef HORROR_GAME_ENABLE_DEBUG
-	// New rendering method.
-	ss_.str(std::string());
+	std::stringstream ss_;
 #endif
 	
-	//Region* region = scene_manager_->getRoot().findRegion(cam.getPosition());
 	Region* region = getRegionToRenderFrom(camera_location, *scene_manager_);
 	if (region != NULL)
 	{
 #ifdef HORROR_GAME_ENABLE_DEBUG
-		ss_ << "(" << cam.getPosition().x << "," << cam.getPosition().y << "," << cam.getPosition().z << ") ";
-		ss_ << region->getName() << "|";
-#endif
-//		std::cout << "Camera in region: " << region->getName() << std::endl;
-		std::vector<const Portal*> processed_portals;
-		region->preRender(*frustum_, camera_location, *this, true, pre_rendered_objects_, 0, processed_portals, ss_);
-		for (std::vector<SceneNode*>::const_iterator ci = scene_manager_->getPlayers().begin(); ci != scene_manager_->getPlayers().end(); ++ci)
-		{
-			(*ci)->preRender(*frustum_, camera_location, *this, true, pre_rendered_objects_);
-		}
-		ss_ << std::endl;
-		//std::cout << "." << std::endl;
-		//std::cout << ss_.str() << std::endl;
-//		std::cout << "Done rendering!"  << std::endl;
-#ifdef _WIN32
+		ss_ << "******************* RENDER *********************" << std::endl;
+		ss_ << "Camera: (" << cam.getLocation().x << "," << cam.getLocation().y << "," << cam.getLocation().z << ")" << std::endl;
 		OutputDebugString(ss_.str().c_str());
 		ss_.str(std::string());
 #endif
+		std::vector<const Portal*> processed_portals;
+		region->preRender(*frustum_, camera_location, *this, true, pre_rendered_objects_, 0, processed_portals);
 	}
 	// If we cannot find a region we fall back on the true and tested... Although this
 	// is more a debug feature and should be removed in future versions of this rendering
@@ -201,7 +186,6 @@ void SimpleRenderer::render(const FrustumCaster& cam)
 #endif
 		// Update the animations before rendering.
 		SceneNode& root = scene_manager_->getRoot();
-		//root.preRender(*frustum_, cam.getPosition(), *this, true, pre_rendered_objects_);
 		root.preRender(*frustum_, camera_location, *this, true, pre_rendered_objects_);
 	}
 
@@ -211,7 +195,7 @@ void SimpleRenderer::render(const FrustumCaster& cam)
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo_id_);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	// Draw the skybox (if any).
+	// Draw the skybox first (if any).
 	if (sky_box_ != NULL)
 	{
 		glDisable(GL_DEPTH_TEST);
@@ -219,30 +203,7 @@ void SimpleRenderer::render(const FrustumCaster& cam)
 		glEnable(GL_DEPTH_TEST);
 	}
 
-
-	// Sort lights such that there are no more than MAX_LIGHT lights being provided to the shaders.
-	while (active_lights_.size() > LightShader::MAX_LIGHTS_)
-	{
-		std::vector<const SceneLeafLight*>::iterator i;
-		float max_distance = -1;
-		// Find the light that is furthest away from the camera.
-		for (std::vector<const SceneLeafLight*>::iterator ci = active_lights_.begin(); ci != active_lights_.end(); ++ci)
-		{
-			//float distance = glm::length((*ci)->getParent()->getGlobalLocation() - cam.getPosition());
-			float distance = glm::length((*ci)->getParent()->getGlobalLocation() - camera_location);
-			if (distance > max_distance)
-			{
-				i = ci;
-				max_distance = distance;
-			}
-		}
-
-		active_lights_.erase(i);
-	}
-	
-	//std::cout << "#lights: " << active_lights_.size() << std::endl;
-
-	bool cull_face_enabled = true;
+	//bool cull_face_enabled = true;
 	glEnable(GL_CULL_FACE);
 
 	// Two pass rendering, first for all objects which are not transparent and then for all objects which are.
@@ -250,47 +211,61 @@ void SimpleRenderer::render(const FrustumCaster& cam)
 	{
 		const RenderableSceneLeaf* leaf = *ci;
 		++rendered_objects_;
-
+		
 		if (!leaf->isTransparent())
 		{
+			// Find the closest lights.
+			std::vector<const SceneLeafLight*> closest_lights;
+			findClosestLights(active_lights_, *leaf, closest_lights);
+
 			if (leaf->isDoubleSided())// && cull_face_enabled)
 			{
 				glDisable(GL_CULL_FACE);
-				cull_face_enabled = false;
+				//cull_face_enabled = false;
 			}
 			else// if (!cull_face_enabled)
 			{
 				glEnable(GL_CULL_FACE);
-				cull_face_enabled = true;
+				//cull_face_enabled = true;
 			}
-			leaf->draw(view_matrix, perspective_matrix, active_lights_, NULL);
+			//leaf->draw(view_matrix, perspective_matrix, active_lights_, NULL);
+			leaf->draw(view_matrix, perspective_matrix, closest_lights, NULL);
 		}
 	}
 	
+	ShaderInterface::allRender();
+	
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
 	// Render the particles.
 	for (std::vector<const RenderableSceneLeaf*>::const_iterator ci = active_entities_.begin(); ci != active_entities_.end(); ++ci)
 	{
 		const RenderableSceneLeaf* leaf = *ci;
+
 		if (leaf->isTransparent())
 		{
+			// Find the closest lights.
+			std::vector<const SceneLeafLight*> closest_lights;
+			findClosestLights(active_lights_, *leaf, closest_lights);
+
 			if (leaf->isDoubleSided())// && cull_face_enabled)
 			{
 				glDisable(GL_CULL_FACE);
-				cull_face_enabled = false;
+				//cull_face_enabled = false;
 			}
 			else// if (!cull_face_enabled)
 			{
 				glEnable(GL_CULL_FACE);
-				cull_face_enabled = true;
+				//cull_face_enabled = true;
 			}
-			leaf->draw(view_matrix, perspective_matrix, active_lights_, NULL);
+			//leaf->draw(view_matrix, perspective_matrix, active_lights_, NULL);
+			leaf->draw(view_matrix, perspective_matrix, closest_lights, NULL);
 		}
 	}
+	ShaderInterface::allRender();
 	glDisable(GL_BLEND);
 	
+	/*
 	if (double_lights_ != 0 || double_models_ != 0)
 	{
 #ifdef _WIN32
@@ -301,9 +276,46 @@ void SimpleRenderer::render(const FrustumCaster& cam)
 		std::cout << "Double lights: " << double_lights_ << ". Double models: " << double_models_ << std::endl;
 #endif
 	}
-	
+	*/
 	//ss_ << "end...";
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void SimpleRenderer::findClosestLights(const std::vector<const SceneLeafLight*>& active_lights, const SceneLeaf& leaf, std::vector<const SceneLeafLight*>& closest_lights)
+{
+	// Find the closest lights.
+	std::vector<float> light_distances;
+	for (const SceneLeafLight* light : active_lights)
+	{
+		float distance = glm::distance(leaf.getParent()->getGlobalLocation(), light->getParent()->getGlobalLocation());
+		// Check if this light is closer than others.
+		if (closest_lights.size() < LightShader::MAX_LIGHTS_)
+		{
+			closest_lights.push_back(light);
+			light_distances.push_back(distance);
+		}
+		else
+		{
+			float highest_distance = 0;
+			unsigned int highest_distance_index = 0;
+			for (unsigned int i = 0; i < closest_lights.size(); ++i)
+			{
+				if (highest_distance < light_distances[i])
+				{
+					highest_distance = light_distances[i];
+					highest_distance_index = i;
+				}
+			}
+
+			if (distance < highest_distance)
+			{
+				closest_lights.erase(closest_lights.begin() + highest_distance_index);
+				light_distances.erase(light_distances.begin() + highest_distance_index);
+				closest_lights.push_back(light);
+				light_distances.push_back(distance);
+			}
+		}
+	}
 }
 
 void SimpleRenderer::visit(const SceneLeafLight& light)
@@ -311,10 +323,10 @@ void SimpleRenderer::visit(const SceneLeafLight& light)
 	if (std::find(active_lights_.begin(), active_lights_.end(), &light) != active_lights_.end())
 	{
 		++double_lights_;
-	//	return;
+		return;
 	}
 
-	light.getLight().setId(active_lights_.size());
+	//light.getLight().setId(active_lights_.size());
 	active_lights_.push_back(&light);
 }
 
@@ -323,7 +335,7 @@ void SimpleRenderer::visit(const RenderableSceneLeaf& model)
 	if (std::find(active_entities_.begin(), active_entities_.end(), &model) != active_entities_.end())
 	{
 		++double_models_;
-	//	return;
+		return;
 	}
 
 	if (model.getType() == SKYBOX)
@@ -349,3 +361,5 @@ void SimpleRenderer::onResize(int width, int height)
 	glBindTexture(GL_TEXTURE_2D, depth_texture_->getTextureId());
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH32F_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV, NULL);
 }
+
+};

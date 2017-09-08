@@ -2,18 +2,22 @@
 #include <Windows.h>
 #endif
 
-#include "HeightMap.h"
+#include "dpengine/entities/HeightMap.h"
 
 #include <complex>
 #include <math.h>
+#include <algorithm> 
 
-#include "../math/Math.h"
-#include "../math/Plane.h"
-#include "../collision/CollisionInfo.h"
-#include "../collision/BoxCollision.h"
+#include "dpengine/math/Math.h"
+#include "dpengine/math/Plane.h"
+#include "dpengine/collision/CollisionInfo.h"
+#include "dpengine/collision/ConvexPolygon.h"
+
+namespace DreadedPE
+{
 
 HeightMap::HeightMap(unsigned int width, unsigned int height, float cell_size, const std::vector<float>& height_map, SceneManager& scene_manager, SceneNode* parent, const glm::mat4& transformation, ENTITY_TYPE type, const std::string& name, bool init_children)
-	: Entity(scene_manager, parent, transformation, type, name, init_children), width_(width), height_(height), cell_size_(cell_size), height_map_(&height_map)
+	: Entity(scene_manager, parent, transformation, type, name, glm::vec3(1, 1, 1), init_children), width_(width), height_(height), cell_size_(cell_size), height_map_(&height_map)
 {
 
 }
@@ -144,7 +148,7 @@ bool HeightMap::getCollisions(Entity& entity, const glm::vec3& begin, const glm:
 					CollisionInfo ci;
 					ci.colliding_entity_ = const_cast<HeightMap*>(this);
 					ci.other_colliding_entity_ = &entity;
-					ci.collision_loc_.push_back(plane_intersection);
+					CollisionPoint cp(plane_intersection, NULL, NULL);
 					info.push_back(ci);
 					found_collision = true;
 				}
@@ -153,7 +157,7 @@ bool HeightMap::getCollisions(Entity& entity, const glm::vec3& begin, const glm:
 					CollisionInfo ci;
 					ci.colliding_entity_ = const_cast<HeightMap*>(this);
 					ci.other_colliding_entity_ = &entity;
-					ci.collision_loc_.push_back(plane_intersection);
+					CollisionPoint cp(plane_intersection, NULL, NULL);
 					info.push_back(ci);
 					found_collision = true;
 				}
@@ -312,11 +316,15 @@ bool HeightMap::doesCollide(Entity& entity, CollisionInfo& info) const
 {
 	if (&entity != this)
 	{
-		for (unsigned int i = 0; i < 8; ++i)
+		for (std::vector<const Plane*>::const_iterator ci = entity.getCollisionChecker().getPlanes().begin(); ci != entity.getCollisionChecker().getPlanes().end(); ++ci)
 		{
-			if (doesCollide(&entity, entity.getCollisionChecker().getPoints()[i]))
+			const Plane* plane = *ci;
+			for (std::vector<glm::vec3>::const_iterator ci = plane->getPoints().begin(); ci != plane->getPoints().end(); ++ci)
 			{
-				return true;
+				if (doesCollide(&entity, *ci))
+				{
+					return true;
+				}
 			}
 		}
 	}
@@ -501,3 +509,5 @@ float HeightMap::getHeight(float x, float z) const
     float xInterp1 = (*height_map_)[p2] + fracX * ((*height_map_)[p3] - (*height_map_)[p2]);
     return xInterp0 + fracZ * (xInterp1 - xInterp0);
 }
+
+};

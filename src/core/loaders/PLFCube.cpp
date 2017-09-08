@@ -1,4 +1,7 @@
-#include "PLFCube.h"
+#include "dpengine/loaders/PLFCube.h"
+
+namespace DreadedPE
+{
 
 PLF_Cube::PLF_Cube(const glm::vec3& bottom_left_away,
 			const glm::vec3& bottom_right_away,
@@ -193,3 +196,5 @@ std::ostream& operator<<(std::ostream& os, const PLF_Cube& cube)
 	
 	return os;
 }
+
+};

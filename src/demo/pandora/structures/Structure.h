@@ -3,11 +3,15 @@
 
 #include <vector>
 #include <glm/glm.hpp>
-#include "../../../core/entities/Entity.h"
+#include "dpengine/entities/Entity.h"
 #include "../level/MissionSite.h"
 
-class SceneNode;
-class SceneManager;
+namespace DreadedPE
+{
+	class SceneNode;
+	class SceneManager;
+};
+
 class MissionSite;
 class Valve;
 
@@ -15,11 +19,11 @@ class InspectionPoint;
 class InspectionGoal;
 class OntologyInterface;
 
-class Structure : public Entity
+class Structure : public DreadedPE::Entity
 {
 public:
-	Structure(const std::string& name, const std::string& plf_file_name, const std::string& texture_file_name, SceneManager& scene_manager, SceneNode* parent, MissionSite& mission_site, const glm::mat4& transformation, const std::vector<InspectionPoint*>& inspection_points, bool separate_inspection_goals = false);
-	Structure(const std::string& name, SceneManager& scene_manager, SceneNode* parent, MissionSite& mission_site, const glm::mat4& transformation);
+	Structure(const std::string& name, const std::string& plf_file_name, const std::string& texture_file_name, DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, MissionSite& mission_site, const glm::mat4& transformation, const std::vector<InspectionPoint*>& inspection_points, bool separate_inspection_goals = false);
+	Structure(const std::string& name, DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, MissionSite& mission_site, const glm::mat4& transformation);
 	
 	const std::vector<InspectionPoint*>& getInspectionPoints() const { return inspection_points_; }
 	const std::vector<InspectionGoal*>& getInspectionGoals() const { return inspection_goals_; }

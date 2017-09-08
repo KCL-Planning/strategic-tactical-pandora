@@ -7,7 +7,10 @@
 
 #include <ros/ros.h>
 
-class Entity;
+namespace DreadedPE
+{
+	class Entity;
+};
 
 class Odometry
 {
@@ -15,14 +18,14 @@ public:
 	/**
 	 * Create an odometry sensor for the given entity.
 	 */
-	Odometry(Entity& entity);
+	Odometry(DreadedPE::Entity& entity);
 
 	/**
 	 * Send a message through ROS which contains the location of this entity.
 	 */
 	void update(float dt);
 private:
-	Entity* entity_;
+	DreadedPE::Entity* entity_;
 };
 
 #endif

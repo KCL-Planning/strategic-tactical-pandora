@@ -24,7 +24,7 @@
 #include "../level/MissionSite.h"
 #include "../gui/ActionLabel.h"
 
-#include "../../../core/entities/HeightMap.h"
+#include "../models/HeightMap.h"
 
 const std::string ActionController::GOTO_ACTION_NAME = "goto";
 const std::string ActionController::GOTO_STRUCTURE_ACTION_NAME = "goto_structure";
@@ -41,7 +41,7 @@ const std::string ActionController::RECHARGE_ACTION_NAME = "recharge";
 
 #define USE_MULTIPLE_AUVS
 
-ActionController::ActionController(SceneManager& scene_manager, ros::NodeHandle& node_handle, AUV& auv, HeightMap& height_map, FollowWaypointController& follow_waypoint_controller, OntologyInterface& ontology, ActionLabel* label)
+ActionController::ActionController(DreadedPE::SceneManager& scene_manager, ros::NodeHandle& node_handle, AUV& auv, DreadedPE::HeightMap& height_map, FollowWaypointController& follow_waypoint_controller, OntologyInterface& ontology, ActionLabel* label)
 	: node_handle_(&node_handle), auv_(&auv), height_map_(&height_map), follow_waypoint_controller_(&follow_waypoint_controller), ontology_(&ontology), current_action_(NULL), label_(label)
 {
 	std::stringstream ss_dispatch;
@@ -295,7 +295,7 @@ void ActionController::actionDispatch(const planning_msgs::ActionDispatch::Const
 	{
 		std::string valve_id;
 		float desired_increment = 0;
-		int valve_deadline;
+		int valve_deadline = 0;
 		for (std::vector<diagnostic_msgs::KeyValue>::const_iterator ci = msg->parameters.begin(); ci != msg->parameters.end(); ++ci)
 		{
 			if ("valve_id" == (*ci).key)

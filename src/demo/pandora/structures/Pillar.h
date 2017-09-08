@@ -1,17 +1,21 @@
 #ifndef DEMO_PANDORA_STRUCTURES_PILLAR_H
 #define DEMO_PANDORA_STRUCTURES_PILLAR_H
 
+#include <memory>
 #include <glm/glm.hpp>
 #include <string>
 
-#include "../../../core/entities/Entity.h"
+#include "dpengine/entities/Entity.h"
 
 class OntologyInterface;
-class SceneManager;
-class SceneNode;
+namespace DreadedPE
+{
+	class SceneManager;
+	class SceneNode;
+	class Texture;
+};
 class InspectionPoint;
 class MissionSite;
-class Texture;
 
 /**
  * Waypoint:"canSeePillar" -> Pillar
@@ -20,10 +24,10 @@ class Texture;
  * 
  * 
  */
-class Pillar : public Entity
+class Pillar : public DreadedPE::Entity
 {
 public:
-	Pillar(const std::string& name, MissionSite& mission_site, SceneManager& scene_manager, SceneNode* parent, const glm::mat4& transformation, const std::string& level_file_name, Texture& texture);
+	Pillar(const std::string& name, MissionSite& mission_site, DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, const glm::mat4& transformation, const std::string& level_file_name, DreadedPE::Texture& texture);
 	//int getId() const { return id_; }
 	void setObserved();// { has_been_observed_ = true; }
 	bool hasBeenObserved() const { return has_been_observed_; }
@@ -41,7 +45,7 @@ private:
 	bool notification_sent_;
 	std::vector<InspectionPoint*> inspection_points_;
 	MissionSite* mission_site_;
-	Material* wfl_material_;
+	std::shared_ptr<DreadedPE::Material> wfl_material_;
 };
 
 #endif

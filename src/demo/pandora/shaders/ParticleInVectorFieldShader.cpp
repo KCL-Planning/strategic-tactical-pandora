@@ -19,13 +19,13 @@ GLuint ParticleComputerShader::buffer_point_lifetime_id_ = 0;
 */
 
 ParticleComputerShader::ParticleComputerShader(ParticleEmitter& particle_system)
-	: GLSLProgram("shaders/ParticleCalculator.vert"), particle_system_(&particle_system)
+	: DreadedPE::GLSLProgram("shaders/ParticleCalculator.vert"), particle_system_(&particle_system)
 {
 	init();
 }
 
 ParticleComputerShader::ParticleComputerShader(const std::string& vertex_shader, ParticleEmitter& particle_system)
-	: GLSLProgram(vertex_shader), particle_system_(&particle_system)
+	: DreadedPE::GLSLProgram(vertex_shader), particle_system_(&particle_system)
 {
 	init();
 }

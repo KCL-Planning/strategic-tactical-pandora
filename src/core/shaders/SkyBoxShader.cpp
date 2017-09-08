@@ -1,10 +1,13 @@
 #include <glm/gtc/type_ptr.hpp>
 
-#include "SkyBoxShader.h"
-#include "../scene/Material.h"
-#include "../scene/SceneLeafModel.h"
-#include "../texture/Texture.h"
-#include "../../shapes/Shape.h"
+#include "dpengine/shaders/SkyBoxShader.h"
+#include "dpengine/scene/Material.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/texture/Texture.h"
+#include "dpengine/shapes/Shape.h"
+
+namespace DreadedPE
+{
 
 SkyBoxShader* SkyBoxShader::shader_ = NULL;
 
@@ -14,14 +17,9 @@ SkyBoxShader::SkyBoxShader(const std::string& vertex_shader, const std::string& 
 
 }
 
-void SkyBoxShader::initialise(const SceneLeafLight& light_node, const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const SceneLeafLight*>& lights)
+void SkyBoxShader::prepareToRender(const SceneLeafModel& model_node, const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const SceneLeafLight*>& lights)
 {
-
-}
-
-void SkyBoxShader::initialise(const SceneLeafModel& model_node, const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const SceneLeafLight*>& lights)
-{
-	std::map<const Shape*, GLuint>::iterator mapped_i = shape_to_vbo_.find(&model_node.getModel());
+	std::map<const Shape*, GLuint>::iterator mapped_i = shape_to_vbo_.find(model_node.getShape().get());
 	GLuint vbo_index;
 	if (mapped_i == shape_to_vbo_.end())
 	{
@@ -38,11 +36,12 @@ void SkyBoxShader::initialise(const SceneLeafModel& model_node, const glm::mat4&
 		glDisableVertexAttribArray(7);
 
 		//Bind the vertex array and set the vertex pointer to point at it
-		glBindBuffer(GL_ARRAY_BUFFER, model_node.getModel().getVertexBufferId());
+		glBindBuffer(GL_ARRAY_BUFFER, model_node.getShape()->getVertexBufferId());
 		glVertexAttribPointer((GLint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model_node.getModel().getIndexBufferId());
-		shape_to_vbo_[&model_node.getModel()] = vbo_index;
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model_node.getShape()->getIndexBufferId());
+		shape_to_vbo_[model_node.getShape().get()] = vbo_index;
+		model_node.getShape()->addDestructionListener(*this);
 	}
 	else
 	{
@@ -52,16 +51,6 @@ void SkyBoxShader::initialise(const SceneLeafModel& model_node, const glm::mat4&
 	if (last_used_shader_ != this)
 	{
 		bindShader();
-/*	
-		glEnableVertexAttribArray(0);
-		glDisableVertexAttribArray(1);
-		glDisableVertexAttribArray(2);
-		glDisableVertexAttribArray(3);
-		glDisableVertexAttribArray(4);
-		glDisableVertexAttribArray(5);
-		glDisableVertexAttribArray(6);
-		glDisableVertexAttribArray(7);
-*/
 	}
 
 	glm::mat4 model_view_matrix = view_matrix * model_matrix;
@@ -70,21 +59,13 @@ void SkyBoxShader::initialise(const SceneLeafModel& model_node, const glm::mat4&
 	glUniformMatrix4fv(modelview_matrix_loc_, 1, false, glm::value_ptr(model_view_matrix));
 	glUniformMatrix4fv(projection_matrix_loc_, 1, false, glm::value_ptr(projection_matrix));
 
-	assert (model_node.getMaterial().get1DTextures().size() == 0);
-	assert (model_node.getMaterial().get2DTextures().size() == 0);
-	assert (model_node.getMaterial().getCubeTextures().size() == 1);
+	assert (model_node.getMaterial()->get1DTextures().size() == 0);
+	assert (model_node.getMaterial()->get2DTextures().size() == 0);
+	assert (model_node.getMaterial()->getCubeTextures().size() == 1);
 
-	//glActiveTexture(GL_TEXTURE20);
-	//glBindTexture(GL_TEXTURE_CUBE_MAP, model_node.getMaterial().getCubeTextures()[0]->getTextureId());
-	//glUniform1i(texture0_loc_, 20);
-	glUniform1i(texture0_loc_, model_node.getMaterial().getCubeTextures()[0]->getActiveTextureId());
-/*
-	//Bind the vertex array and set the vertex pointer to point at it
-	glBindBuffer(GL_ARRAY_BUFFER, model_node.getModel().getVertexBufferId());
-	glVertexAttribPointer((GLint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-*/
+	glUniform1i(texture0_loc_, model_node.getMaterial()->getCubeTextures()[0]->getActiveTextureId());
 
-	model_node.getModel().render();
+	glDrawElements(model_node.getShape()->getRenderingMode(), model_node.getShape()->getIndices().size(), GL_UNSIGNED_INT, 0);
 
 	glBindVertexArray(0);
 }
@@ -116,3 +97,5 @@ SkyBoxShader& SkyBoxShader::getShader()
 	}
 	return *shader_;
 }
+
+};

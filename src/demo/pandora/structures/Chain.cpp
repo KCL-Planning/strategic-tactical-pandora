@@ -2,29 +2,24 @@
 
 #include <stdlib.h>
 
-#include "../../../core/loaders/AssimpLoader.h"
-#include "../../../core/loaders/PortalLevelFormatLoader.h"
-#include "../../../core/texture/TargaTexture.h"
-#include "../../../core/scene/SceneManager.h"
-#include "../../../core/scene/SceneLeaf.h"
-#include "../../../core/scene/SceneLeafModel.h"
-#include "../../../core/scene/SceneNode.h"
-#include "../../../core/scene/Material.h"
-#include "../../../core/shaders/BasicShadowShader.h"
-#include "../../../core/models/AnimatedModel.h"
-#include "../../../core/texture/Texture.h"
-#include "../../../core/entities/Entity.h"
+#include "dpengine/loaders/AssimpLoader.h"
+#include "dpengine/loaders/PortalLevelFormatLoader.h"
+#include "dpengine/texture/TargaTexture.h"
+#include "dpengine/scene/SceneManager.h"
+#include "dpengine/scene/SceneLeaf.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/scene/SceneNode.h"
+#include "dpengine/scene/Material.h"
+#include "dpengine/shaders/BasicShadowShader.h"
+#include "dpengine/models/AnimatedModel.h"
+#include "dpengine/texture/Texture.h"
+#include "dpengine/entities/Entity.h"
 
-#include "../../../core/collision/BoxCollision.h"
+#include "dpengine/collision/ConvexPolygon.h"
 
-#include "../../../shapes/Cube.h"
+#include "dpengine/shapes/Cube.h"
 
-#include "../../instance_rendering/InstanceShader.h"
-#include "../../instance_rendering/SceneLeafInstanced.h"
-#include "../../instance_rendering/InstanceRenderedShape.h"
-#include "../../instance_rendering/InstanceRenderedSceneNode.h"
-
-#include "../../../core/entities/HeightMap.h"
+#include "dpengine/entities/HeightMap.h"
 
 #include "../Waypoint.h"
 #include "../level/MissionSite.h"
@@ -34,7 +29,7 @@
 
 int Chain::global_chain_id_ = 0;
 
-Chain::Chain(MissionSite& mission_site, SceneManager& scene_manager, SceneNode* parent, HeightMap& height_map, const glm::mat4& transformation, unsigned int nr_chain_links)
+Chain::Chain(MissionSite& mission_site, DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, DreadedPE::HeightMap& height_map, const glm::mat4& transformation, unsigned int nr_chain_links)
 	: Structure("chain", scene_manager, parent, mission_site, transformation), has_been_observed_(false), notification_sent_(false), mission_site_(&mission_site)
 {
 	std::stringstream ss;
@@ -44,19 +39,19 @@ Chain::Chain(MissionSite& mission_site, SceneManager& scene_manager, SceneNode* 
 	
 	chain_goal_ = new ChainGoal(*this);
 	
-	Texture* grass_texture = TargaTexture::loadTexture("data/models/Pandora/misc/atlas/ColourAtlas.tga");
+	DreadedPE::Texture* grass_texture = DreadedPE::TargaTexture::loadTexture("data/models/Pandora/misc/atlas/ColourAtlas.tga");
 	
 	// Initialise the materials for the chain.
-	MaterialLightProperty* chain_ambient = new MaterialLightProperty(0.7f, 0.7f, 0.7f, 1.0f);
-	MaterialLightProperty* chain_diffuse = new MaterialLightProperty(0.8f, 0.8f, 0.8f, 1.0f);
-	MaterialLightProperty* chain_specular = new MaterialLightProperty(0.0f, 0.0f, 0.0f, 1.0f);
-	MaterialLightProperty* chain_emmisive = new MaterialLightProperty(0.5f, 0.5f, 0.5f, 1.0f);
+	DreadedPE::MaterialLightProperty chain_ambient(0.7f, 0.7f, 0.7f, 1.0f);
+	DreadedPE::MaterialLightProperty chain_diffuse(0.8f, 0.8f, 0.8f, 1.0f);
+	DreadedPE::MaterialLightProperty chain_specular(0.0f, 0.0f, 0.0f, 1.0f);
+	DreadedPE::MaterialLightProperty chain_emmisive(0.5f, 0.5f, 0.5f, 1.0f);
 
-	Material* material = new Material(*chain_ambient, *chain_diffuse, *chain_specular, *chain_emmisive);
+	std::shared_ptr<DreadedPE::Material> material(std::make_shared<DreadedPE::Material>(chain_ambient, chain_diffuse, chain_specular, chain_emmisive));
 	material->add2DTexture(*grass_texture);
 	
 	// Load the chain model.
-	std::pair<AnimatedModel*, std::map<aiTextureType, std::vector<Texture*>* >* > chain_obj = AssimpLoader::LoadModel(scene_manager, "data/models/Pandora/misc/small_chain.obj");
+	std::pair<std::shared_ptr<DreadedPE::AnimatedModel>, std::map<aiTextureType, std::vector<DreadedPE::Texture*>* >* > chain_obj = DreadedPE::AssimpLoader::LoadModel(scene_manager, "data/models/Pandora/misc/small_chain.obj");
 	/*
 	InstanceRenderedShape* single_instance = new InstanceRenderedShape(*chain_obj.first);
 	InstanceRenderedSceneNode* chain = new InstanceRenderedSceneNode(scene_manager, this, glm::mat4(1.0f));
@@ -83,8 +78,8 @@ Chain::Chain(MissionSite& mission_site, SceneManager& scene_manager, SceneNode* 
 		
 		// Rotate the direction.
 		current_direction = glm::mat4(1.0f);
-		current_direction = glm::rotate(current_direction, total_pitch, glm::vec3(0, 1, 0));
-		current_direction = glm::rotate(current_direction, yaw, glm::vec3(1, 0, 0));
+		current_direction = glm::rotate(current_direction, glm::radians(total_pitch), glm::vec3(0, 1, 0));
+		current_direction = glm::rotate(current_direction, glm::radians(yaw), glm::vec3(1, 0, 0));
 		
 		glm::vec4 current_location2 = current_direction * glm::vec4(0.0f, 0.0f, -0.4f, 1.0f);
 		current_location += glm::vec3(current_location2);
@@ -92,23 +87,23 @@ Chain::Chain(MissionSite& mission_site, SceneManager& scene_manager, SceneNode* 
 		rotation += 55;
 		
 		glm::mat4 chain_location = glm::translate(glm::mat4(1.0f), current_location);
-		chain_location = glm::rotate(chain_location, total_pitch, glm::vec3(0, 1, 0));
-		chain_location = glm::rotate(chain_location, yaw, glm::vec3(1, 0, 0));
-		chain_location = glm::rotate(chain_location, rotation, glm::vec3(0, 0, 1));
+		chain_location = glm::rotate(chain_location, glm::radians(total_pitch), glm::vec3(0, 1, 0));
+		chain_location = glm::rotate(chain_location, glm::radians(yaw), glm::vec3(1, 0, 0));
+		chain_location = glm::rotate(chain_location, glm::radians(rotation), glm::vec3(0, 0, 1));
 		
 		//ChainLink* chain_link = new ChainLink(scene_manager, *this, chain_location);
-		Entity* chain_link = new Entity(scene_manager, this, chain_location, OBSTACLE, "chainlink");
+		DreadedPE::Entity* chain_link = new Entity(scene_manager, this, chain_location, DreadedPE::OBSTACLE, "chainlink");
 		//chain->addChild(*chain_link);
 		//chain_links_.push_back(chain_link);
 		
-		SceneNode* node = new SceneNode(*scene_manager_, this, chain_location);
-		SceneLeafModel* col_slm = new SceneLeafModel(*node, NULL, *chain_obj.first, *material, BasicShadowShader::getShader(), false, false);
+		DreadedPE::SceneNode* node = new DreadedPE::SceneNode(*scene_manager_, this, chain_location);
+		DreadedPE::SceneLeafModel* col_slm = new DreadedPE::SceneLeafModel(*node, NULL, chain_obj.first, material, DreadedPE::BasicShadowShader::getShader(), false, false);
 		
 		node->updateTransformations();
 		std::cout << "(" << node->getGlobalLocation().x << ", " << node->getGlobalLocation().y << node->getGlobalLocation().z << ")" << std::endl;
 		
 		// Create a bounding box per chain.
-		BoxCollision* bc = new BoxCollision(*chain_link, 0.2f, 0.1f, 0.8f);
+		DreadedPE::ConvexPolygon* bc = new DreadedPE::ConvexPolygon(*chain_link, 0.2f, 0.1f, 0.8f);
 		chain_link->addCollision(*bc);
 		
 		if (rand() < RAND_MAX / 16 || ((on_surface && last_links_since_change > 16) || (!on_surface && last_links_since_change > 12)))

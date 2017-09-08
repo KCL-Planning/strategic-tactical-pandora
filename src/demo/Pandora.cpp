@@ -12,44 +12,42 @@
 #include <ros/ros.h>
 #endif
 
-#include <glm/gtc/matrix_transform.hpp> 
+#include <glm/gtc/matrix_transform.hpp>
 #include <GL/glew.h>
 
-#include "../core/scene/frustum/Frustum.h"
-#include "../core/loaders/targa.h"
-#include "../core/entities/camera/Camera.h"
-#include "../shapes/terrain.h"
-#include "../shapes/Water.h"
-#include "../shapes/Tree.h"
-#include "../shapes/sphere.h"
-#include "../shapes/Piramid.h"
-#include "../shapes/Cube.h"
-#include "../shapes/SkyBox.h"
-#include "../shapes/FrustumShape.h"
-#include "../core/light/PointLight.h"
-#include "../core/light/Light.h"
-#include "../core/light/DirectedLight.h"
+#include "dpengine/scene/frustum/Frustum.h"
+#include "dpengine/loaders/targa.h"
+#include "dpengine/entities/camera/Camera.h"
+#include "dpengine/shapes/terrain.h"
+#include "dpengine/shapes/Water.h"
+#include "dpengine/shapes/Tree.h"
+#include "dpengine/shapes/sphere.h"
+#include "dpengine/shapes/Piramid.h"
+#include "dpengine/shapes/Cube.h"
+#include "dpengine/shapes/SkyBox.h"
+#include "dpengine/shapes/FrustumShape.h"
+#include "dpengine/light/SpotLight.h"
+#include "dpengine/light/Light.h"
+#include "dpengine/light/DirectedLight.h"
 
-#include "../core/scene/SceneLeafLight.h"
-#include "../core/scene/SceneLeafModel.h"
-#include "../core/scene/SceneManager.h"
-#include "../core/scene/SceneNode.h"
-#include "../core/scene/SkyBoxLeaf.h"
-#include "../core/scene/portal/Region.h"
-#include "../shapes/terrain.h"
-#include "../core/scene/Material.h"
-#include "../core/shaders/TerrainShader.h"
-#include "../core/shaders/BasicShadowShader.h"
-#include "../core/shaders/ToonShader.h"
-#include "../core/shaders/WaterShader.h"
-#include "../core/shaders/SkyBoxShader.h"
-#include "../core/shaders/ShadowShader.h"
-#include "../core/shaders/AnimatedShadowShader.h"
-#include "../core/shaders/LineShader.h"
-#include "../core/shaders/MergeFBOShader.h"
-#include "../core/animation/LinearAnimation.h"
-#include "../core/animation/BouncingBox.h"
-#include "../core/entities/WavingWater.h"
+#include "dpengine/scene/SceneLeafLight.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/scene/SceneManager.h"
+#include "dpengine/scene/SceneNode.h"
+#include "dpengine/scene/SkyBoxLeaf.h"
+#include "dpengine/scene/portal/Region.h"
+#include "dpengine/shapes/terrain.h"
+#include "dpengine/scene/Material.h"
+#include "dpengine/shaders/TerrainShader.h"
+#include "dpengine/shaders/BasicShadowShader.h"
+#include "dpengine/shaders/AnimatedShadowShader.h"
+#include "dpengine/shaders/ToonShader.h"
+#include "dpengine/shaders/WaterShader.h"
+#include "dpengine/shaders/SkyBoxShader.h"
+#include "dpengine/shaders/ShadowShader.h"
+#include "dpengine/shaders/LineShader.h"
+#include "dpengine/shaders/MergeFBOShader.h"
+#include "dpengine/renderer/CameraRenderer.h"
 #include "pandora/AUV.h"
 #include "pandora/Propeller.h"
 
@@ -57,47 +55,35 @@
 #include "pandora/ontology/OctomapBuilder.h"
 #endif
 
-#include "../core/collision/BoxCollision.h"
-#include "../core/collision/CollisionInfo.h"
-#include "../core/entities/Lever.h"
-#include "../core/entities/Bridge.h"
-#include "../core/scene/frustum/SphereCheck.h"
-#include "../core/entities/camera/DynamicCamera.h"
-#include "../core/entities/camera/FreeMovingCamera.h"
+#include "dpengine/collision/CollisionInfo.h"
+#include "dpengine/collision/CollisionPoint.h"
+#include "dpengine/scene/frustum/SphereCheck.h"
+#include "dpengine/entities/camera/DynamicCamera.h"
+#include "dpengine/entities/camera/FreeMovingCamera.h"
 
-#include "../core/entities/behaviours/RotateBehaviour.h"
+#include "dpengine/loaders/WavefrontLoader.h"
 
-#include "../core/loaders/WavefrontLoader.h"
+#include "dpengine/loaders/AssimpLoader.h"
 
-#include "../core/loaders/AssimpLoader.h"
+#include "dpengine/texture/Texture.h"
+#include "dpengine/texture/TargaTexture.h"
+#include "dpengine/texture/FreeImageLoader.h"
 
-#include "../core/texture/Texture.h"
-#include "../core/texture/TargaTexture.h"
-#include "../core/texture/FreeImageLoader.h"
+#include "dpengine/loaders/PortalLevelFormatLoader.h"
 
-#include "../core/loaders/PortalLevelFormatLoader.h"
+#include "dpengine/models/AnimatedModel.h"
 
-#include "flat/Wall.h"
-
-#include "../core/models/AnimatedModel.h"
-
-#include "shooter/ArmedPlayer.h"
-
-#ifndef _WIN32
 #include "pandora/gui/PlanVisualiser.h"
 #include "pandora/gui/StrategicPlanVisualiser.h"
 #include "pandora/gui/WaypointLabeler.h"
 #include "pandora/gui/BillBoard.h"
-#endif
 
-#include "../core/loaders/AssimpLoader.h"
+#include "dpengine/loaders/AssimpLoader.h"
 
-#include "../core/entities/behaviours/HoverBehaviour.h"
-#include "../core/entities/behaviours/MoveBehaviour.h"
-#include "../core/entities/HeightMap.h"
+#include "dpengine/entities/HeightMap.h"
+#include <dpengine/renderer/Window.h>
 #include "pandora/ontology/ValveGoal.h"
 
-#ifndef _WIN32
 // ROS stuff.
 #include "pandora/ontology/Ontology.h"
 //#include "pandora/ontology/HWUOntology.h"
@@ -115,14 +101,16 @@
 #include "pandora/sensors/Odometry.h"
 #include "pandora/controllers/FollowWaypointController.h"
 //#include "pandora/controllers/ObserveController.h"
-#endif
 
 // GUI stuff.
-#include "../core/gui/themes/MyGUITheme.h"
-#include "../core/gui/fonts/TexturedFont.h"
+#include "dpengine/gui/themes/MyGUITheme.h"
+#include "dpengine/gui/fonts/TexturedFont.h"
 #include "pandora/gui/PlanLine.h"
 #include "pandora/gui/PlanningGUI.h"
 #include "pandora/gui/StrategicPlanGUIElement.h"
+#include "pandora/volumetric/LightVolumeShape.h"
+#include "pandora/volumetric/ShadowVolumeShader.h"
+#include "pandora/volumetric/VolumetricLightingPost.h"
 
 #include "pandora/structures/ValvePanel.h"
 #include "pandora/structures/Valve.h"
@@ -134,20 +122,16 @@
 //#include "pandora/structures/SmallManifold.h"
 #include "pandora/structures/RechargeStation.h"
 
-// Volumetric light.
-#include "volumetric/LightVolumeShape.h"
-#include "volumetric/ShadowVolumeShader.h"
-
 // Sea life.
 #include "pandora/models/Shark.h"
 #include "pandora/models/Seal.h"
 #include "pandora/models/UnderWaterVolcano.h"
 
-#include "../core/gui/themes/MyGUITheme.h"
-#include "../core/gui/Label.h"
-#include "../core/gui/Container.h"
-#include "../core/gui/GUIManager.h"
-#include "../core/gui/fonts/TexturedFont.h"
+#include "dpengine/gui/themes/MyGUITheme.h"
+#include "dpengine/gui/Label.h"
+#include "dpengine/gui/Container.h"
+#include "dpengine/gui/GUIManager.h"
+#include "dpengine/gui/fonts/TexturedFont.h"
 #include "gui_demo/FPSLabel.h"
 
 #include "pandora/shaders/CausticShader.h"
@@ -157,9 +141,9 @@
 #include "pandora/gui/EditorTool.h"
 #include "pandora/ROSTimer.h"
 
-Pandora::Pandora(SceneManager& scene_manager)
+Pandora::Pandora(DreadedPE::SceneManager& scene_manager)
 #ifndef _WIN32
-	: scene_manager_(&scene_manager), ros_node_(NULL)
+	: scene_manager_(&scene_manager), ros_node_(NULL), last_update_p_(0)
 #else
 	: scene_manager_(&scene_manager)
 #endif
@@ -170,6 +154,7 @@ Pandora::Pandora(SceneManager& scene_manager)
 void Pandora::receivePlannerStatus(const std_msgs::StringConstPtr& msg)
 {
 	planning_status_label_->setLabel(msg->data);
+	is_planning_ = "planning" == msg->data;
 }
 
 bool Pandora::getPointOnSeaBed(int mouse_x, int mouse_y, glm::vec3& collision)
@@ -190,13 +175,13 @@ bool Pandora::getPointOnSeaBed(int mouse_x, int mouse_y, glm::vec3& collision)
 	glm::vec3 world_coordinates = glm::vec3(glm::inverse(camera_node_->getViewMatrix()) * eye_ray);
 	glm::vec3 direction = glm::normalize(world_coordinates);
 	
-	CollisionInfo collision_info;
+	DreadedPE::CollisionInfo collision_info;
 	if (terrain_node_->doesCollide(*auv_, camera_node_->getGlobalLocation(), camera_node_->getGlobalLocation() + direction * 200.0f, collision_info))
 	{
-		for (std::vector<glm::vec3>::const_iterator ci = collision_info.collision_loc_.begin(); ci != collision_info.collision_loc_.end(); ++ci)
+		for (std::vector<DreadedPE::CollisionPoint>::const_iterator ci = collision_info.collision_loc_.begin(); ci != collision_info.collision_loc_.end(); ++ci)
 		{
-			std::cout << "Got a collision at: (" << (*ci).x << ", " << (*ci).y << ", " << (*ci).z << ")" << std::endl;
-			collision = *ci;
+			std::cout << "Got a collision at: (" << (*ci).intersection_point_.x << ", " << (*ci).intersection_point_.y << ", " << (*ci).intersection_point_.z << ")" << std::endl;
+			collision = (*ci).intersection_point_;
 			return true;
 		}
 	}
@@ -205,10 +190,8 @@ bool Pandora::getPointOnSeaBed(int mouse_x, int mouse_y, glm::vec3& collision)
 
 bool Pandora::init(int argc, char** argv)//, bool use_hwu_ontology)
 {
-#ifndef _WIN32
-	//ros::init(argc, argv, "PlannerVisualisation");
+	ros::init(argc, argv, "PlannerVisualisation");
 	ros_node_ = new ros::NodeHandle();
-#endif
 	
 	ros_timer_ = new ROSTimer(*ros_node_);
 	
@@ -236,31 +219,32 @@ bool Pandora::init(int argc, char** argv)//, bool use_hwu_ontology)
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.2, 0.2, 0.4, 1.0f);
 
-	glfwGetWindowSize(&width_, &height_);
+	DreadedPE::Window* window = DreadedPE::Window::getActiveWindow();
+	window->getSize(width_, height_);
 	
-	terrain_ = new Terrain();
-	terrain_->createRandomHeightmap(65, -2.0f, 2.0f);
+	std::shared_ptr<DreadedPE::Terrain> terrain(std::make_shared<DreadedPE::Terrain>());
+	terrain->createRandomHeightmap(65, -2.0f, 2.0f);
 
-	terrain_node_ = new HeightMap(terrain_->getWidth(), terrain_->getWidth(), terrain_->getVertices()[1].x - terrain_->getVertices()[0].x, terrain_->getHeights(), *scene_manager_, &scene_manager_->getRoot(), glm::mat4(1.0f), OBSTACLE, "terrain");
+	terrain_node_ = new DreadedPE::HeightMap(terrain->getWidth(), terrain->getWidth(), terrain->getVertices()[1].x - terrain->getVertices()[0].x, terrain->getHeights(), *scene_manager_, &scene_manager_->getRoot(), glm::mat4(1.0f), DreadedPE::OBSTACLE, "terrain");
 	
-	Texture* water_texture = TargaTexture::loadTexture("data/textures/waterbubble.tga");
-	Texture* grass_texture = TargaTexture::loadTexture("data/textures/grass.tga");
-	Texture* sand_texture = TargaTexture::loadTexture("data/models/Pandora/misc/sand.tga");
-	Texture* height_texture = TargaTexture::loadTexture("data/textures/underwater_height.tga");
-	Texture* auv_texture = TargaTexture::loadTexture("data/models/Pandora/misc/auv_texture.tga");
+	DreadedPE::Texture* water_texture = DreadedPE::TargaTexture::loadTexture("data/textures/waterbubble.tga");
+	DreadedPE::Texture* grass_texture = DreadedPE::TargaTexture::loadTexture("data/textures/grass.tga");
+	DreadedPE::Texture* sand_texture = DreadedPE::TargaTexture::loadTexture("data/models/Pandora/misc/sand.tga");
+	DreadedPE::Texture* height_texture = DreadedPE::TargaTexture::loadTexture("data/textures/underwater_height.tga");
+	DreadedPE::Texture* auv_texture = DreadedPE::TargaTexture::loadTexture("data/models/Pandora/misc/auv_texture.tga");
 	
 	// Initialise a terrain to render.
-	MaterialLightProperty* terrain_ambient = new MaterialLightProperty(0.7f, 0.7f, 0.7f, 1.0f);
-	MaterialLightProperty* terrain_diffuse = new MaterialLightProperty(0.8f, 0.8f, 0.8f, 1.0f);
-	MaterialLightProperty* terrain_specular = new MaterialLightProperty(0.0f, 0.0f, 0.0f, 1.0f);
-	MaterialLightProperty* terrain_emmisive = new MaterialLightProperty(0.5f, 0.5f, 0.5f, 1.0f);
+	DreadedPE::MaterialLightProperty terrain_ambient(0.7f, 0.7f, 0.7f, 1.0f);
+	DreadedPE::MaterialLightProperty terrain_diffuse(0.8f, 0.8f, 0.8f, 1.0f);
+	DreadedPE::MaterialLightProperty terrain_specular(0.0f, 0.0f, 0.0f, 1.0f);
+	DreadedPE::MaterialLightProperty terrain_emmisive(0.5f, 0.5f, 0.5f, 1.0f);
 
-	terrain_material_ = new Material(*terrain_ambient, *terrain_diffuse, *terrain_specular, *terrain_emmisive);
-	terrain_material_->add1DTexture(*height_texture);
+	std::shared_ptr<DreadedPE::Material> terrain_material(std::make_shared<DreadedPE::Material>(terrain_ambient, terrain_diffuse, terrain_specular, terrain_emmisive));
+	terrain_material->add1DTexture(*height_texture);
 	//terrain_material_->add2DTexture(*grass_texture);
-	terrain_material_->add2DTexture(*sand_texture);
+	terrain_material->add2DTexture(*sand_texture);
 
-	SceneLeafModel* terrain_leaf_node = new SceneLeafModel(*terrain_node_, NULL, *terrain_, *terrain_material_, CausticTerrainShader::getShader(), false, false);
+	DreadedPE::SceneLeafModel* terrain_leaf_node = new DreadedPE::SceneLeafModel(*terrain_node_, NULL, terrain, terrain_material, CausticTerrainShader::getShader(), false, false);
 	
 	// The AUV.
 	auv_ = new AUV(terrain_node_, glm::translate(glm::mat4(1.0), glm::vec3(0.0f, 3.0f, 0.0f)), *scene_manager_, *auv_texture, "auv0");
@@ -269,9 +253,9 @@ bool Pandora::init(int argc, char** argv)//, bool use_hwu_ontology)
 	//auv2_ = new AUV(terrain_node_, glm::translate(glm::mat4(1.0), glm::vec3(0.0f, 3.0f, 0.0f)), *scene_manager_, *grass_texture, "auv1");
 	//scene_manager_->addUpdateableEntity(*auv2_);
 
-	DirectedLight* sun = new DirectedLight(*scene_manager_, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), 1.01, 0.15, 0.01);
-	SceneNode* sun_node = new SceneNode(*scene_manager_, auv_, glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0, 20, 0)), -90.0f, glm::vec3(1, 0, 0)));
-	SceneLeafLight* light_leaf = new SceneLeafLight(*sun_node, NULL, *sun);
+	DreadedPE::DirectedLight* sun = new DreadedPE::DirectedLight(*scene_manager_, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), 1.01, 0.15, 0.01);
+	DreadedPE::SceneNode* sun_node = new DreadedPE::SceneNode(*scene_manager_, auv_, glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0, 20, 0)), glm::radians(-90.0f), glm::vec3(1, 0, 0)));
+	DreadedPE::SceneLeafLight* light_leaf = new DreadedPE::SceneLeafLight(*sun_node, NULL, *sun);
 
 	caustic_texture_ = new CausticTexture();
 
@@ -286,20 +270,20 @@ bool Pandora::init(int argc, char** argv)//, bool use_hwu_ontology)
 	level_loader->loadLevel(level);
 	auv_->setTransformation(level_loader->getAUVLocation());
 
-	MaterialLightProperty* ambient = new MaterialLightProperty(0, 0, 0, 0);
-	MaterialLightProperty* diffuse = new MaterialLightProperty(0, 0, 0, 0);
-	MaterialLightProperty* specular = new MaterialLightProperty(0, 0, 0, 0);
-	MaterialLightProperty* emmisive = new MaterialLightProperty(0, 0, 1, 0.1f);
-	Material* material = new Material(*ambient, *diffuse, *specular, *emmisive);
+	DreadedPE::MaterialLightProperty ambient(0, 0, 0, 0);
+	DreadedPE::MaterialLightProperty diffuse(0, 0, 0, 0);
+	DreadedPE::MaterialLightProperty specular(0, 0, 0, 0);
+	DreadedPE::MaterialLightProperty emmisive(0, 0, 1, 0.1f);
+	std::shared_ptr<DreadedPE::Material> material(std::make_shared<DreadedPE::Material>(ambient, diffuse, specular, emmisive));
 	
-	rrt_ = new RRT(*ros_node_, *scene_manager_, *auv_, *terrain_node_, *octomap_, *ontology_, *material);
+	rrt_ = new RRT(*ros_node_, *scene_manager_, *auv_, *terrain_node_, *octomap_, *ontology_, material);
 	ontology_->initialise(*rrt_);
 	
 	// Setup the GUI.
-	MyGUITheme* theme = new MyGUITheme();
-	Texture* font_texture = TargaTexture::loadTexture("data/textures/fonts/test_font.tga");
+	DreadedPE::MyGUITheme* theme = new DreadedPE::MyGUITheme("data/textures/gui.tga");
+	DreadedPE::Texture* font_texture = DreadedPE::TargaTexture::loadTexture("data/textures/fonts/test_font.tga");
 
-	Font* font = new TexturedFont(*font_texture);
+	DreadedPE::Font* font = new DreadedPE::TexturedFont(*font_texture);
 	
 	//WaypointLabeler* wl = new WaypointLabeler(*scene_manager_, *rrt_, *terrain_node_);
 
@@ -325,53 +309,41 @@ bool Pandora::init(int argc, char** argv)//, bool use_hwu_ontology)
 	UnderWaterVolcano* under_Water_volcano = new UnderWaterVolcano(*scene_manager_, terrain_node_, glm::mat4(1.0f), under_water_volcano_locations);
 	scene_manager_->addUpdateableEntity(*under_Water_volcano);
 	*/
+	
 	// Create a node that ignores the rotation.
-	SceneNode* stable_platform = new SceneNode(*scene_manager_, &auv_->getAUVNode(), glm::mat4(1.0f));
+	DreadedPE::SceneNode* stable_platform = new DreadedPE::SceneNode(*scene_manager_, &auv_->getAUVNode(), glm::mat4(1.0f));
 	stable_platform->ignoreRotations(true);
 	
 	{
-		PointLight* point_light = new PointLight(*scene_manager_, 34, glm::vec3(0.6f, 0.6f, 0.6f), glm::vec3(0.9f, 0.9f, 0.9f), glm::vec3(0.2f, 0.2f, 0.2f), 1.0f, 0.3f, 0.15f, 0.1f, 10.0f);
-		SceneNode* light_node = new SceneNode(*scene_manager_, &auv_->getAUVModel(),  glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.25f)));
-		SceneLeafLight* light_leaf = new SceneLeafLight(*light_node, NULL, *point_light);
+		DreadedPE::SpotLight* point_light = new DreadedPE::SpotLight(*scene_manager_, 34, glm::vec3(0.6f, 0.6f, 0.6f), glm::vec3(0.9f, 0.9f, 0.9f), glm::vec3(0.2f, 0.2f, 0.2f), 1.0f, 0.3f, 0.15f, 0.1f, 10.0f);
+		DreadedPE::SceneNode* light_node = new DreadedPE::SceneNode(*scene_manager_, &auv_->getAUVModel(),  glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.25f)));
+		DreadedPE::SceneLeafLight* light_leaf = new DreadedPE::SceneLeafLight(*light_node, NULL, *point_light);
 
-		volumetric_light_point_ = new PointLight(*scene_manager_, 34, glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(0.9f, 0.9f, 0.9f), glm::vec3(0.2f, 0.2f, 0.2f), 1.0f, 0.3f, 0.15f, 0.1f, 10.0f, 128, GL_NONE, GL_NONE, GL_NONE);
-		volumetric_light_leaf_ = new SceneLeafLight(*light_node, NULL, *volumetric_light_point_);
-		LightVolumeShape* lvs = new LightVolumeShape(*scene_manager_, *volumetric_light_point_);
-		
-		light_volume_leaf_ = new SceneLeafModel(*light_node, NULL, *lvs, *terrain_material_, ShadowVolumeShader::getShader(), false, true, COLLISION, ShadowRenderer::NO_SHADOW);
-		lvs->setLeafNode(*light_volume_leaf_);
-		/*
-		// AUV 2
-		PointLight* point_light2 = new PointLight(*scene_manager_, 34, glm::vec3(0.6f, 0.6f, 0.6f), glm::vec3(0.9f, 0.9f, 0.9f), glm::vec3(0.2f, 0.2f, 0.2f), 1.0f, 0.3f, 0.15f, 0.1f, 10.0f);
-		SceneNode* light_node2 = new SceneNode(*scene_manager_, &auv2_->getAUVModel(),  glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.25f)));
-		SceneLeafLight* light_leaf2 = new SceneLeafLight(*light_node2, NULL, *point_light2);
-		
-		volumetric_light_point2_ = new PointLight(*scene_manager_, 34, glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(0.9f, 0.9f, 0.9f), glm::vec3(0.2f, 0.2f, 0.2f), 1.0f, 0.3f, 0.15f, 0.1f, 10.0f, 128, GL_NONE, GL_NONE, GL_NONE);
-		volumetric_light_leaf2_ = new SceneLeafLight(*light_node2, NULL, *volumetric_light_point2_);
-		LightVolumeShape* lvs2 = new LightVolumeShape(*scene_manager_, *volumetric_light_point2_);
-		
-		light_volume_leaf2_ = new SceneLeafModel(*light_node2, NULL, *lvs2, *terrain_material_, ShadowVolumeShader::getShader(), false, true, COLLISION, ShadowRenderer::NO_SHADOW);
-		lvs2->setLeafNode(*light_volume_leaf2_);
-		*/
+		//VolumetricLightingPost* volumetric_post = new VolumetricLightingPost(*scene_manager_, *light_node, terrain_material);
+		//DreadedPE::CameraRenderer::getActiveCameraRenderer().addPostProcessRenderer(*volumetric_post);
 	}
+	
+	// Add the camera system.
+	//camera_node_ = new DreadedPE::DynamicCamera(*auv_, *scene_manager_, stable_platform, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 2.0f)), 90.0f, 1024, 768, 0.1f, 300.0f);
+	camera_node_ = new DreadedPE::FreeMovingCamera(*scene_manager_, terrain_node_, glm::mat4(1.0f), 90.0f, 1024, 768, 0.1f, 300.0f);
+	scene_manager_->addUpdateableEntity(*camera_node_);
+	
+	new DreadedPE::CameraRenderer(*scene_manager_, *camera_node_);
+	
 	
 #ifndef _WIN32
 	sonar_ = new Sonar(*ros_node_, *scene_manager_, auv_, *auv_, auv_->getName(), glm::mat4(1.0f), 0.1f, 60.0f, 30.0f);
 	//FrustumShape* frustumShape = new FrustumShape(0.1f, 60.0f, tan((30.0f / 180.0f) * M_PI) * 0.1f, tan((30.0f / 180.0f) * M_PI) * 0.1f, tan((30.0f / 180.0f) * M_PI) * 60.0f, tan((30.0f / 180.0f) * M_PI) * 60.0f);
 	//SceneLeafModel* scene_leaf_model = new SceneLeafModel(*sonar_, NULL, *frustumShape, *terrain_material_, BasicShadowShader::getShader(), true, false);
 #endif
-
-	// Add the camera system.
-	//camera_node_ = new DynamicCamera(*auv_, *scene_manager_, stable_platform, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 2.0f)), 90.0f, 1024, 768, 0.1f, 300.0f);
-	camera_node_ = new FreeMovingCamera(*scene_manager_, terrain_node_, glm::mat4(1.0f), 90.0f, 1024, 768, 0.1f, 300.0f);
-	scene_manager_->addUpdateableEntity(*camera_node_);
+	
 	
 	PlanVisualiser* pv = new PlanVisualiser(*ros_node_, *auv_, *ontology_, *terrain_node_, *scene_manager_, *theme, *font, *camera_node_);	action_controller_->addListener(*pv);
 	
 	StrategicPlanVisualiser* spv = new StrategicPlanVisualiser(*ros_node_, *auv_, *ontology_, *terrain_node_, *scene_manager_, *theme, *font, *camera_node_);
 	action_controller_->addListener(*spv);
 	
-	GUIManager& gui_manager = GUIManager::getInstance();
+	DreadedPE::GUIManager& gui_manager = DreadedPE::GUIManager::getInstance();
 	std::vector<glm::vec2> uv_mapping;
 	uv_mapping.push_back(glm::vec2(0.75f, 1.0f));
 	uv_mapping.push_back(glm::vec2(1.0f, 1.0f));
@@ -397,15 +369,15 @@ bool Pandora::init(int argc, char** argv)//, bool use_hwu_ontology)
 	action_controller_->addListener(*planning_gui_);
 	gui_manager.addFrame(*planning_gui_);
 	
-	MaterialLightProperty* inspection_point_material_ambient = new MaterialLightProperty(0, 0, 0, 0);
-	MaterialLightProperty* inspection_point_material_diffuse = new MaterialLightProperty(0, 0, 0, 0);
-	MaterialLightProperty* inspection_point_material_specular = new MaterialLightProperty(0, 0, 0, 0);
-	MaterialLightProperty* inspection_point_material_emmisive = new MaterialLightProperty(1, 1, 1, 1.0f);
-	Material* inspection_point_material = new Material(*inspection_point_material_ambient, *inspection_point_material_diffuse, *inspection_point_material_specular, *inspection_point_material_emmisive);
+	DreadedPE::MaterialLightProperty inspection_point_material_ambient(0, 0, 0, 0);
+	DreadedPE::MaterialLightProperty inspection_point_material_diffuse(0, 0, 0, 0);
+	DreadedPE::MaterialLightProperty inspection_point_material_specular(0, 0, 0, 0);
+	DreadedPE::MaterialLightProperty inspection_point_material_emmisive(1, 1, 1, 1.0f);
+	std::shared_ptr<DreadedPE::Material> inspection_point_material(std::make_shared<DreadedPE::Material>(inspection_point_material_ambient, inspection_point_material_diffuse, inspection_point_material_specular, inspection_point_material_emmisive));
 	inspection_point_material->add2DTexture(*grass_texture);
 	
-	MaterialLightProperty* view_point_material_emmisive = new MaterialLightProperty(1, 0, 1, 1.0f);
-	Material* view_point_material = new Material(*inspection_point_material_ambient, *inspection_point_material_diffuse, *inspection_point_material_specular, *view_point_material_emmisive);
+	DreadedPE::MaterialLightProperty view_point_material_emmisive(1, 0, 1, 1.0f);
+	std::shared_ptr<DreadedPE::Material> view_point_material(std::make_shared<DreadedPE::Material>(inspection_point_material_ambient, inspection_point_material_diffuse, inspection_point_material_specular, view_point_material_emmisive));
 	view_point_material->add2DTexture(*grass_texture);
 	
 	// Create some shapes to denote the inspection points.
@@ -417,20 +389,22 @@ bool Pandora::init(int argc, char** argv)//, bool use_hwu_ontology)
 			const InspectionPoint* ip = *ci;
 			std::cout << ip->getPose().x_ << " " << ip->getPose().y_ << " " << ip->getPose().z_ << std::endl;
 				
-			Sphere* sphere = new Sphere(10, 10, 0.1);
-			SceneNode* sphere_node = new SceneNode(*scene_manager_, terrain_node_, glm::translate(glm::mat4(1.0f), glm::vec3(ip->getPose().x_, ip->getPose().y_, ip->getPose().z_)));
-			SceneLeafModel* sphere_model = new SceneLeafModel(*sphere_node, NULL, *sphere, *inspection_point_material, BasicShadowShader::getShader(), false, false, OBJECT, ShadowRenderer::NO_SHADOW);
+			std::shared_ptr<DreadedPE::Sphere> sphere(std::make_shared<DreadedPE::Sphere>(10, 10, 0.1));
+			DreadedPE::SceneNode* sphere_node = new DreadedPE::SceneNode(*scene_manager_, terrain_node_, glm::translate(glm::mat4(1.0f), glm::vec3(ip->getPose().x_, ip->getPose().y_, ip->getPose().z_)));
+			DreadedPE::SceneLeafModel* sphere_model = new DreadedPE::SceneLeafModel(*sphere_node, NULL, sphere, inspection_point_material, DreadedPE::BasicShadowShader::getShader(), false, false, DreadedPE::OBJECT, DreadedPE::ShadowRenderer::NO_SHADOW);
 			
-			Sphere* sphere2 = new Sphere(10, 10, 0.2);
-			SceneNode* sphere_node2 = new SceneNode(*scene_manager_, terrain_node_, glm::translate(glm::mat4(1.0f), glm::vec3(ip->getVisiblePoint().x, ip->getVisiblePoint().y, ip->getVisiblePoint().z)));
-			SceneLeafModel* sphere_model2 = new SceneLeafModel(*sphere_node2, NULL, *sphere2, *view_point_material, BasicShadowShader::getShader(), false, false, OBJECT, ShadowRenderer::NO_SHADOW);
+			std::shared_ptr<DreadedPE::Sphere> sphere2(std::make_shared<DreadedPE::Sphere>(10, 10, 0.2));
+			DreadedPE::SceneNode* sphere_node2 = new DreadedPE::SceneNode(*scene_manager_, terrain_node_, glm::translate(glm::mat4(1.0f), glm::vec3(ip->getVisiblePoint().x, ip->getVisiblePoint().y, ip->getVisiblePoint().z)));
+			DreadedPE::SceneLeafModel* sphere_model2 = new DreadedPE::SceneLeafModel(*sphere_node2, NULL, sphere2, view_point_material, DreadedPE::BasicShadowShader::getShader(), false, false, DreadedPE::OBJECT, DreadedPE::ShadowRenderer::NO_SHADOW);
 		}
 	}
 //#endif
-	shadow_renderer_ = new ShadowRenderer(*scene_manager_, 512, GL_BACK, GL_NONE, GL_NONE);
+
+/*
+	shadow_renderer_ = new DreadedPE::ShadowRenderer(*scene_manager_, 512, GL_BACK, GL_NONE, GL_NONE);
 	
 	// Create a seperate framebuffer for the post processing.
-	post_processing_texture_ = new Texture(GL_TEXTURE_2D);
+	post_processing_texture_ = new DreadedPE::Texture(GL_TEXTURE_2D);
 	
 	//glGenTextures(1, &texture_id_);
 	glBindTexture(GL_TEXTURE_2D, post_processing_texture_->getTextureId());
@@ -450,22 +424,22 @@ bool Pandora::init(int argc, char** argv)//, bool use_hwu_ontology)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	EditorTool* et = new EditorTool(*scene_manager_, *ontology_, *theme, font->clone(), 100, 100, *camera_node_, *terrain_node_);
-	
+*/
 	// Setup the GUI for the FPS.
-	Container* fps_container = new Container(*theme, font->clone(), 10, 10, 120, 20, false);
-	Label* fps_label = new Label(*theme, 120, 20, "", 12);
+	DreadedPE::Container* fps_container = new DreadedPE::Container(*theme, font->clone(), 10, 10, 120, 20, false);
+	DreadedPE::Label* fps_label = new DreadedPE::Label(*theme, 120, 20, "", 12);
 	fps_container->addElement(*fps_label, 0, -20);
 	fps_label_ = new FPSLabel(*fps_label);
 
 	gui_manager.addFrame(*fps_container);
 	
-	time_container_ = new Container(*theme, font->clone(), width_ -  160, 10, 160, 20, false);
-	time_label_ = new Label(*theme, 160, 20, "0d 0h 0m 0s", 12);
+	time_container_ = new DreadedPE::Container(*theme, font->clone(), width_ -  160, 10, 160, 20, false);
+	time_label_ = new DreadedPE::Label(*theme, 160, 20, "0d 0h 0m 0s", 12);
 	time_container_->addElement(*time_label_, 0, -20);
 	gui_manager.addFrame(*time_container_);
 	
-	planning_status_container_ = new Container(*theme, font->clone(), width_ / 2.0f - 300, 10, 200, 20, false);
-	planning_status_label_ = new Label(*theme, 600, 20, "IDLE", 12);
+	planning_status_container_ = new DreadedPE::Container(*theme, font->clone(), width_ / 2.0f - 300, 10, 200, 20, false);
+	planning_status_label_ = new DreadedPE::Label(*theme, 600, 20, "IDLE", 12);
 	planning_status_container_->addElement(*planning_status_label_, 0, -20);
 	gui_manager.addFrame(*planning_status_container_);
 	
@@ -480,11 +454,13 @@ bool Pandora::postInit()
 	//PipeNetwork* pipe_network = new PipeNetwork(*scene_manager_, terrain_node_, ontology_->getMissionSites(), 1.0f);
 #endif
 	
-	glfwGetWindowSize(&width_, &height_);
+	DreadedPE::Window* window = DreadedPE::Window::getActiveWindow();
+	window->getSize(width_, height_);
+	
 	//return true;
 	// Lets add some sharks :)
 	//AssimpLoader* loader = new AssimpLoader();
-	std::pair<AnimatedModel*, std::map<aiTextureType, std::vector<Texture*>* >* > shark_properties = AssimpLoader::LoadModel(*scene_manager_, "data/models/Pandora/sea creatures/shark.dae");
+	std::pair<std::shared_ptr<DreadedPE::AnimatedModel>, std::map<aiTextureType, std::vector<DreadedPE::Texture*>* >* > shark_properties = DreadedPE::AssimpLoader::LoadModel(*scene_manager_, "data/models/Pandora/sea creatures/shark.dae");
 /*
 	Texture* diffuse_texture = (*(*shark_properties.second)[aiTextureType_DIFFUSE])[0];
 	MaterialLightProperty* ambient = new MaterialLightProperty(0.2f, 0.2f, 0.2f, 1.0f);
@@ -496,22 +472,21 @@ bool Pandora::postInit()
 	material->add2DTexture(*diffuse_texture);
 */
 	// Load the texture for the shark.
-	Texture* shark_texture = TargaTexture::loadTexture("data/models/Pandora/sea creatures/shark.tga");
+	DreadedPE::Texture* shark_texture = DreadedPE::TargaTexture::loadTexture("data/models/Pandora/sea creatures/shark.tga");
 	
-	MaterialLightProperty* shark_ambient = new MaterialLightProperty(0.2, 0.2, 0.2, 1.0);
-	MaterialLightProperty* shark_diffuse = new MaterialLightProperty(0.8, 0.8, 0.8, 1.0);
-	MaterialLightProperty* shark_specular = new MaterialLightProperty(0.01, 0.01, 0.01, 1.0);
-	MaterialLightProperty* shark_emissive = new MaterialLightProperty(0.6, 0.6, 0.6, 1.0);
+	DreadedPE::MaterialLightProperty shark_ambient(0.2, 0.2, 0.2, 1.0);
+	DreadedPE::MaterialLightProperty shark_diffuse(0.8, 0.8, 0.8, 1.0);
+	DreadedPE::MaterialLightProperty shark_specular(0.01, 0.01, 0.01, 1.0);
+	DreadedPE::MaterialLightProperty shark_emissive(0.6, 0.6, 0.6, 1.0);
 	
-	Material* shark_material = new Material(*shark_ambient, *shark_diffuse, *shark_specular, *shark_emissive);
+	std::shared_ptr<DreadedPE::Material> shark_material(std::make_shared<DreadedPE::Material>(shark_ambient, shark_diffuse, shark_specular, shark_emissive));
 	shark_material->add2DTexture(*shark_texture);
 	
-	
 	Shark* shark = new Shark(terrain_node_, glm::translate(glm::mat4(1.0), glm::vec3(20.0f, 13.25f, 0.0f)), *scene_manager_);
-	SceneLeafModel* chair_leaf_node = new SceneLeafModel(*shark, NULL, *shark_properties.first, *shark_material, AnimatedShadowShader::getShader(), false, false);
-	chair_leaf_node->setShadowType(ShadowRenderer::ANIMATED_SHADOW);
+	DreadedPE::SceneLeafModel* chair_leaf_node = new DreadedPE::SceneLeafModel(*shark, NULL, shark_properties.first, shark_material, DreadedPE::AnimatedShadowShader::getShader(), false, false);
+	chair_leaf_node->setShadowType(DreadedPE::ShadowRenderer::ANIMATED_SHADOW);
 
-	shark->init(*shark_material, BasicShadowShader::getShader());
+	shark->init(*shark_material, DreadedPE::BasicShadowShader::getShader());
 	
 	std::vector<glm::vec3> waypoints1;
 	waypoints1.push_back(glm::vec3(10, 15, 25));
@@ -520,10 +495,10 @@ bool Pandora::postInit()
 	shark->setWaypoints(waypoints1);
 	
 	Shark* shark2 = new Shark(terrain_node_, glm::translate(glm::mat4(1.0), glm::vec3(-20.0f, 45.25f, 0.0f)), *scene_manager_);
-	SceneLeafModel* chair_leaf_node2 = new SceneLeafModel(*shark2, NULL, *shark_properties.first, *shark_material, AnimatedShadowShader::getShader(), false, false);
-	chair_leaf_node2->setShadowType(ShadowRenderer::ANIMATED_SHADOW);
+	DreadedPE::SceneLeafModel* chair_leaf_node2 = new DreadedPE::SceneLeafModel(*shark2, NULL, shark_properties.first, shark_material, DreadedPE::AnimatedShadowShader::getShader(), false, false);
+	chair_leaf_node2->setShadowType(DreadedPE::ShadowRenderer::ANIMATED_SHADOW);
 	
-	shark2->init(*shark_material, BasicShadowShader::getShader());
+	shark2->init(*shark_material, DreadedPE::BasicShadowShader::getShader());
 	
 	std::vector<glm::vec3> waypoints2;
 	waypoints2.push_back(glm::vec3(1, 9, 9));
@@ -545,7 +520,7 @@ bool Pandora::postInit()
 	//scene_manager_->addUpdateableEntity(*shark2);
 	//scene_manager_->addUpdateableEntity(*shark3);
 	
-	shark_properties.first->setAnimation(*shark_properties.first->getAnimations()[0]);
+	shark_properties.first->setAnimation(*shark_properties.first->getAnimations()[0], false);
 /*
 	// Load the seal model1
 	std::pair<AnimatedModel*, std::map<aiTextureType, std::vector<Texture*>* >* > seal_properties = AssimpLoader::LoadModel(*scene_manager_, "data/models/Pandora/sea creatures/swimforward.dae");
@@ -598,70 +573,6 @@ bool Pandora::postInit()
 	return true;
 }
 
-GLuint Pandora::postProcess(Texture& color_texture, Texture& depth_texture, float dt)
-{
-	fps_label_->frameRendered();
-	
-	if (!auv_->isLightOn())
-	{
-		return 0;
-	}
-
-	// Render the scene from the camera's point of view, we use this depth texture to cull the light such that it does not shine through
-	// solid objects.
-	shadow_renderer_->render(*camera_node_);
-
-	glm::vec3 camera_location = camera_node_->getLocation();
-	glm::mat4 view_matrix = camera_node_->getViewMatrix();
-	glm::mat4 perspective_matrix = camera_node_->getPerspectiveMatrix();
-	
-	std::vector<const SceneLeafLight*> active_lights;
-	active_lights.push_back(volumetric_light_leaf_);
-
-	// Render the shadow from the light's perspective.
-	volumetric_light_point_->preRender(volumetric_light_leaf_->getParent()->getCompleteTransformation());
-	//volumetric_light_point2_->preRender(volumetric_light_leaf2_->getParent()->getCompleteTransformation());
-	
-	glClearColor(0.0, 0.0, 0.0, 0.0f);
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo_id_);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_DEPTH_TEST);
-	glEnable(GL_DEPTH_CLAMP);
-
-	// Enable additive blending.
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_ONE, GL_ONE);
-
-	ShadowVolumeShader& shader = ShadowVolumeShader::getShader();
-	shader.initialise(*light_volume_leaf_, view_matrix, light_volume_leaf_->getParent()->getCompleteTransformation(), perspective_matrix, *volumetric_light_leaf_, camera_node_->getNearPlane(), camera_node_->getFarPlane(), shadow_renderer_->getTexture());
-	light_volume_leaf_->draw(view_matrix, perspective_matrix, active_lights, NULL);
-	
-	/*
-	active_lights.clear();
-	active_lights.push_back(volumetric_light_leaf2_);
-	
-	shader.initialise(*light_volume_leaf2_, view_matrix, light_volume_leaf2_->getParent()->getCompleteTransformation(), perspective_matrix, *volumetric_light_leaf2_, camera_node_->getNearPlane(), camera_node_->getFarPlane(), shadow_renderer_->getTexture());
-	light_volume_leaf2_->draw(view_matrix, perspective_matrix, active_lights, NULL);
-	*/
-	
-	//ss_ << "end...";
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glDisable(GL_BLEND);
-	glDisable(GL_DEPTH_CLAMP);
-
-	// Merge the images of the volumetric light step with the main image.
-	MergeFBOShader& merge_shader = MergeFBOShader::getShader();
-	merge_shader.postProcess(color_texture, *post_processing_texture_, dt);
-
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-	glEnable(GL_DEPTH_TEST);
-	glClearColor(0.2, 0.2, 0.4, 1.0f);
-	
-	return merge_shader.getFrameBufferId();
-}
-
 void Pandora::tick(float dt)
 {
 	ros_timer_->update(dt);
@@ -671,8 +582,6 @@ void Pandora::tick(float dt)
 	ss << "Time " << nr_seconds << "s";
 	time_label_->setLabel(ss.str());
 	
-	caustic_texture_->update(dt);
-#ifndef _WIN32
 	ros::spinOnce();
 	// Publish the odometry information of the UAV.
 	auv_odometry_->update(dt);
@@ -684,7 +593,7 @@ void Pandora::tick(float dt)
 
 	// Update ROS.
 	ros::spinOnce();
-	Frustum frustum(sonar_->getPerspectiveMatrix() * sonar_->getViewMatrix());
+	DreadedPE::Frustum frustum(sonar_->getPerspectiveMatrix() * sonar_->getViewMatrix());
 	for (std::vector<MissionSite*>::const_iterator ci = ontology_->getMissionSites().begin(); ci != ontology_->getMissionSites().end(); ++ci)
 	{
 		MissionSite* mission_site = *ci;
@@ -706,7 +615,6 @@ void Pandora::tick(float dt)
 			}
 		}
 	}
-#endif
 /*
 	if (glfwGetMouseButton(GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 	{
@@ -728,6 +636,18 @@ void Pandora::tick(float dt)
 */
 }
 
+void Pandora::prepareForRendering(float p)
+{
+	float dt = p - last_update_p_;
+	if (dt < 0)
+	{
+		dt = 1.0f - last_update_p_ + p;
+	}
+	last_update_p_ = p;
+	fps_label_->frameRendered();
+	caustic_texture_->update(dt);
+}
+
 void Pandora::onResize(int width, int height)
 {
 	width_ = width;
@@ -747,7 +667,7 @@ void Pandora::onResize(int width, int height)
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, post_processing_texture_->getTextureId(), 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	MergeFBOShader& merge_shader = MergeFBOShader::getShader();
+	DreadedPE::MergeFBOShader& merge_shader = DreadedPE::MergeFBOShader::getShader();
 	merge_shader.onResize(width, height);
 	
 	planning_gui_->onResize(width, height);

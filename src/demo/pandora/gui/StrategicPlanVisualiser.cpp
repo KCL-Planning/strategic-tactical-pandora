@@ -1,14 +1,14 @@
 #include <nav_msgs/Path.h>
 
-#include "../../../core/scene/SceneLeafModel.h"
-#include "../../../core/scene/SceneManager.h"
-#include "../../../core/scene/SceneNode.h"
-#include "../../../core/shaders/LineShader.h"
-#include "../../../core/scene/Material.h"
-#include "../../../core/gui/themes/MyGUITheme.h"
-#include "../../../core/gui/GUIManager.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/scene/SceneManager.h"
+#include "dpengine/scene/SceneNode.h"
+#include "dpengine/shaders/LineShader.h"
+#include "dpengine/scene/Material.h"
+#include "dpengine/gui/themes/MyGUITheme.h"
+#include "dpengine/gui/GUIManager.h"
 
-#include "../../../shapes/Line.h"
+#include "dpengine/shapes/Line.h"
 #include "../controllers/PlannerAction.h"
 
 #include "StrategicPlanVisualiser.h"
@@ -22,18 +22,18 @@
 
 #define USE_MULTILE_AUVS
 
-StrategicPlanVisualiser::StrategicPlanVisualiser(ros::NodeHandle& ros_node, AUV& auv, OntologyInterface& ontology, SceneNode& parent, SceneManager& scene_manager, Theme& theme, Font& font, Camera& camera)
+StrategicPlanVisualiser::StrategicPlanVisualiser(ros::NodeHandle& ros_node, AUV& auv, OntologyInterface& ontology, DreadedPE::SceneNode& parent, DreadedPE::SceneManager& scene_manager, DreadedPE::Theme& theme, DreadedPE::Font& font, DreadedPE::Camera& camera)
 	: SceneNode(scene_manager, &parent, glm::mat4(1.0f)), auv_(&auv), ontology_(&ontology), theme_(&theme), font_(&font), camera_(&camera)
 {
-	line_ = new Line(false);
+	line_ = std::make_shared<DreadedPE::Line>(false);
 	
-	MaterialLightProperty* ambient = new MaterialLightProperty(0, 0, 0, 0);
-	MaterialLightProperty* diffuse = new MaterialLightProperty(0, 0, 0, 0);
-	MaterialLightProperty* specular = new MaterialLightProperty(0, 0, 0, 0);
-	MaterialLightProperty* emmisive = new MaterialLightProperty(1, 1, 0, 0.8f);
-	Material* material = new Material(*ambient, *diffuse, *specular, *emmisive);
+	DreadedPE::MaterialLightProperty ambient(0, 0, 0, 0);
+	DreadedPE::MaterialLightProperty diffuse(0, 0, 0, 0);
+	DreadedPE::MaterialLightProperty specular(0, 0, 0, 0);
+	DreadedPE::MaterialLightProperty emmisive(1, 1, 0, 0.8f);
+	std::shared_ptr<DreadedPE::Material> material(std::make_shared<DreadedPE::Material>(ambient, diffuse, specular, emmisive));
 	
-	path_ = new SceneLeafModel(*this, NULL, *line_, *material, LineShader::getShader(), true, true);
+	path_ = new DreadedPE::SceneLeafModel(*this, NULL, line_, material, DreadedPE::LineShader::getShader(), true, true);
 	
 	complete_plan_listener_ = ros_node.subscribe("/planning_system/strategic_plan", 1, &StrategicPlanVisualiser::setCurrentPlan, this);
 }
@@ -93,7 +93,7 @@ void StrategicPlanVisualiser::setCurrentPlan(const planning_msgs::CompletePlan::
 	}
 	
 	// Remove the old bill boards.
-	GUIManager& gui_manager = GUIManager::getInstance();
+	DreadedPE::GUIManager& gui_manager = DreadedPE::GUIManager::getInstance();
 	for (std::map<int, BillBoard*>::const_iterator ci = active_bill_boards_.begin(); ci != active_bill_boards_.end(); ++ci)
 	{
 		//gui_manager.deleteFrame(*((*ci).second));
@@ -155,7 +155,7 @@ void StrategicPlanVisualiser::setCurrentPlan(const planning_msgs::CompletePlan::
 		}
 		else if (action.name == "complete_mission")
 		{
-			SceneNode* dummy_node = new SceneNode(*scene_manager_, NULL, glm::translate(glm::mat4(1.0f), previous_point));
+			DreadedPE::SceneNode* dummy_node = new DreadedPE::SceneNode(*scene_manager_, NULL, glm::translate(glm::mat4(1.0f), previous_point));
 			std::vector<glm::vec2> uv_mapping;
 			uv_mapping.push_back(glm::vec2(0.25f, 1.0f));
 			uv_mapping.push_back(glm::vec2(0.5f, 1.0f));

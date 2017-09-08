@@ -13,9 +13,9 @@
 
 #include <math.h>
 
-#include "../../core/gui/Label.h"
+#include "dpengine/gui/Label.h"
 
-FPSLabel::FPSLabel(Label& label)
+FPSLabel::FPSLabel(DreadedPE::Label& label)
 	: label_(&label), current_time_(getWallTime()), frames_rendered_(0), fps_(0)
 {
 	

@@ -5,7 +5,7 @@
 
 #include "../../core/entities/Entity.h"
 
-class BoxCollision;
+class ConvexPolygon;
 class SceneNode;
 class SceneManager;
 

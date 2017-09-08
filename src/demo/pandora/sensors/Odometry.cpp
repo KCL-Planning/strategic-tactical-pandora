@@ -2,9 +2,9 @@
 #include "Odometry.h"
 #include <tf/transform_broadcaster.h>
 
-#include "../../../core/entities/Entity.h"
+#include "dpengine/entities/Entity.h"
 
-Odometry::Odometry(Entity& entity)
+Odometry::Odometry(DreadedPE::Entity& entity)
 	: entity_(&entity)
 {
 

@@ -12,7 +12,7 @@
 #include "../../core/scene/SceneLeafModel.h"
 #include "../../core/scene/SceneManager.h"
 #include "../../core/collision/CollisionInfo.h"
-#include "../../core/collision/BoxCollision.h"
+#include "../../core/collision/ConvexPolygon.h"
 #include "../../core/scene/portal/Region.h"
 #include "../../core/scene/Material.h"
 #include "../../core/shaders/BasicShadowShader.h"
@@ -26,7 +26,7 @@ PhysicsCube::PhysicsCube(SceneManager& scene_manager, SceneNode* parent, const g
 	
 	// Set up the physical properties.
 	y_velocity_ = 0.0f;
-	BoxCollision* bc = new BoxCollision(*this, 1.0f, 1.0f, 1.0f);
+	ConvexPolygon* bc = new ConvexPolygon(*this, 1.0f, 1.0f, 1.0f);
 	addCollision(*bc);
 	height_ = 1.0f;
 	

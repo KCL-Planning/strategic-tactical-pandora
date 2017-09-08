@@ -1,18 +1,22 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 
-#include "BoneNode.h"
-#include "../scene/SceneNode.h"
-#include "Bone.h"
-#include "AnimationNode.h"
-#include "Animation.h"
+#include "dpengine/models/BoneNode.h"
+#include "dpengine/scene/SceneNode.h"
+#include "dpengine/models/Bone.h"
+#include "dpengine/models/AnimationNode.h"
+#include "dpengine/models/Animation.h"
 
 #ifdef _WIN32
+#define NOMINMAX
 #include <windows.h>
 #endif
 
-BoneNode::BoneNode(SceneManager& scene_manager, const std::string& name, const glm::mat4& transformation, BoneNode* parent, Bone* bone)
-	: SceneNode(scene_manager, parent, transformation, false), name_(name), bone_(bone), root_node_(NULL), active_animation_node_(NULL)
+namespace DreadedPE
+{
+
+	BoneNode::BoneNode(SceneManager& scene_manager, const std::string& name, const glm::mat4& transformation, BoneNode* parent, Bone* bone, const glm::vec3& scaling)
+	: SceneNode(scene_manager, parent, transformation, scaling, false), name_(name), bone_(bone), root_node_(NULL), active_animation_node_(NULL)
 {
 	if (parent != NULL)
 	{
@@ -84,7 +88,8 @@ void BoneNode::prepare(float animation_duration)
 					//rotation_matrix = glm::mat4_cast(quat_rot);
 
 					glm::fquat rot = ci + 1 == animation_node->getRotations().end() ? (*animation_node->getRotations().begin()).first : (*(ci + 1)).first;
-					rotation_matrix = glm::mat4_cast(static_cast<glm::fquat(*)(const glm::fquat&, const glm::fquat&, const float&)>(&glm::slerp)(current_rotation.first, rot, delta));
+					//rotation_matrix = glm::mat4_cast(static_cast<glm::fquat(*)(const glm::fquat&, const glm::fquat&, const float&)>(&glm::slerp)(current_rotation.first, rot, delta));
+					rotation_matrix = glm::mat4_cast(glm::slerp(current_rotation.first, rot, delta));
 					break;
 				}
 			}
@@ -165,3 +170,5 @@ void BoneNode::setActiveAnimationNode(AnimationNode* animation_node)
 {
 	active_animation_node_ = animation_node;
 }
+
+};

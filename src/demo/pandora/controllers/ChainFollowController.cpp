@@ -3,6 +3,7 @@
 #include <math.h>
 
 #include <iostream>
+#include <memory>
 
 #include <vector>
 #include <glm/glm.hpp>
@@ -14,43 +15,44 @@
 #include "../AUV.h"
 #include "../structures/Chain.h"
 #include "../gui/AUVStatusIcon.h"
-#include "../../../core/math/Math.h"
-#include "../../../core/shaders/LineShader.h"
-#include "../../../core/scene/Material.h"
-#include "../../../core/scene/SceneManager.h"
-#include "../../../core/scene/SceneLeafModel.h"
-#include "../../../core/collision/CollisionInfo.h"
-#include "../../../core/entities/HeightMap.h"
+#include "dpengine/math/Math.h"
+#include "dpengine/shaders/LineShader.h"
+#include "dpengine/scene/Material.h"
+#include "dpengine/scene/SceneManager.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/collision/CollisionInfo.h"
+#include "dpengine/collision/CollisionPoint.h"
+#include "dpengine/entities/HeightMap.h"
 
-#include "../../../shapes/Line.h"
+#include "dpengine/shapes/Line.h"
 
 
-ChainFollowController::ChainFollowController(SceneManager& scene_manager, AUV& auv, OntologyInterface& ontology, ros::Publisher& action_feedback_pub, HeightMap& height_map)
+ChainFollowController::ChainFollowController(DreadedPE::SceneManager& scene_manager, AUV& auv, OntologyInterface& ontology, ros::Publisher& action_feedback_pub, DreadedPE::HeightMap& height_map)
 	: scene_manager_(&scene_manager), auv_(&auv), chain_(NULL), time_(0), max_time_(0), path_(NULL), height_map_(&height_map), turn_left_(true), turning_time_(0)
 {
 	//rrt_->addListener(*this);
 	
-	MaterialLightProperty* ambient = new MaterialLightProperty(0, 0, 0, 0);
-	MaterialLightProperty* diffuse = new MaterialLightProperty(0, 0, 0, 0);
-	MaterialLightProperty* specular = new MaterialLightProperty(0, 0, 0, 0);
-	MaterialLightProperty* emmisive = new MaterialLightProperty(1, 1, 0, 0.8f);
-	Material* material = new Material(*ambient, *diffuse, *specular, *emmisive);
+	DreadedPE::MaterialLightProperty ambient(0, 0, 0, 0);
+	DreadedPE::MaterialLightProperty diffuse(0, 0, 0, 0);
+	DreadedPE::MaterialLightProperty specular(0, 0, 0, 0);
+	DreadedPE::MaterialLightProperty emmisive(1, 1, 0, 0.8f);
+	std::shared_ptr<DreadedPE::Material> material(std::make_shared<DreadedPE::Material>(ambient, diffuse, specular, emmisive));
 	
-	MaterialLightProperty* ambient2 = new MaterialLightProperty(0, 0, 0, 0);
-	MaterialLightProperty* diffuse2 = new MaterialLightProperty(0, 0, 0, 0);
-	MaterialLightProperty* specular2 = new MaterialLightProperty(0, 0, 0, 0);
-	MaterialLightProperty* emmisive2 = new MaterialLightProperty(1, 0, 0, 0.8f);
-	Material* material2 = new Material(*ambient2, *diffuse2, *specular2, *emmisive2);
+	DreadedPE::MaterialLightProperty ambient2(0, 0, 0, 0);
+	DreadedPE::MaterialLightProperty diffuse2(0, 0, 0, 0);
+	DreadedPE::MaterialLightProperty specular2(0, 0, 0, 0);
+	DreadedPE::MaterialLightProperty emmisive2(1, 0, 0, 0.8f);
+	std::shared_ptr<DreadedPE::Material> material2(std::make_shared<DreadedPE::Material>(ambient2, diffuse2, specular2, emmisive2));
 	
-	MaterialLightProperty* emmisive3 = new MaterialLightProperty(0, 0, 1, 0.8f);
-	Material* material3 = new Material(*ambient2, *diffuse2, *specular2, *emmisive3);
+	DreadedPE::MaterialLightProperty emmisive3(0, 0, 1, 0.8f);
+	std::shared_ptr<DreadedPE::Material> material3(std::make_shared<DreadedPE::Material>(ambient2, diffuse2, specular2, emmisive3));
 	
-	line_ = new Line(false);
-	colliding_line_ = new Line(false);
-	grid_line_ = new Line(true);
-	path_ = new SceneLeafModel(scene_manager.getRoot(), NULL, *line_, *material, LineShader::getShader(), true, true);
-	SceneLeafModel* colliding_path = new SceneLeafModel(scene_manager.getRoot(), NULL, *colliding_line_, *material2, LineShader::getShader(), true, true);
-	SceneLeafModel* grid_path = new SceneLeafModel(scene_manager.getRoot(), NULL, *grid_line_, *material3, LineShader::getShader(), true, true);
+	line_ = std::make_shared<DreadedPE::Line>(false);
+	colliding_line_ = std::make_shared<DreadedPE::Line>(false);
+	grid_line_ = std::make_shared<DreadedPE::Line>(true);
+	path_ = new DreadedPE::SceneLeafModel(scene_manager.getRoot(), NULL, line_, material, DreadedPE::LineShader::getShader(), true, true);
+	DreadedPE::SceneLeafModel* colliding_path = new DreadedPE::SceneLeafModel(scene_manager.getRoot(), NULL, colliding_line_, material2, DreadedPE::LineShader::getShader(), true, true);
+	DreadedPE::SceneLeafModel* grid_path = new DreadedPE::SceneLeafModel(scene_manager.getRoot(), NULL, grid_line_, material3, DreadedPE::LineShader::getShader(), true, true);
 }
 
 void ChainFollowController::followChain(Chain& chain, float max_time)
@@ -111,24 +113,24 @@ void ChainFollowController::update(float dt)
 		start_point = auv_->getAUVModel().getCompleteTransformation() * start_point;
 		
 		// Perform a collision detection with the chain using this link.
-		std::vector<CollisionInfo> collisions;
+		std::vector<DreadedPE::CollisionInfo> collisions;
 		bool collides_with_chain = false;
 		if (chain_->getCollisions(*auv_, glm::vec3(start_point), glm::vec3(random_ray), collisions))
 		{
-			for (std::vector<CollisionInfo>::const_iterator ci = collisions.begin(); ci != collisions.end(); ++ci)
+			for (std::vector<DreadedPE::CollisionInfo>::const_iterator ci = collisions.begin(); ci != collisions.end(); ++ci)
 			{
-				const CollisionInfo& collision_info = *ci;
+				const DreadedPE::CollisionInfo& collision_info = *ci;
 				if (observed_chain_links_.count(collision_info.colliding_entity_) == 0)
 				{
 					// This should always be true.
 					if (collision_info.collision_loc_.size() > 0)
 					{
 						glm::vec3 heighest_collision(0, -10, 0);
-						for (std::vector<glm::vec3>::const_iterator ci = collision_info.collision_loc_.begin(); ci != collision_info.collision_loc_.end(); ++ci)
+						for (std::vector<DreadedPE::CollisionPoint>::const_iterator ci = collision_info.collision_loc_.begin(); ci != collision_info.collision_loc_.end(); ++ci)
 						{
-							if ((*ci).y > heighest_collision.y)
+							if ((*ci).intersection_point_.y > heighest_collision.y)
 							{
-								heighest_collision = *ci;
+								heighest_collision = (*ci).intersection_point_;
 							}
 						}
 						

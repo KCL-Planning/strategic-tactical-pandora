@@ -42,7 +42,7 @@
 #include "../core/animation/BouncingBox.h"
 #include "../core/entities/WavingWater.h"
 #include "../core/entities/Player.h"
-#include "../core/collision/BoxCollision.h"
+#include "../core/collision/ConvexPolygon.h"
 #include "../core/entities/Lever.h"
 #include "../core/entities/Bridge.h"
 #include "../core/scene/frustum/SphereCheck.h"
@@ -144,7 +144,7 @@ bool FallingBlock::init(int argc, char** argv)
 	
 	Cube* rotating_cube = new Cube(5, 0.5, 5);
 	rotating_cube_entity_ = new Entity(*scene_manager_, terrain_node_, glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(10.0f, 1.0f, -10.0f)), 90.0f, glm::vec3(0, 1, 0)), OBSTACLE, "Rotating Cube");
-	BoxCollision* stair_step_bc = new BoxCollision(*rotating_cube_entity_, 5.0f, 0.5f, 5.0f);
+	ConvexPolygon* stair_step_bc = new ConvexPolygon(*rotating_cube_entity_, 5.0f, 0.5f, 5.0f);
 	rotating_cube_entity_->addCollision(*stair_step_bc);
 	Behaviour* behaviour = new RotateBehaviour(*rotating_cube_entity_, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 0, 180, 90, 10);
 	rotating_cube_entity_->addBehaviour(*behaviour);

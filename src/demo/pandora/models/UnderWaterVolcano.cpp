@@ -2,41 +2,43 @@
 
 #include <iostream>
 #include <stdlib.h>
+#include <memory>
+#include <glm/gtc/matrix_transform.hpp>
 
-#include "../../../core/scene/SceneLeafModel.h"
-#include "../../../core/entities/Entity.h"
-#include "../../../core/particles/GPUParticleEmitter.h"
-#include "../../../core/particles/GPUParticleComputerShader.h"
-#include "../../../core/particles/GPUParticleDrawShader.h"
-#include "../../../core/particles/Particle.h"
-#include "../../../core/texture/Texture.h"
-#include "../../../core/texture/TargaTexture.h"
-#include "../../../core/shaders/BasicShadowShader.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/entities/Entity.h"
+#include "dpengine/particles/GPUParticleEmitter.h"
+#include "dpengine/particles/GPUParticleComputerShader.h"
+#include "dpengine/particles/GPUParticleDrawShader.h"
+#include "dpengine/particles/Particle.h"
+#include "dpengine/texture/Texture.h"
+#include "dpengine/texture/TargaTexture.h"
+#include "dpengine/shaders/BasicShadowShader.h"
 
-#include "../../../shapes/Cube.h"
+#include "dpengine/shapes/Cube.h"
 
-UnderWaterVolcano::UnderWaterVolcano(SceneManager& scene_manager, SceneNode* parent, const glm::mat4& transformation, const std::vector<glm::vec3>& under_water_volcano_locations)
-	: Entity(scene_manager, parent, transformation, OBSTACLE, "UnderWaterVolcano"), total_time_(0)
+UnderWaterVolcano::UnderWaterVolcano(DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, const glm::mat4& transformation, const std::vector<glm::vec3>& under_water_volcano_locations)
+	: DreadedPE::Entity(scene_manager, parent, transformation, DreadedPE::OBSTACLE, "UnderWaterVolcano"), total_time_(0)
 {
 	//updateTransformations();
 	// Set the initial particle state.
-	std::vector<Particle> initial_particle_state;
+	std::vector<DreadedPE::Particle> initial_particle_state;
 
-	Cube* underwater_volvano_model = new Cube(0.1f, 0.1f, 0.1f);
+	//std::shared_ptr<DreadedPE::Cube> underwater_volcano_model(std::make_shared<DreadedPE::Cube>(0.1f, 0.1f, 0.1f));
 
 	for (std::vector<glm::vec3>::const_iterator ci = under_water_volcano_locations.begin(); ci != under_water_volcano_locations.end(); ++ci)
 	{
-		SceneNode* dummy_node = new SceneNode(scene_manager, this, glm::translate(glm::mat4(1.0f), *ci));
-		SceneLeafModel* dummy_cube = new SceneLeafModel(*dummy_node, NULL, *underwater_volvano_model, *SceneNode::bright_material_, BasicShadowShader::getShader(), false, false);
+		//DreadedPE::SceneNode* dummy_node = new DreadedPE::SceneNode(scene_manager, this, glm::translate(glm::mat4(1.0f), *ci));
+		//DreadedPE::SceneLeafModel* dummy_cube = new DreadedPE::SceneLeafModel(*dummy_node, NULL, underwater_volcano_model, *DreadedPE::SceneNode::bright_material_, DreadedPE::BasicShadowShader::getShader(), false, false);
 
-		Particle particle(*ci, glm::vec3(0, 0, 0), 0, 0);
+		DreadedPE::Particle particle(*ci, glm::vec3(0, 0, 0), 0, 0);
 		initial_particle_state.push_back(particle);
 	}
 
-	smoke_texture_ = TargaTexture::loadTexture("data/textures/smoke_particle.tga");
-	GPUParticleComputerShader* computer_shader = new GPUParticleComputerShader("src/demo/pandora/shaders/resources/ParticleInVectorField.vert", "src/demo/pandora/shaders/resources/ParticleCalculator.geom", initial_particle_state, 0.05f, 4.0f);
-	GPUParticleDrawShader* draw_shader = new GPUParticleDrawShader(*computer_shader, *smoke_texture_, "src/demo/pandora/shaders/resources/particle.vert", "src/demo/pandora/shaders/resources/particle_bb.geom", "src/demo/pandora/shaders/resources/SmokeParticle.frag");
-	particle_emitter_ = new GPUParticleEmitter(*this, *computer_shader, *draw_shader);
+	smoke_texture_ = DreadedPE::TargaTexture::loadTexture("data/textures/smoke_particle.tga");
+	DreadedPE::GPUParticleComputerShader* computer_shader = new DreadedPE::GPUParticleComputerShader("src/demo/pandora/shaders/resources/ParticleInVectorField.vert", "src/demo/pandora/shaders/resources/ParticleCalculator.geom", initial_particle_state, 0.05f, 4.0f);
+	DreadedPE::GPUParticleDrawShader* draw_shader = new DreadedPE::GPUParticleDrawShader(*computer_shader, *smoke_texture_, "src/demo/pandora/shaders/resources/particle.vert", "src/demo/pandora/shaders/resources/particle_bb.geom", "src/demo/pandora/shaders/resources/SmokeParticle.frag");
+	particle_emitter_ = new DreadedPE::GPUParticleEmitter(*this, *computer_shader, *draw_shader);
 }
 
 void UnderWaterVolcano::prepare(float dt)
@@ -73,5 +75,5 @@ void UnderWaterVolcano::prepare(float dt)
 		}
 	}
 	*/
-	SceneNode::prepare(dt);
+	DreadedPE::SceneNode::prepare(dt);
 }

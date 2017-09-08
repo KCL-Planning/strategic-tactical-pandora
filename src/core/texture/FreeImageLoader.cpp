@@ -1,12 +1,16 @@
-#include "FreeImageLoader.h"
-#include "Texture.h"
+#include "dpengine/texture/FreeImageLoader.h"
+#include "dpengine/texture/Texture.h"
 
 #ifdef _WIN32
+#define NOMINMAX
 #include <windows.h>
 #endif
 
 #include <iostream>
 #include <sstream>
+
+namespace DreadedPE
+{
 
 bool FreeImageLoader::free_image_loader_initialised_ = false;
 std::map<std::string, Texture*> FreeImageLoader::cached_images_ = std::map<std::string, Texture*>();
@@ -23,7 +27,7 @@ void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char *message)
 
 FIBITMAP* FreeImageLoader::getFiBitMap(const std::string& path)
 {
-	std::cout << "FreeImageLoader::getFiBitMap(" << path << ");" << std::endl;
+	//std::cout << "FreeImageLoader::getFiBitMap(" << path << ");" << std::endl;
 	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
 	// check the file signature and deduce its format
 	// (the second argument is currently not used by FreeImage)
@@ -41,7 +45,7 @@ FIBITMAP* FreeImageLoader::getFiBitMap(const std::string& path)
 		return NULL;
 	}
 	
-	std::cout << "Format: " << FreeImage_GetFormatFromFIF(fif) << std::endl;
+	//std::cout << "Format: " << FreeImage_GetFormatFromFIF(fif) << std::endl;
 
 	
 	// ok, let's load the file
@@ -50,7 +54,7 @@ FIBITMAP* FreeImageLoader::getFiBitMap(const std::string& path)
 
 Texture* FreeImageLoader::loadTexture(const std::string& path)
 {
-	std::cout << "FreeImageLoader::loadTexture(" << path << ");" << std::endl;
+	//std::cout << "FreeImageLoader::loadTexture(" << path << ");" << std::endl;
 	if (!free_image_loader_initialised_)
 	{
 		initialise();
@@ -58,7 +62,7 @@ Texture* FreeImageLoader::loadTexture(const std::string& path)
 	
 	if (cached_images_.find(path) != cached_images_.end())
 	{
-		std::cout << "Return the cached texture (" << path << ");" << std::endl;
+		//std::cout << "Return the cached texture (" << path << ");" << std::endl;
 		return cached_images_[path];
 	}
 	
@@ -73,7 +77,7 @@ Texture* FreeImageLoader::loadTexture(const std::string& path)
 	unsigned int height = FreeImage_GetHeight(dib);
 	unsigned int bits_per_pixel = FreeImage_GetBPP(dib);
 	
-	std::cout << "FreeImageLoader::loadTexture: " << width << ", " << height << "; BPP: " << bits_per_pixel << std::endl;
+	//std::cout << "FreeImageLoader::loadTexture: " << width << ", " << height << "; BPP: " << bits_per_pixel << std::endl;
 	
 	if (height == 0 || width == 0)
 	{
@@ -100,12 +104,12 @@ Texture* FreeImageLoader::loadTexture(const std::string& path)
 		if (bits_per_pixel == 24)
 		{
 			FIBITMAP *converted_dib = FreeImage_ConvertTo24Bits(dib);
-			glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB8, width, 0, GL_RGB, GL_UNSIGNED_BYTE, (void*)FreeImage_GetBits(converted_dib));
+			glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB8, width, 0, GL_BGR, GL_UNSIGNED_BYTE, (void*)FreeImage_GetBits(converted_dib));
 		}
 		else
 		{
 			FIBITMAP *converted_dib = FreeImage_ConvertTo32Bits(dib);
-			glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA8, width, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void*)FreeImage_GetBits(converted_dib));
+			glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA8, width, 0, GL_BGRA, GL_UNSIGNED_BYTE, (void*)FreeImage_GetBits(converted_dib));
 		}
 	}
 	// Otherwise we have a 2D texture.
@@ -123,14 +127,20 @@ Texture* FreeImageLoader::loadTexture(const std::string& path)
 		{
 			FIBITMAP *converted_dib = FreeImage_ConvertTo24Bits(dib);
 			//gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGB8, width, height, GL_RGB, GL_UNSIGNED_BYTE, (void*)FreeImage_GetBits(converted_dib));
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, (void*)FreeImage_GetBits(converted_dib));
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, (void*)FreeImage_GetBits(converted_dib));
 		}
-		else
+		else //if (bits_per_pixel == 32)
 		{
 			FIBITMAP *converted_dib = FreeImage_ConvertTo32Bits(dib);
 			//gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA8, width, height, GL_RGBA, GL_UNSIGNED_BYTE, (void*)FreeImage_GetBits(converted_dib));
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void*)FreeImage_GetBits(converted_dib));
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, (void*)FreeImage_GetBits(converted_dib));
 		}
+		/*
+		else
+		{
+			exit(0);
+		}
+		*/
 	}
 	cached_images_[path] = texture;
 	return texture;
@@ -220,3 +230,5 @@ void FreeImageLoader::initialise()
 	
 	free_image_loader_initialised_ = true;
 }
+
+};

@@ -35,8 +35,8 @@ public:
 		glm::vec4 visible_point(0, 0, -5, 1);
 		
 		glm::mat4 rotation_matrix(1.0f);
-		rotation_matrix = glm::rotate(rotation_matrix, pose.yaw_, glm::vec3(0, 1, 0));
-		rotation_matrix = glm::rotate(rotation_matrix, pose.pitch_, glm::vec3(1, 0, 0));
+		rotation_matrix = glm::rotate(rotation_matrix, glm::radians(pose.yaw_), glm::vec3(0, 1, 0));
+		rotation_matrix = glm::rotate(rotation_matrix, glm::radians(pose.pitch_), glm::vec3(1, 0, 0));
 		
 		visible_point = rotation_matrix * visible_point;
 		//glm::fquat rot(glm::vec3(pose.pitch_, pose.yaw_, 0));

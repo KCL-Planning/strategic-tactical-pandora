@@ -1,14 +1,14 @@
 #include <nav_msgs/Path.h>
 
-#include "../../../core/scene/SceneLeafModel.h"
-#include "../../../core/scene/SceneManager.h"
-#include "../../../core/scene/SceneNode.h"
-#include "../../../core/shaders/LineShader.h"
-#include "../../../core/scene/Material.h"
-#include "../../../core/gui/themes/MyGUITheme.h"
-#include "../../../core/gui/GUIManager.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/scene/SceneManager.h"
+#include "dpengine/scene/SceneNode.h"
+#include "dpengine/shaders/LineShader.h"
+#include "dpengine/scene/Material.h"
+#include "dpengine/gui/themes/MyGUITheme.h"
+#include "dpengine/gui/GUIManager.h"
 
-#include "../../../shapes/Line.h"
+#include "dpengine/shapes/Line.h"
 #include "../controllers/PlannerAction.h"
 
 #include "PlanVisualiser.h"
@@ -20,36 +20,36 @@
 
 #define USE_MULTILE_AUVS
 
-PlanVisualiser::PlanVisualiser(ros::NodeHandle& ros_node, AUV& auv, OntologyInterface& ontology, SceneNode& parent, SceneManager& scene_manager, Theme& theme, Font& font, Camera& camera)
+PlanVisualiser::PlanVisualiser(ros::NodeHandle& ros_node, AUV& auv, OntologyInterface& ontology, DreadedPE::SceneNode& parent, DreadedPE::SceneManager& scene_manager, DreadedPE::Theme& theme, DreadedPE::Font& font, DreadedPE::Camera& camera)
 	: SceneNode(scene_manager, &parent, glm::mat4(1.0f)), auv_(&auv), ontology_(&ontology), theme_(&theme), font_(&font), camera_(&camera)
 {
-	line_ = new Line(false);
+	line_ = std::make_shared<DreadedPE::Line>(false);
 	
-	MaterialLightProperty* ambient = new MaterialLightProperty(0, 0, 0, 0);
-	MaterialLightProperty* diffuse = new MaterialLightProperty(0, 0, 0, 0);
-	MaterialLightProperty* specular = new MaterialLightProperty(0, 0, 0, 0);
-	MaterialLightProperty* emmisive = new MaterialLightProperty(1, 1, 0, 0.8f);
-	Material* material = new Material(*ambient, *diffuse, *specular, *emmisive);
+	DreadedPE::MaterialLightProperty ambient(0, 0, 0, 0);
+	DreadedPE::MaterialLightProperty diffuse(0, 0, 0, 0);
+	DreadedPE::MaterialLightProperty specular(0, 0, 0, 0);
+	DreadedPE::MaterialLightProperty emmisive(1, 1, 0, 0.8f);
+	std::shared_ptr<DreadedPE::Material> material(std::make_shared<DreadedPE::Material>(ambient, diffuse, specular, emmisive));
 	
-	path_ = new SceneLeafModel(*this, NULL, *line_, *material, LineShader::getShader(), true, true);
+	path_ = new DreadedPE::SceneLeafModel(*this, NULL, line_, material, DreadedPE::LineShader::getShader(), true, true);
 	
-	bad_line_ = new Line(false);
-	MaterialLightProperty* bad_ambient = new MaterialLightProperty(0, 0, 0, 0);
-	MaterialLightProperty* bad_diffuse = new MaterialLightProperty(0, 0, 0, 0);
-	MaterialLightProperty* bad_specular = new MaterialLightProperty(0, 0, 0, 0);
-	MaterialLightProperty* bad_emmisive = new MaterialLightProperty(1, 0, 0, 0.8f);
-	Material* bad_material = new Material(*bad_ambient, *bad_diffuse, *bad_specular, *bad_emmisive);
+	bad_line_ = std::make_shared<DreadedPE::Line>(false);
+	DreadedPE::MaterialLightProperty bad_ambient(0, 0, 0, 0);
+	DreadedPE::MaterialLightProperty bad_diffuse(0, 0, 0, 0);
+	DreadedPE::MaterialLightProperty bad_specular(0, 0, 0, 0);
+	DreadedPE::MaterialLightProperty bad_emmisive(1, 0, 0, 0.8f);
+	std::shared_ptr<DreadedPE::Material> bad_material(std::make_shared<DreadedPE::Material>(bad_ambient, bad_diffuse, bad_specular, bad_emmisive));
 	
-	bad_path_ = new SceneLeafModel(*this, NULL, *bad_line_, *bad_material, LineShader::getShader(), true, true);
+	bad_path_ = new DreadedPE::SceneLeafModel(*this, NULL, bad_line_, bad_material, DreadedPE::LineShader::getShader(), true, true);
 	
-	filter_line_ = new Line(false);
-	MaterialLightProperty* filter_ambient = new MaterialLightProperty(0, 0, 0, 0);
-	MaterialLightProperty* filter_diffuse = new MaterialLightProperty(0, 0, 0, 0);
-	MaterialLightProperty* filter_specular = new MaterialLightProperty(0, 0, 0, 0);
-	MaterialLightProperty* filter_emmisive = new MaterialLightProperty(1, 0, 1, 0.8f);
-	Material* filter_material = new Material(*filter_ambient, *filter_diffuse, *filter_specular, *filter_emmisive);
+	filter_line_ = std::make_shared<DreadedPE::Line>(false);
+	DreadedPE::MaterialLightProperty filter_ambient(0, 0, 0, 0);
+	DreadedPE::MaterialLightProperty filter_diffuse(0, 0, 0, 0);
+	DreadedPE::MaterialLightProperty filter_specular(0, 0, 0, 0);
+	DreadedPE::MaterialLightProperty filter_emmisive(1, 0, 1, 0.8f);
+	std::shared_ptr<DreadedPE::Material> filter_material(std::make_shared<DreadedPE::Material>(filter_ambient, filter_diffuse, filter_specular, filter_emmisive));
 	
-	filter_path_ = new SceneLeafModel(*this, NULL, *filter_line_, *filter_material, LineShader::getShader(), true, true);
+	filter_path_ = new DreadedPE::SceneLeafModel(*this, NULL, filter_line_, filter_material, DreadedPE::LineShader::getShader(), true, true);
 	
 	complete_plan_listener_ = ros_node.subscribe("/planning_system/current_plan", 1, &PlanVisualiser::setCurrentPlan, this);
 	rviz_plan_publisher_ = ros_node.advertise<nav_msgs::Path>("/plan/complete_plan", 1);
@@ -98,7 +98,7 @@ void PlanVisualiser::setCurrentPlan(const planning_msgs::CompletePlan::ConstPtr&
 	AUVStatusIcon& auv_status_icon = AUVStatusIcon::getInstance();
 	
 	// Remove the old bill boards.
-	GUIManager& gui_manager = GUIManager::getInstance();
+	DreadedPE::GUIManager& gui_manager = DreadedPE::GUIManager::getInstance();
 	for (std::map<int, BillBoard*>::const_iterator ci = active_bill_boards_.begin(); ci != active_bill_boards_.end(); ++ci)
 	{
 		//gui_manager.deleteFrame(*((*ci).second));
@@ -154,7 +154,7 @@ void PlanVisualiser::setCurrentPlan(const planning_msgs::CompletePlan::ConstPtr&
 			
 			if (point != previous_point)
 			{
-				SceneNode* dummy_node = new SceneNode(*scene_manager_, NULL, glm::translate(glm::mat4(1.0f), (point + previous_point) / 2.0f));
+				DreadedPE::SceneNode* dummy_node = new DreadedPE::SceneNode(*scene_manager_, NULL, glm::translate(glm::mat4(1.0f), (point + previous_point) / 2.0f));
 				const std::vector<glm::vec2>& uv_mapping = auv_status_icon.getGotoIcon();
 				/*
 				uv_mapping.push_back(glm::vec2(0.75f, 0.75f));
@@ -205,7 +205,7 @@ void PlanVisualiser::setCurrentPlan(const planning_msgs::CompletePlan::ConstPtr&
 		}
 		else if (action.name == "observe" || action.name == "observe_pillar" || action.name == "examine_panel")
 		{
-			SceneNode* dummy_node = new SceneNode(*scene_manager_, NULL, glm::translate(glm::mat4(1.0f), previous_point));
+			DreadedPE::SceneNode* dummy_node = new DreadedPE::SceneNode(*scene_manager_, NULL, glm::translate(glm::mat4(1.0f), previous_point));
 			const std::vector<glm::vec2>& uv_mapping = auv_status_icon.getObserveIcon();
 			/*
 			uv_mapping.push_back(glm::vec2(0.25f, 1.0f));
@@ -219,7 +219,7 @@ void PlanVisualiser::setCurrentPlan(const planning_msgs::CompletePlan::ConstPtr&
 		}
 		else if (action.name == "illuminate_pillar")
 		{
-			SceneNode* dummy_node = new SceneNode(*scene_manager_, NULL, glm::translate(glm::mat4(1.0f), previous_point));
+			DreadedPE::SceneNode* dummy_node = new DreadedPE::SceneNode(*scene_manager_, NULL, glm::translate(glm::mat4(1.0f), previous_point));
 			const std::vector<glm::vec2>& uv_mapping = auv_status_icon.getEmptyIcon();
 			/*
 			uv_mapping.push_back(glm::vec2(0.5f, 0.75f));
@@ -233,7 +233,7 @@ void PlanVisualiser::setCurrentPlan(const planning_msgs::CompletePlan::ConstPtr&
 		}
 		else if (action.name == "turn_valve")
 		{
-			SceneNode* dummy_node = new SceneNode(*scene_manager_, NULL, glm::translate(glm::mat4(1.0f), previous_point));
+			DreadedPE::SceneNode* dummy_node = new DreadedPE::SceneNode(*scene_manager_, NULL, glm::translate(glm::mat4(1.0f), previous_point));
 			const std::vector<glm::vec2>& uv_mapping = auv_status_icon.getTurnValveIcon();
 			/*
 			uv_mapping.push_back(glm::vec2(0.0f, 1.0f));
@@ -247,7 +247,7 @@ void PlanVisualiser::setCurrentPlan(const planning_msgs::CompletePlan::ConstPtr&
 		}
 		else
 		{
-			SceneNode* dummy_node = new SceneNode(*scene_manager_, NULL, glm::translate(glm::mat4(1.0f), previous_point));
+			DreadedPE::SceneNode* dummy_node = new DreadedPE::SceneNode(*scene_manager_, NULL, glm::translate(glm::mat4(1.0f), previous_point));
 			std::vector<glm::vec2> uv_mapping;// = auv_status_icon.getTurnValveIcon();
 
 			uv_mapping.push_back(glm::vec2(0.0f, 1.0f));

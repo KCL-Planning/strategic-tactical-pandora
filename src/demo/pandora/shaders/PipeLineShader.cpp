@@ -3,13 +3,13 @@
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "../../../core/light/Light.h"
-#include "../../../core/scene/Material.h"
-#include "../../../shapes/terrain.h"
-#include "../../../core/scene/SceneLeafModel.h"
-#include "../../../core/models/Bone.h"
-#include "../../../core/models/BoneNode.h"
-#include "../../../core/texture/Texture.h"
+#include "dpengine/light/Light.h"
+#include "dpengine/scene/Material.h"
+#include "dpengine/shapes/terrain.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/models/Bone.h"
+#include "dpengine/models/BoneNode.h"
+#include "dpengine/texture/Texture.h"
 
 PipeLineShader* PipeLineShader::shader_ = NULL;
 
@@ -20,10 +20,10 @@ PipeLineShader::PipeLineShader(const std::string& vertex_shader, const std::stri
 
 }
 
-void PipeLineShader::initialise(const SceneLeafModel& model_node, const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const SceneLeafLight*>& lights)
+void PipeLineShader::initialise(const DreadedPE::SceneLeafModel& model_node, const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const DreadedPE::SceneLeafLight*>& lights)
 {
 	// Check if this shape has been rendered using this shader before.
-	std::map<const Shape*, GLuint>::iterator mapped_i = shape_to_vbo_.find(&model_node.getModel());
+	std::map<const DreadedPE::Shape*, GLuint>::iterator mapped_i = shape_to_vbo_.find(&model_node.getModel());
 	GLuint vbo_index;
 	if (mapped_i == shape_to_vbo_.end())
 	{
@@ -72,7 +72,7 @@ void PipeLineShader::initialise(const SceneLeafModel& model_node, const glm::mat
 	}
 
 
-	LightShader::initialise(model_node, view_matrix, model_matrix, projection_matrix, lights);
+	DreadedPE::LightShader::initialise(model_node, view_matrix, model_matrix, projection_matrix, lights);
 	
 	glm::mat4 model_view_matrix = view_matrix * model_matrix;
 	glm::mat4 normal_matrix = glm::inverseTranspose(model_view_matrix);

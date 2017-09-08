@@ -1,14 +1,18 @@
 #ifdef _WIN32
+#define NOMINMAX
 #include <Windows.h>
 #endif
 
-#include "ShaderParser.h"
+#include "dpengine/shaders/ShaderParser.h"
 
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <istream>
 #include <iterator>
+
+namespace DreadedPE
+{
 
 ShaderParser* ShaderParser::instance_ = NULL;
 
@@ -171,3 +175,5 @@ bool ShaderParser::parse(const std::string& relative_path, std::stringstream& re
 */
 	return true;
 }
+
+};

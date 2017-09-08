@@ -55,7 +55,7 @@
 #include "pandora/ontology/OctomapBuilder.h"
 #endif
 
-#include "../core/collision/BoxCollision.h"
+#include "../core/collision/ConvexPolygon.h"
 #include "../core/entities/Lever.h"
 #include "../core/entities/Bridge.h"
 #include "../core/scene/frustum/SphereCheck.h"

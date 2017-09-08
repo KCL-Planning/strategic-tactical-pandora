@@ -16,6 +16,8 @@ class Filter
 public:
 	Filter(const knowledge_msgs::Filter& filter_msg);
 	
+	virtual ~Filter() = default;
+	
 	virtual knowledge_msgs::Notification prepareNotification();
 	
 	/**
@@ -35,9 +37,8 @@ public:
 protected:
 	// DEBUG: Just for visualisation.
 	std::vector<glm::vec3> points_;
-	bool has_been_triggered_; /// DEBUG: True if this filter returned false to the 'check filter' at least once.
-	
 	knowledge_msgs::Filter filter_msg_; // The msg that was used to construct this filter.
+	bool has_been_triggered_; /// DEBUG: True if this filter returned false to the 'check filter' at least once.
 };
 
 std::ostream& operator<<(std::ostream& o, const Filter& filter);

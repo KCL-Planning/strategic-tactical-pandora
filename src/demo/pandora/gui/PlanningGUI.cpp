@@ -1,25 +1,26 @@
 #include "PlanningGUI.h"
 
-#include <GL/glfw.h>
 #include <sstream>
 #include <math.h>
 
-#include "../../../shapes/Line.h"
-#include "../../../core/shaders/LineShader.h"
-#include "../../../core/gui/Label.h"
-#include "../../../core/gui/Button.h"
-#include "../../../core/gui/Scrollbar.h"
-#include "../../../core/gui/fonts/TexturedFont.h"
+#include "dpengine/shapes/Line.h"
+#include "dpengine/shaders/LineShader.h"
+#include "dpengine/gui/Label.h"
+#include "dpengine/gui/Button.h"
+#include "dpengine/gui/Scrollbar.h"
+#include "dpengine/gui/fonts/TexturedFont.h"
+#include <dpengine/renderer/Window.h>
 
 #include "PlanLine.h"
 #include "PlanGraph.h"
 
-PlanningGUI::PlanningGUI(ros::NodeHandle& ros_node, Theme& theme, Font& font, float x, float y, float size_x, float size_y, float pixels_per_second)
-	: Container(theme, font, x, y, size_x, size_y, true), ros_node_(&ros_node), font_(&font), plan_line_heights_(30), pixels_per_second_(pixels_per_second), start_time_(0), running_time_(0), total_planning_time_(0), hide_till_first_action_(false)
+PlanningGUI::PlanningGUI(ros::NodeHandle& ros_node, DreadedPE::Theme& theme, DreadedPE::Font& font, float x, float y, float size_x, float size_y, float pixels_per_second)
+	: DreadedPE::Container(theme, font, x, y, size_x, size_y, true), ros_node_(&ros_node), font_(&font), plan_line_heights_(30), pixels_per_second_(pixels_per_second), start_time_(0), running_time_(0), total_planning_time_(0), hide_till_first_action_(false)
 {
 	std::cout << pixels_per_second_ << std::endl;
 	int width, height;
-	glfwGetWindowSize(&width, &height);
+	DreadedPE::Window* window = DreadedPE::Window::getActiveWindow();
+	window->getSize(width, height);
 	
 	
 	// Add buttons to reduce / increase the pixels / second.
@@ -52,7 +53,7 @@ void PlanningGUI::addPlanLine(AUV& auv)
 
 void PlanningGUI::draw(const glm::mat4& perspective_matrix, int level) const
 {
-	Container::draw(perspective_matrix, level);
+	DreadedPE::Container::draw(perspective_matrix, level);
 }
 
 void PlanningGUI::onResize(float width, float height)
@@ -75,7 +76,7 @@ void PlanningGUI::onResize(float width, float height)
 	plan_graph_->onResize(width, height);
 	
 	updateTransformations();
-	Container::onResize(width, height);
+	DreadedPE::Container::onResize(width, height);
 	plan_graph_->setVisible(false);
 }
 /*
@@ -148,6 +149,15 @@ void PlanningGUI::update(float dt)
 	if (time_from_begining < min_time)
 	{
 		plan_graph_->setPosition(0, plan_graph_->getLocalY());
+		plan_graph_->markForUpdate();
+		plan_graph_->updateBuffers();
+		
+		for (PlanLine* plan_line : planlines_)
+		{
+			plan_line->setPosition(0, plan_line->getLocalY());
+			plan_line->markForUpdate();
+			plan_line->updateBuffers();
+		}
 		//std::cout << "Set position to 0." << std::endl;
 	}/*
 	else if (time_from_begining > max_time)
@@ -159,9 +169,21 @@ void PlanningGUI::update(float dt)
 	{
 		float time_in_pixels_in_middle = time_from_begining * pixels_per_second_ - size_x_ / 2.0f;
 		plan_graph_->setPosition(-time_in_pixels_in_middle, plan_graph_->getLocalY());
+		plan_graph_->markForUpdate();
+		plan_graph_->updateBuffers();
+		
+		for (PlanLine* plan_line : planlines_)
+		{
+			plan_line->setPosition(-time_in_pixels_in_middle, plan_line->getLocalY());
+			plan_line->markForUpdate();
+			plan_line->updateBuffers();
+		}
 		//std::cout << "Set position to " << time_in_pixels_in_middle << "." << std::endl;
 	}
+	
 	Container::update(dt);
+	markForUpdate();
+	updateBuffers();
 }
 
 void PlanningGUI::strategicActionDispatch(const planning_msgs::ActionDispatch::ConstPtr& msg)

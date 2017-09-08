@@ -4,17 +4,23 @@
 #include <glm/glm.hpp>
 #include <string>
 
-#include "../../../core/entities/Entity.h"
+#include "dpengine/entities/Entity.h"
 #include "Structure.h"
 
 class OntologyInterface;
-class SceneManager;
-class SceneNode;
+
+namespace DreadedPE
+{
+	class SceneManager;
+	class SceneNode;
+	class HeightMap;
+};
+
 class InspectionPoint;
 class MissionSite;
 class ChainGoal;
 class ChainLink;
-class HeightMap;
+
 
 /**
  * Waypoint:"canSeePillar" -> Pillar
@@ -26,7 +32,7 @@ class HeightMap;
 class Chain : public Structure
 {
 public:
-	Chain(MissionSite& mission_site, SceneManager& scene_manager, SceneNode* parent, HeightMap& height_map, const glm::mat4& transformation, unsigned int nr_chain_links);
+	Chain(MissionSite& mission_site, DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, DreadedPE::HeightMap& height_map, const glm::mat4& transformation, unsigned int nr_chain_links);
 	const std::string& getId() const { return id_; }
 	void setObserved();// { has_been_observed_ = true; }
 	bool hasBeenObserved() const { return has_been_observed_; }

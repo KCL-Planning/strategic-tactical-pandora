@@ -1,5 +1,4 @@
 #include "GL/glew.h"
-#include "GL/glfw.h"
 
 #ifdef _WIN32
 #include <Windows.h>

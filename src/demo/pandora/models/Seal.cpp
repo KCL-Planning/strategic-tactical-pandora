@@ -3,7 +3,6 @@
 #define GLFW_NO_GLU // Do not allow GL/glfw to include the gl.h header
 
 #include "GL/glew.h"
-#include "GL/glfw.h"
 
 #define _USE_MATH_DEFINES
 #ifdef _WIN32
@@ -19,25 +18,25 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 
-#include "../../../core/entities/camera/Camera.h"
-#include "../../../core/scene/SceneNode.h"
-#include "../../../core/scene/SceneManager.h"
-#include "../../../shapes/terrain.h"
-#include "../../../shapes/Line.h"
-#include "../../../core/collision/BoxCollision.h"
-#include "../../../core/collision/CollisionInfo.h"
-#include "../../../core/scene/portal/Region.h"
-#include "../../../core/scene/SceneLeafModel.h"
-#include "../../../core/shaders/LineShader.h"
-#include "../../../core/shaders/BasicShadowShader.h"
+#include "dpengine/entities/camera/Camera.h"
+#include "dpengine/scene/SceneNode.h"
+#include "dpengine/scene/SceneManager.h"
+#include "dpengine/shapes/terrain.h"
+#include "dpengine/shapes/Line.h"
+#include "dpengine/collision/ConvexPolygon.h"
+#include "dpengine/collision/CollisionInfo.h"
+#include "dpengine/scene/portal/Region.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/shaders/LineShader.h"
+#include "dpengine/shaders/BasicShadowShader.h"
 
-Seal::Seal(SceneNode* parent, const glm::mat4& transformation, SceneManager& scene_manager)
-	: Entity(scene_manager, parent, transformation, OBSTACLE, "shark")
+Seal::Seal(DreadedPE::SceneNode* parent, const glm::mat4& transformation, DreadedPE::SceneManager& scene_manager)
+	: DreadedPE::Entity(scene_manager, parent, transformation, DreadedPE::OBSTACLE, "shark")
 {
 	
 }
 
-void Seal::init(Material& material, ShaderInterface& shader)
+void Seal::init(DreadedPE::Material& material, DreadedPE::ShaderInterface& shader)
 {
 	
 }
@@ -47,7 +46,7 @@ void Seal::prepare(float dt)
 	SceneNode::prepare(dt);
 }
 
-void Seal::onCollision(const CollisionInfo& collision_info)
+void Seal::onCollision(const DreadedPE::CollisionInfo& collision_info)
 {
 	
 }

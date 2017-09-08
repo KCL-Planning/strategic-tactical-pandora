@@ -9,19 +9,23 @@
 
 //#include <octomap
 
-#include "../../../core/entities/Entity.h"
-#include "../../../core/renderer/FrustumCaster.h"
+#include "dpengine/entities/Entity.h"
+#include "dpengine/renderer/FrustumCaster.h"
 
-class ShadowRenderer;
+namespace DreadedPE
+{
+	class SceneManager;
+	class ShadowRenderer;
+};
 
 /**
  * Special class that uses a ortho perspective matrix to create a single 'slice' 
  * that is used by Franciesco.
  */
-class SliceSonar : public FrustumCaster, public Entity
+class SliceSonar : public DreadedPE::FrustumCaster, public DreadedPE::Entity
 {
 public:
-	SliceSonar(ros::NodeHandle& node, SceneManager& scene_manager, SceneNode* parent, const glm::mat4& transform, float min_range, float max_range, float angle);
+	SliceSonar(ros::NodeHandle& node, DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, const glm::mat4& transform, float min_range, float max_range, float angle);
 	~SliceSonar();
 
 	void prepare(float dt);
@@ -35,7 +39,7 @@ private:
 	ros::NodeHandle* ros_node_;
 	float min_range_, max_range_, angle_;
 
-	ShadowRenderer* shadow_renderer_;
+	DreadedPE::ShadowRenderer* shadow_renderer_;
 
 	float* image_data_;
 

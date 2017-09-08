@@ -41,7 +41,7 @@
 #include "../core/animation/BouncingBox.h"
 #include "../core/entities/WavingWater.h"
 #include "../core/entities/Player.h"
-#include "../core/collision/BoxCollision.h"
+#include "../core/collision/ConvexPolygon.h"
 #include "../core/entities/Lever.h"
 #include "../core/entities/Bridge.h"
 #include "../core/scene/frustum/SphereCheck.h"
@@ -136,7 +136,7 @@ bool TestScene::init(int argc, char** argv)
 		{
 			Entity* tree_node = new Entity(*scene_manager_, terrain_node, glm::translate(glm::mat4(1.0), glm::vec3(tree_x - terrain->getWidth() / 2, height + 1.0f, tree_z - terrain->getWidth() / 2)), OBSTACLE, "tree");
 
-			BoxCollision* bc = new BoxCollision(*tree_node, 1.0f, 1.0f, 1.0f);
+			ConvexPolygon* bc = new ConvexPolygon(*tree_node, 1.0f, 1.0f, 1.0f);
 			tree_node->addCollision(*bc, *bright_material, BasicShadowShader::getShader());
 
 			SceneLeafModel* tree_leaf_node = new SceneLeafModel(*tree_node, NULL, *tree, *tree_material, BasicShadowShader::getShader(), false, true);
@@ -252,7 +252,7 @@ bool TestScene::init(int argc, char** argv)
 
 		//SphereCheck* sphere_frustrum_check = new SphereCheck(*renderable_cube, 1.0f);
 
-		BoxCollision* bc = new BoxCollision(*renderable_cube, 1.0f, 1.0f, 1.0f);
+		ConvexPolygon* bc = new ConvexPolygon(*renderable_cube, 1.0f, 1.0f, 1.0f);
 		renderable_cube->addCollision(*bc, *bright_material, BasicShadowShader::getShader());
 
 		SceneLeafModel* leaf_node = new SceneLeafModel(*renderable_cube, NULL, *sphere, *coin_material, BasicShadowShader::getShader(), false, false);
@@ -264,7 +264,7 @@ bool TestScene::init(int argc, char** argv)
 		BouncingBox* bb = new BouncingBox(*scene_manager_, terrain_node, glm::translate(glm::mat4(1.0), glm::vec3(-6.0f, 8.0f, 4.0)), -15, 3, -32, 0, 15, 32, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(-6.0f, 8.0f, 4.0));
 		Entity* renderable_cube = new Entity(*scene_manager_, bb, glm::mat4(1.0), OBSTACLE, "bounded box");
 
-		BoxCollision* bc = new BoxCollision(*renderable_cube, 2.0f, 0.5f, 2.0f);
+		ConvexPolygon* bc = new ConvexPolygon(*renderable_cube, 2.0f, 0.5f, 2.0f);
 		renderable_cube->addCollision(*bc, *bright_material, BasicShadowShader::getShader());
 
 		SceneLeafModel* leaf_node = new SceneLeafModel(*renderable_cube, NULL, *normal_cube, *geometry_material, BasicShadowShader::getShader(), false, false);
@@ -274,7 +274,7 @@ bool TestScene::init(int argc, char** argv)
 		BouncingBox* bb = new BouncingBox(*scene_manager_, terrain_node, glm::translate(glm::mat4(1.0), glm::vec3(-12.0f, 7.0f, 0.0)), -15, 3, -3.5, 0, 15, 3, glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(-12.0f, 7.0f, 0.0));
 		Entity* renderable_cube = new Entity(*scene_manager_, bb, glm::mat4(1.0), OBSTACLE, "bounded box");
 
-		BoxCollision* bc = new BoxCollision(*renderable_cube, 2.0f, 0.5f, 2.0f);
+		ConvexPolygon* bc = new ConvexPolygon(*renderable_cube, 2.0f, 0.5f, 2.0f);
 		renderable_cube->addCollision(*bc, *bright_material, BasicShadowShader::getShader());
 
 		SceneLeafModel* leaf_node = new SceneLeafModel(*renderable_cube, NULL, *normal_cube, *geometry_material, BasicShadowShader::getShader(), false, false);
@@ -284,7 +284,7 @@ bool TestScene::init(int argc, char** argv)
 		BouncingBox* bb = new BouncingBox(*scene_manager_, terrain_node, glm::translate(glm::mat4(1.0), glm::vec3(-5.0f, 7.0f, 8.0)), -15, 7, -32, 0, 15, 32, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(-5.0f, 7.0f, 8.0));
 		Entity* renderable_cube = new Entity(*scene_manager_, bb, glm::mat4(1.0), OBSTACLE, "bounded box");
 
-		BoxCollision* bc = new BoxCollision(*renderable_cube, 2.0f, 0.5f, 2.0f);
+		ConvexPolygon* bc = new ConvexPolygon(*renderable_cube, 2.0f, 0.5f, 2.0f);
 		renderable_cube->addCollision(*bc, *bright_material, BasicShadowShader::getShader());
 
 		SceneLeafModel* leaf_node = new SceneLeafModel(*renderable_cube, NULL, *normal_cube, *geometry_material, BasicShadowShader::getShader(), false, false);
@@ -295,7 +295,7 @@ bool TestScene::init(int argc, char** argv)
 		BouncingBox* bb = new BouncingBox(*scene_manager_, terrain_node, glm::translate(glm::mat4(1.0), glm::vec3(0.0f, 15.0f, 8.0)), -5, 10, 0, 5, 20, 12, glm::vec3(0.5f, 0.0f, 0.5f), glm::vec3(0.0f, 15.0f, 8.0));
 		Entity* renderable_cube = new Entity(*scene_manager_, bb, glm::mat4(1.0), OBSTACLE, "bounded box");
 
-		BoxCollision* bc = new BoxCollision(*renderable_cube, 2.0f, 0.5f, 2.0f);
+		ConvexPolygon* bc = new ConvexPolygon(*renderable_cube, 2.0f, 0.5f, 2.0f);
 		renderable_cube->addCollision(*bc, *bright_material, BasicShadowShader::getShader());
 
 		SceneLeafModel* leaf_node = new SceneLeafModel(*renderable_cube, NULL, *normal_cube, *geometry_material, BasicShadowShader::getShader(), false, false);
@@ -319,7 +319,7 @@ bool TestScene::init(int argc, char** argv)
 
 		Lever* lever = new Lever(*scene_manager_, base, glm::translate(glm::mat4(1.0), glm::vec3(0.0f, 0.5f, -0.0f)), OBSTACLE);
 
-		BoxCollision* bc = new BoxCollision(*lever, 0.5f, 1.0f, 0.5f);
+		ConvexPolygon* bc = new ConvexPolygon(*lever, 0.5f, 1.0f, 0.5f);
 		lever->addCollision(*bc, *bright_material, BasicShadowShader::getShader());
 
 		SceneLeafModel* lever_leaf_node = new SceneLeafModel(*lever, NULL, *lever_shape, *geometry_material, BasicShadowShader::getShader(), false, false);
@@ -334,7 +334,7 @@ bool TestScene::init(int argc, char** argv)
 		//SceneNode* geometry_node = new SceneNode(terrain_node, glm::translate(glm::mat4(1.0), glm::vec3(-4.0f, 6.0f, -12.0f)));
 		//bridge_ = new Bridge(*lever, *geometry_node, ENTITY_TYPE::OBSTACLE, glm::vec3(-4.0f, 6.0f, -12.0f), glm::vec3(4.0f, 6.0f, -12.0f));
 
-		BoxCollision* bridge_bc = new BoxCollision(*bridge_, 12.0f, 0.5f, 4.0f);
+		ConvexPolygon* bridge_bc = new ConvexPolygon(*bridge_, 12.0f, 0.5f, 4.0f);
 		bridge_->addCollision(*bridge_bc, *bright_material, BasicShadowShader::getShader());
 
 		SceneLeafModel* leaf_node = new SceneLeafModel(*bridge_, NULL, *bridge, *geometry_material, BasicShadowShader::getShader(), false, false);
@@ -359,7 +359,7 @@ bool TestScene::init(int argc, char** argv)
 		Entity* renderable_cube = new Entity(*scene_manager_, la, glm::mat4(1.0), OBSTACLE, "large cube");
 		//Entity* renderable_cube = new Entity(*scene_manager_, geometry_node, glm::rotate(glm::mat4(1.0f), 170.0f, glm::vec3(0.0f, 1.0f, 0.0f)), OBSTACLE, "large cube");
 		
-		BoxCollision* bc = new BoxCollision(*renderable_cube, 3.0f, 1.0f, 3.0f);
+		ConvexPolygon* bc = new ConvexPolygon(*renderable_cube, 3.0f, 1.0f, 3.0f);
 		renderable_cube->addCollision(*bc, *bright_material, BasicShadowShader::getShader());
 
 		SceneLeafModel* leaf_node = new SceneLeafModel(*la, NULL, *large_cube, *geometry_material, BasicShadowShader::getShader(), false, false);

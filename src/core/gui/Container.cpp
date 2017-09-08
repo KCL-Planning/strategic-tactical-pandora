@@ -1,19 +1,25 @@
-#include "Container.h"
-#include "themes/Theme.h"
+#define NOMINMAX
 
-#include <GL/glfw.h>
+#include <algorithm> 
 
-#include "../shaders/GUIShader.h"
-#include "../shaders/LineShader.h"
+#include "dpengine/gui/Container.h"
+#include "dpengine/gui/themes/Theme.h"
 
-#include "fonts/FontRenderingGUIElement.h"
-#include "fonts/Font.h"
+#include "dpengine/shaders/GUIShader.h"
 
-Container::Container(const Theme& theme, Font& font, float x, float y, float size_x, float size_y, bool render_outside)
-	: GUIElement(theme, x, y, size_x, size_y), font_(&font), content_size_x_(-std::numeric_limits<float>::max()), content_size_y_(-std::numeric_limits<float>::max()), render_outside_(render_outside), need_to_update_buffers_(true)
+#include "dpengine/gui/fonts/FontRenderingGUIElement.h"
+#include "dpengine/gui/fonts/Font.h"
+#include "dpengine/renderer/Window.h"
+
+namespace DreadedPE
 {
+
+Container::Container(const Theme& theme, Font& font, float x, float y, float size_x, float size_y, bool render_outside, float transparency)
+	: GUIElement(theme, x, y, size_x, size_y), content_size_x_(-std::numeric_limits<float>::max()), content_size_y_(-std::numeric_limits<float>::max()), render_outside_(render_outside), need_to_update_buffers_(true), font_(&font), transparency_(transparency)
+{
+	Window* window = Window::getActiveWindow();
 	int width, height;
-	glfwGetWindowSize(&width, &height);
+	window->getSize(width, height);
 	
 	m_vertices_.push_back(glm::vec3(0, height, 0));
 	m_vertices_.push_back(glm::vec3(size_x, height, 0));
@@ -66,8 +72,25 @@ Container::Container(const Theme& theme, Font& font, float x, float y, float siz
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * combined_indices_.size(), &combined_indices_[0], GL_STATIC_DRAW);
 }
 
+void Container::markForUpdate()
+{
+	/*
+	for (GUIElement* c : children_)
+	{
+		c->markForUpdate();
+	}
+
+	for (Container* c : container_children_)
+	{
+		c->markForUpdate();
+	}
+	*/
+	GUIElement::markForUpdate();
+}
+
 void Container::setTextureUVMapping(const std::vector<glm::vec2>& texture)
 {
+	markForUpdate();
 	m_tex_coords_ = texture;
 	need_to_update_buffers_ = true;
 }
@@ -86,6 +109,7 @@ void Container::updateTransformations()
 
 void Container::addElement(GUIElement& child, float x, float y)
 {
+	markForUpdate();
 	child.setParent(this);
 	children_.push_back(&child);
 	child.setPosition(x, y);
@@ -102,6 +126,7 @@ void Container::addElement(GUIElement& child, float x, float y)
 
 void Container::removeElement(GUIElement& child)
 {
+	markForUpdate();
 	for (std::vector<GUIElement*>::iterator i = children_.begin(); i != children_.end(); ++i)
 	{
 		if (*i == &child)
@@ -123,6 +148,7 @@ void Container::removeElement(GUIElement& child)
 
 void Container::addElement(Container& child, float x, float y)
 {
+	markForUpdate();
 	child.setParent(this);
 	container_children_.push_back(&child);
 	child.setPosition(x, y);
@@ -133,6 +159,7 @@ void Container::addElement(Container& child, float x, float y)
 
 void Container::removeElement(Container& child)
 {
+	markForUpdate();
 	for (std::vector<Container*>::iterator i = container_children_.begin(); i != container_children_.end(); ++i)
 	{
 		if (*i == &child)
@@ -144,14 +171,37 @@ void Container::removeElement(Container& child)
 	}
 }
 
+bool Container::containsElement(GUIElement& child)
+{
+	for (GUIElement* ge : children_)
+	{
+		if (ge == &child)
+		{
+			return true;
+		}
+	}
+
+	for (Container* c : container_children_)
+	{
+		if (c->containsElement(child))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 void Container::update(float dt)
 {
 	//m_tex_coords_ = theme_->getMaximiseTexture();
 	GUIElement::update(dt);
 	for (std::vector<GUIElement*>::const_iterator ci = children_.begin(); ci != children_.end(); ++ci)
 	{
-		// Check if this element is clicked on by the mouse.
-		(*ci)->update(dt);
+		if ((*ci)->needsUpdate() || (*ci)->isSelected())
+		{
+			// Check if this element is clicked on by the mouse.
+			(*ci)->update(dt);
+		}
 	}
 
 	// Update the combined buffers, if necessary.
@@ -261,7 +311,10 @@ void Container::update(float dt)
 
 	for (std::vector<Container*>::const_iterator ci = container_children_.begin(); ci != container_children_.end(); ++ci)
 	{
-		(*ci)->update(dt);
+		if ((*ci)->needsUpdate() || (*ci)->isSelected())
+		{
+			(*ci)->update(dt);
+		}
 	}
 	
 	GUIElement::update(dt);
@@ -269,8 +322,21 @@ void Container::update(float dt)
 
 GUIElement* Container::processMousePressEvent(int mouse_x, int mouse_y)
 {
-	if (mouse_x >= global_transformation_[3][0] && mouse_x <= global_transformation_[3][0] + size_x_ &&
-		mouse_y >= -global_transformation_[3][1] && mouse_y <= -global_transformation_[3][1] + size_y_)
+	markForUpdate();
+	for (GUIElement* g : children_)
+	{
+		g->setSelected(false);
+	}
+
+	for (Container* c : container_children_)
+	{
+		c->is_selected_ = false;
+	}
+
+
+	is_selected_ = mouse_x >= global_transformation_[3][0] && mouse_x <= global_transformation_[3][0] + size_x_ &&
+	               mouse_y >= -global_transformation_[3][1] && mouse_y <= -global_transformation_[3][1] + size_y_;
+	if (is_selected_)
 	{
 		// Check if any of its children are 'clicked'.
 		for (std::vector<GUIElement*>::const_iterator ci = children_.begin(); ci != children_.end(); ++ci)
@@ -282,6 +348,7 @@ GUIElement* Container::processMousePressEvent(int mouse_x, int mouse_y)
 				GUIElement* pressed_element = (*ci)->processMousePressEvent(mouse_x, mouse_y);
 				if (pressed_element != NULL)
 				{
+					pressed_element->setSelected(true);
 					return pressed_element;
 				}
 			}
@@ -296,6 +363,7 @@ GUIElement* Container::processMousePressEvent(int mouse_x, int mouse_y)
 				GUIElement* pressed_element = (*ci)->processMousePressEvent(mouse_x, mouse_y);
 				if (pressed_element != NULL)
 				{
+					pressed_element->setSelected(true);
 					return pressed_element;
 				}
 			}
@@ -307,6 +375,7 @@ GUIElement* Container::processMousePressEvent(int mouse_x, int mouse_y)
 
 void Container::processMouseReleasedEvent(int mouse_x, int mouse_y)
 {
+	markForUpdate();
 	for (std::vector<GUIElement*>::const_iterator ci = children_.begin(); ci != children_.end(); ++ci)
 	{
 		// Check if this element is clicked on by the mouse.
@@ -374,6 +443,7 @@ void Container::draw(const glm::mat4& perspective_matrix, int level) const
 
 void Container::onResize(int width, int height)
 {
+	markForUpdate();
 	m_vertices_.clear();
 	m_vertices_.push_back(glm::vec3(0, height, 0));
 	m_vertices_.push_back(glm::vec3(size_x_, height, 0));
@@ -395,3 +465,5 @@ void Container::onResize(int width, int height)
 	font_->onResize(width, height);
 	updateBuffers();
 }
+
+};

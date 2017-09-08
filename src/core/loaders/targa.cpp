@@ -2,9 +2,12 @@
 #include <cassert>
 #include <iostream>
 
-#include "targa.h"
+#include "dpengine/loaders/targa.h"
 
 using std::ifstream;
+
+namespace DreadedPE
+{
 
 TargaImage::TargaImage():
 m_width(0),
@@ -255,3 +258,5 @@ void TargaImage::flipImageVertically()
     //Copy the flipped image data to the original array
     m_imageData.assign(flippedData.begin(), flippedData.end());
 }
+
+};

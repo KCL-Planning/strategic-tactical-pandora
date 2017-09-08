@@ -3,28 +3,36 @@
 
 #include <string>
 
-#include "../../../core/shaders/LightShader.h"
+#include "dpengine/shaders/LightShader.h"
 
-class DirectedLight;
-class Texture;
-class SceneManager;
-class SceneNode;
+namespace DreadedPE
+{
+	class DirectedLight;
+	class Texture;
+	class SceneManager;
+	class SceneNode;
+};
 class CausticTexture;
 
-class CausticShader : public LightShader
+class CausticShader : public DreadedPE::LightShader
 {
 public:
 	/**
 	 * We do not render scene leaf lights...
 	 */
-	virtual void initialise(const SceneLeafLight& light_node, const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const SceneLeafLight*>& lights)
+	virtual void initialise(const DreadedPE::SceneLeafLight& light_node, const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const DreadedPE::SceneLeafLight*>& lights)
 	{
 
 	}
 
-	virtual void initialise(const SceneLeafModel& model_node, const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const SceneLeafLight*>& lights);
+	virtual void prepareToRender(const DreadedPE::SceneLeafModel& model_node, const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const DreadedPE::SceneLeafLight*>& lights);
 
-	static void initialiseSun(DirectedLight& sun, CausticTexture& caustic_texture);
+	void render()
+	{
+		
+	}
+	
+	static void initialiseSun(DreadedPE::DirectedLight& sun, CausticTexture& caustic_texture);
 
 	static CausticShader& getShader();
 protected:
@@ -33,7 +41,7 @@ protected:
 	
 private:
 	static CausticShader* shader_;
-	static DirectedLight* sun_;
+	static DreadedPE::DirectedLight* sun_;
 	static CausticTexture* caustic_texture_;
 };
 

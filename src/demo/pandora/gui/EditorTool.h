@@ -1,32 +1,37 @@
 #ifndef PANDORA_GUI_EDITOR_TOOL_H
 #define PANDORA_GUI_EDITOR_TOOL_H
 
+#include <memory>
 #include <glm/glm.hpp>
 #include <string>
 #include <map>
 
-#include "../../../core/gui/Frame.h"
+#include "dpengine/gui/Frame.h"
 
-class Theme;
-class Font;
-class Label;
-class Button;
-class Camera;
-class HeightMap;
-class SceneManager;
+namespace DreadedPE
+{
+	class Theme;
+	class Font;
+	class Label;
+	class Button;
+	class Camera;
+	class HeightMap;
+	class SceneManager;
+	class SceneLeafModel;
+	class Material;
+	class Entity;
+};
+
 class MissionSite;
-class SceneLeafModel;
-class Material;
-class Entity;
 class OntologyInterface;
 class Structure;
 
-class EditorTool : public Frame
+class EditorTool : public DreadedPE::Frame
 {
 public:
-	EditorTool(SceneManager& scene_manager, OntologyInterface& ontology,Theme& theme, Font& font, float x, float y, Camera& camera, HeightMap& height_map);
+	EditorTool(DreadedPE::SceneManager& scene_manager, OntologyInterface& ontology, DreadedPE::Theme& theme, DreadedPE::Font& font, float x, float y, DreadedPE::Camera& camera, DreadedPE::HeightMap& height_map);
 	
-	void buttonPressed(const Button& source);
+	void buttonPressed(const DreadedPE::Button& source);
 	
 	void update(float dt);
 private:
@@ -37,21 +42,21 @@ private:
 	
 	void setCurrentMode(EDITOR_MODE mode);
 	
-	SceneManager* scene_manager_;
+	DreadedPE::SceneManager* scene_manager_;
 	OntologyInterface* ontology_;
-	Label* selected_entity_label_;
-	Button* submit_button_;
-	Button* remove_button_;
-	Button* add_pillar_button_;
-	Button* add_manifold_button_;
-	Button* add_valve_panel_button_;
-	Camera* camera_;
-	HeightMap* height_map_;
+	DreadedPE::Label* selected_entity_label_;
+	DreadedPE::Button* submit_button_;
+	DreadedPE::Button* remove_button_;
+	DreadedPE::Button* add_pillar_button_;
+	DreadedPE::Button* add_manifold_button_;
+	DreadedPE::Button* add_valve_panel_button_;
+	DreadedPE::Camera* camera_;
+	DreadedPE::HeightMap* height_map_;
 	
 	MissionSite* mission_site_;
 	
-	std::vector<std::pair<SceneLeafModel*, const Material*> > org_materials_;
-	std::vector<Material*> tmp_materials_;
+	std::vector<std::pair<DreadedPE::SceneLeafModel*, std::shared_ptr<const DreadedPE::Material> > > org_materials_;
+	std::vector<std::shared_ptr<DreadedPE::Material> > tmp_materials_;
 	Structure* selected_structure_;
 	
 	bool submitted_;

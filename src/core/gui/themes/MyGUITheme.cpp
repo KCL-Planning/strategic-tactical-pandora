@@ -1,15 +1,24 @@
-#include "MyGUITheme.h"
+#include "dpengine/gui/themes/MyGUITheme.h"
 
-#include "../../texture/TargaTexture.h"
+#include "dpengine/texture/TargaTexture.h"
+
+namespace DreadedPE
+{
 
 MyGUITheme::MyGUITheme()
-	: Theme(*(TargaTexture::loadTexture("data/textures/gui.tga")))
+	: Theme(*(TargaTexture::loadTexture("textures/gui/gui.tga")))
 {
 	// Frame background.
 	frame_texture_.push_back(glm::vec2(372.0f / 512.0f, (256.0f - 2.0f) / 256.0f));
 	frame_texture_.push_back(glm::vec2(442.0f / 512.0f, (256.0f - 2.0f) / 256.0f));
 	frame_texture_.push_back(glm::vec2(372.0f / 512.0f, (256.0f - 64.0f) / 256.0f));
 	frame_texture_.push_back(glm::vec2(442.0f / 512.0f, (256.0f - 64.0f) / 256.0f));
+
+	// Bordered frame.
+	bordered_frame_texture_.push_back(glm::vec2(169.0f / 512.0f, (256.0f - 164.0f) / 256.0f));
+	bordered_frame_texture_.push_back(glm::vec2(196.0f / 512.0f, (256.0f - 164.0f) / 256.0f));
+	bordered_frame_texture_.push_back(glm::vec2(169.0f / 512.0f, (256.0f - 188.0f) / 256.0f));
+	bordered_frame_texture_.push_back(glm::vec2(196.0f / 512.0f, (256.0f - 188.0f) / 256.0f));
 
 	// Button up.
 	button_texture_.push_back(glm::vec2(136.0f / 512.0f, (256.0f - 56.0f) / 256.0f));
@@ -77,14 +86,28 @@ MyGUITheme::MyGUITheme()
 	scrollbar_unit_texture_.push_back(glm::vec2(22.0f / 512.0f, (256.0f - 66.0f) / 256.0f));
 	
 	// Solid black.
-	solid_black_texture_.push_back(glm::vec2(0.0f / 512.0f, (256.0f - 0.0f) / 256.0f));
-	solid_black_texture_.push_back(glm::vec2(1.0f / 512.0f, (256.0f - 0.0f) / 256.0f));
-	solid_black_texture_.push_back(glm::vec2(0.0f / 512.0f, (256.0f - 1.0f) / 256.0f));
-	solid_black_texture_.push_back(glm::vec2(1.0f / 512.0f, (256.0f - 1.0f) / 256.0f));
+	solid_black_texture_.push_back(glm::vec2(510.0f / 512.0f, (256.0f - 1.0f) / 256.0f));
+	solid_black_texture_.push_back(glm::vec2(511.0f / 512.0f, (256.0f - 1.0f) / 256.0f));
+	solid_black_texture_.push_back(glm::vec2(510.0f / 512.0f, (256.0f - 2.0f) / 256.0f));
+	solid_black_texture_.push_back(glm::vec2(511.0f / 512.0f, (256.0f - 2.0f) / 256.0f));
 	
 	// Invisible texture.
-	invisible_texture_.push_back(glm::vec2(0, 0));
-	invisible_texture_.push_back(glm::vec2(0, 0));
-	invisible_texture_.push_back(glm::vec2(0, 0));
-	invisible_texture_.push_back(glm::vec2(0, 0));
+	invisible_texture_.push_back(glm::vec2(1.0f / 512.0f, (256.0f - 250.0f) / 256.0f));
+	invisible_texture_.push_back(glm::vec2(2.0f / 512.0f, (256.0f - 250.0f) / 256.0f));
+	invisible_texture_.push_back(glm::vec2(1.0f / 512.0f, (256.0f - 251.0f) / 256.0f));
+	invisible_texture_.push_back(glm::vec2(2.0f / 512.0f, (256.0f - 251.0f) / 256.0f));
+
+	// Forward texture.
+	forward_texture_.push_back(glm::vec2(94.0f / 512.0f, (256.0f - 195.0f) / 256.0f));
+	forward_texture_.push_back(glm::vec2(106.0f / 512.0f, (256.0f - 195.0f) / 256.0f));
+	forward_texture_.push_back(glm::vec2(94.0f / 512.0f, (256.0f - 208.0f) / 256.0f));
+	forward_texture_.push_back(glm::vec2(106.0f / 512.0f, (256.0f - 208.0f) / 256.0f));
+
+	// Backward texture.
+	back_texture_.push_back(glm::vec2(94.0f / 512.0f, (256.0f - 130.0f) / 256.0f));
+	back_texture_.push_back(glm::vec2(106.0f / 512.0f, (256.0f - 130.0f) / 256.0f));
+	back_texture_.push_back(glm::vec2(94.0f / 512.0f, (256.0f - 143.0f) / 256.0f));
+	back_texture_.push_back(glm::vec2(106.0f / 512.0f, (256.0f - 143.0f) / 256.0f));
 }
+
+};

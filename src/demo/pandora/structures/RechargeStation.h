@@ -5,14 +5,17 @@
 
 #include "../level/MissionSite.h"
 
-class SceneManager;
-class SceneNode;
+namespace DreadedPE
+{
+	class SceneManager;
+	class SceneNode;
+};
 class Waypoint;
 
 class RechargeStation : public MissionSite
 {
 public:
-	RechargeStation(SceneManager& scene_manager, SceneNode* parent, const glm::mat4& transformation);
+	RechargeStation(DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, const glm::mat4& transformation);
 };
 
 #endif

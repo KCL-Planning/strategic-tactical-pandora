@@ -9,16 +9,20 @@
 
 //#include <octomap
 
-#include "../../../core/entities/Entity.h"
-#include "../../../core/renderer/FrustumCaster.h"
+#include "dpengine/entities/Entity.h"
+#include "dpengine/renderer/FrustumCaster.h"
 
 class AUV;
-class ShadowRenderer;
+namespace DreadedPE
+{
+	class SceneManager;
+	class ShadowRenderer;
+};
 
-class Sonar : public FrustumCaster, public Entity
+class Sonar : public DreadedPE::FrustumCaster, public DreadedPE::Entity
 {
 public:
-	Sonar(ros::NodeHandle& node, SceneManager& scene_manager, SceneNode* parent, AUV& auv, const std::string& frame_id, const glm::mat4& transform, float min_range, float max_range, float angle);
+	Sonar(ros::NodeHandle& node, DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, AUV& auv, const std::string& frame_id, const glm::mat4& transform, float min_range, float max_range, float angle);
 	~Sonar();
 
 	void prepare(float dt);
@@ -35,7 +39,7 @@ private:
 	bool pitch_moving_up_;
 	//GLuint depth_texture_id_;
 
-	ShadowRenderer* shadow_renderer_;
+	DreadedPE::ShadowRenderer* shadow_renderer_;
 
 	float* image_data_;
 	float pitch_;

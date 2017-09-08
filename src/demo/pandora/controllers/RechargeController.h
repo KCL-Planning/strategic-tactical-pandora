@@ -6,17 +6,20 @@
 #include "PlannerAction.h"
 
 class AUV;
-class Line;
-class SceneNode;
-class SceneLeafModel;
-class SceneManager;
-class Material;
+namespace DreadedPE
+{
+	class Line;
+	class SceneNode;
+	class SceneLeafModel;
+	class SceneManager;
+	class Material;
+};
 class OntologyInterface;
 
 class RechargeController : public PlannerAction
 {
 public:
-	RechargeController(SceneManager& scene_manager, AUV& auv, OntologyInterface& ontology);
+	RechargeController(DreadedPE::SceneManager& scene_manager, AUV& auv, OntologyInterface& ontology);
 	
 	/**
 	 * Set the duration of how long the recharge action should take.

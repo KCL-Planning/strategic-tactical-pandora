@@ -10,42 +10,34 @@
 
 #include <map>
 
-#include "../../../core/gui/Frame.h"
-#include "../../../core/gui/Container.h"
-#include "../../../core/gui/events/ButtonPressedListener.h"
+#include "dpengine/gui/Frame.h"
+#include "dpengine/gui/Container.h"
+#include "dpengine/gui/events/ButtonPressedListener.h"
 
-#ifndef _WIN32
 #include "../controllers/ActionExecutionListener.h"
 #include "../controllers/PlannerAction.h"
-#endif
 
 class AUV;
 class ActionLabel;
-class Font;
-class Button;
-class Texture;
+
+namespace DreadedPE
+{
+	class Font;
+	class Button;
+	class Texture;
+};
 
 /**
  * Draws a plan line.
  */
-#ifndef _WIN32
-class PlanLine : public Container, public ActionExecutionListener, public ButtonPressedListener
-#else
-class PlanLine : public Frame
-#endif
+class PlanLine : public DreadedPE::Container, public ActionExecutionListener, public DreadedPE::ButtonPressedListener
 {
 public:
-#ifndef _WIN32
-	PlanLine(ros::NodeHandle& ros_node, AUV* auv, float pixels_per_second, const Theme& theme, Font& font, float x, float y, float size_x, float size_y);
-#else
-	PlanLine(Theme& theme, Font& font, float x, float y, float size_x, float size_y);
-#endif
+	PlanLine(ros::NodeHandle& ros_node, AUV* auv, float pixels_per_second, const DreadedPE::Theme& theme, DreadedPE::Font& font, float x, float y, float size_x, float size_y);
 
-#ifndef _WIN32
 	void actionExecutionStarted(const PlannerAction& action);
 	void actionExecutionFailed(const PlannerAction& action);
 	void actionExecutionSucceeded(const PlannerAction& action);
-#endif
 	void update(float dt);
 	
 	/**
@@ -56,7 +48,7 @@ public:
 	/**
 	 * Handle button presses.
 	 */
-	void buttonPressed(const Button& source);
+	void buttonPressed(const DreadedPE::Button& source);
 	
 	/**
 	 * Change the pixels per seconds and update the graph to reflect this change.
@@ -68,23 +60,26 @@ public:
 	 */
 	void setCurrentPlan(const planning_msgs::CompletePlan& msg);
 	
+	/**
+	 * Get all the action labels.
+	 */
+	const std::vector<ActionLabel*>& getActionLabels() const { return action_labels_; }
+	
 private:
 	AUV* auv_;
-	Font* font_;
+	DreadedPE::Font* font_;
 	float total_time_;
 	float start_time_current_action_;
 	float pixels_per_second_;
 	
 	//std::map<std::string, float> plan_line_time_;
 	
-#ifndef _WIN32
-	
 	ros::Subscriber complete_plan_listener_; /// Listen to messages that contain the complete current plan.
 	planning_msgs::ActionDispatch current_action_;
-#endif	
+
 	std::vector<ActionLabel*> action_labels_;
 	
-	Texture* icon_texture_;
+	DreadedPE::Texture* icon_texture_;
 	
 	static int INVALID_ACTION_ID_;
 	

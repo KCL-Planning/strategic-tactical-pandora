@@ -6,17 +6,20 @@
 #include "PlannerAction.h"
 
 class AUV;
-class Line;
-class SceneNode;
-class SceneLeafModel;
-class SceneManager;
-class Material;
+namespace DreadedPE
+{
+	class Line;
+	class SceneNode;
+	class SceneLeafModel;
+	class SceneManager;
+	class Material;
+};
 class OntologyInterface;
 
 class IlluminateController : public PlannerAction
 {
 public:
-	IlluminateController(SceneManager& scene_manager, AUV& auv, OntologyInterface& ontology);
+	IlluminateController(DreadedPE::SceneManager& scene_manager, AUV& auv, OntologyInterface& ontology);
 	
 	/**
 	 * Set the duration of how long the illumination should take.

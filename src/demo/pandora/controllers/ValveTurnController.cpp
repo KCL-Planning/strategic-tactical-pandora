@@ -10,20 +10,20 @@
 
 #include "../AUV.h"
 #include "../ontology/OntologyInterface.h"
-#include "../../../core/scene/SceneNode.h"
-#include "../../../core/scene/SceneLeafModel.h"
-#include "../../../core/scene/SceneManager.h"
-#include "../../../core/scene/Material.h"
-#include "../../../core/shaders/LineShader.h"
-#include "../../../core/shaders/ShadowShader.h"
-#include "../../../core/shaders/BasicShadowShader.h"
-#include "../../../shapes/Line.h"
-#include "../../../shapes/FrustumShape.h"
+#include "dpengine/scene/SceneNode.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/scene/SceneManager.h"
+#include "dpengine/scene/Material.h"
+#include "dpengine/shaders/LineShader.h"
+#include "dpengine/shaders/ShadowShader.h"
+#include "dpengine/shaders/BasicShadowShader.h"
+#include "dpengine/shapes/Line.h"
+#include "dpengine/shapes/FrustumShape.h"
 #include "../structures/Structure.h"
 #include "../structures/Valve.h"
 #include "../models/RobotHand.h"
 
-ValveTurnController::ValveTurnController(SceneManager& scene_manager, AUV& auv, OntologyInterface& ontology, ros::Publisher& action_feedback_pub, FollowWaypointController& follow_waypoint_controller)
+ValveTurnController::ValveTurnController(DreadedPE::SceneManager& scene_manager, AUV& auv, OntologyInterface& ontology, ros::Publisher& action_feedback_pub, FollowWaypointController& follow_waypoint_controller)
 	: auv_(&auv), time_(0), ontology_(&ontology), valve_(NULL), desired_increment_(0), valve_deadline_(0), action_feedback_pub_(&action_feedback_pub), follow_waypoint_controller_(&follow_waypoint_controller)
 {
 	

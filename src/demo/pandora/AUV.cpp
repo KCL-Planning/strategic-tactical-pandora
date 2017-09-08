@@ -2,7 +2,6 @@
 #define GLFW_NO_GLU // Do not allow GL/glfw to include the gl.h header
 
 #include "GL/glew.h"
-#include "GL/glfw.h"
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -18,25 +17,24 @@
 #include "AUV.h"
 #include "Propeller.h"
 
-#include "../../core/entities/camera/Camera.h"
-#include "../../core/scene/SceneNode.h"
-#include "../../core/scene/SceneManager.h"
-#include "../../shapes/terrain.h"
-#include "../../shapes/Cube.h"
-#include "../../core/collision/BoxCollision.h"
-#include "../../core/collision/CollisionInfo.h"
-#include "../../core/scene/SceneLeafModel.h"
-#include "../../core/scene/Material.h"
-#include "../../core/scene/portal/Region.h"
-#include "../../core/particles/GPUParticleEmitter.h"
-#include "../../core/particles/GPUParticleComputerShader.h"
-#include "../../core/particles/GPUParticleDrawShader.h"
-#include "../../core/math/Math.h"
-#include "../../core/loaders/WavefrontLoader.h"
-#include "../../core/shaders/BasicShadowShader.h"
-#include "../../core/entities/behaviours/HoverBehaviour.h"
-#include "../../core/texture/TargaTexture.h"
-#include "../../core/particles/Particle.h"
+#include "dpengine/entities/camera/Camera.h"
+#include "dpengine/scene/SceneNode.h"
+#include "dpengine/scene/SceneManager.h"
+#include "dpengine/shapes/terrain.h"
+#include "dpengine/shapes/Cube.h"
+#include "dpengine/collision/ConvexPolygon.h"
+#include "dpengine/collision/CollisionInfo.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/scene/Material.h"
+#include "dpengine/scene/portal/Region.h"
+#include "dpengine/particles/GPUParticleEmitter.h"
+#include "dpengine/particles/GPUParticleComputerShader.h"
+#include "dpengine/particles/GPUParticleDrawShader.h"
+#include "dpengine/math/Math.h"
+#include "dpengine/loaders/WavefrontLoader.h"
+#include "dpengine/shaders/BasicShadowShader.h"
+#include "dpengine/texture/TargaTexture.h"
+#include "dpengine/particles/Particle.h"
 
 #include "shaders/CausticShader.h"
 #include "gui/BillBoard.h"
@@ -47,12 +45,12 @@
 #include "RRT.h"
 #endif
 
-AUV::AUV(SceneNode* parent, const glm::mat4& transformation, SceneManager& scene_manager, Texture& texture, const std::string& frame_name)
-	: Entity(scene_manager, parent, transformation, OBSTACLE, frame_name), pitch_(0.0f), yaw_(0.0f), roll_(0.0f), desired_velocity_(0), desired_direction_(glm::vec3(0, 0, -1)), face_forward_(true), desired_yaw_(0), desired_pitch_(0), light_is_on_(false), status_label_(NULL), bill_board_time_(0)
+AUV::AUV(DreadedPE::SceneNode* parent, const glm::mat4& transformation, DreadedPE::SceneManager& scene_manager, DreadedPE::Texture& texture, const std::string& frame_name)
+	: Entity(scene_manager, parent, transformation, DreadedPE::OBSTACLE, frame_name), pitch_(0.0f), yaw_(0.0f), roll_(0.0f), desired_velocity_(0), desired_direction_(glm::vec3(0, 0, -1)), face_forward_(true), desired_yaw_(0), desired_pitch_(0), light_is_on_(false), status_label_(NULL), bill_board_time_(0)
 {
 	velocity_ = 0.0f;
-	BoxCollision* bc = new BoxCollision(*this, 1.2f, 1.2f, 1.5f);
-	addCollision(*bc, *SceneNode::bright_material_, BasicShadowShader::getShader());
+	DreadedPE::ConvexPolygon* bc = new DreadedPE::ConvexPolygon(*this, 1.2f, 1.2f, 1.5f);
+	addCollision(*bc);
 	max_velocity_ = 16.0f;
 	total_time_ = 0;
 	
@@ -62,41 +60,41 @@ AUV::AUV(SceneNode* parent, const glm::mat4& transformation, SceneManager& scene
 	
 	// Add a node with a 'wavy' behaviour.
 	auv_node_ = new SceneNode(*scene_manager_, this, glm::mat4(1.0f));
-	HoverBehaviour* hover_behaviour = new HoverBehaviour(*auv_node_);
-	auv_node_->addBehaviour(*hover_behaviour);
+	///HoverBehaviour* hover_behaviour = new HoverBehaviour(*auv_node_);
+	///auv_node_->addBehaviour(*hover_behaviour);
 	
 	model_node_ = new SceneNode(*scene_manager_, auv_node_, glm::mat4(1.0f));
 
-	Shape* auv_model = WavefrontLoader::importShape("data/models/Pandora/misc/AUV.obj");
-	Shape* propeller_model = WavefrontLoader::importShape("data/models/Pandora/misc/propeller.obj");
+	std::shared_ptr<DreadedPE::Shape> auv_model = DreadedPE::WavefrontLoader::importShape("data/models/Pandora/misc/AUV.obj");
+	std::shared_ptr<DreadedPE::Shape> propeller_model = DreadedPE::WavefrontLoader::importShape("data/models/Pandora/misc/propeller.obj");
 	
-	MaterialLightProperty* sub_ambient = new MaterialLightProperty(0.8, 0.8, 0.8, 1.0);
-	MaterialLightProperty* sub_diffuse = new MaterialLightProperty(0.6, 0.6, 0.6, 1.0);
-	MaterialLightProperty* sub_specular = new MaterialLightProperty(0.3, 0.3, 0.3, 1.0);
-	MaterialLightProperty* sub_emmisive = new MaterialLightProperty(0.5, 0.5, 0.5, 1.0);
+	DreadedPE::MaterialLightProperty sub_ambient(0.8, 0.8, 0.8, 1.0);
+	DreadedPE::MaterialLightProperty sub_diffuse(0.6, 0.6, 0.6, 1.0);
+	DreadedPE::MaterialLightProperty sub_specular(0.3, 0.3, 0.3, 1.0);
+	DreadedPE::MaterialLightProperty sub_emmisive(0.5, 0.5, 0.5, 1.0);
 
-	Material* sub_material = new Material(*sub_ambient, *sub_diffuse, *sub_specular, *sub_emmisive);
+	std::shared_ptr<DreadedPE::Material> sub_material(std::make_shared<DreadedPE::Material>(sub_ambient, sub_diffuse, sub_specular, sub_emmisive));
 	sub_material->add2DTexture(texture);
 
-	SceneLeafModel* auv_model_leaf = new SceneLeafModel(*model_node_, NULL, *auv_model, *sub_material, CausticShader::getShader(), false, false, OBJECT, ShadowRenderer::STATIC_SHADOW);
+	DreadedPE::SceneLeafModel* auv_model_leaf = new DreadedPE::SceneLeafModel(*model_node_, NULL, auv_model, sub_material, CausticShader::getShader(), false, false, DreadedPE::OBJECT, DreadedPE::ShadowRenderer::STATIC_SHADOW);
 	
 	down_thrust_ = new Propeller(*scene_manager_, model_node_, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.28f, -0.55f)));
-	SceneLeafModel* down_thrust_model_leaf = new SceneLeafModel(*down_thrust_, NULL, *propeller_model, *sub_material, CausticShader::getShader(), false, false, OBJECT, ShadowRenderer::STATIC_SHADOW);
+	DreadedPE::SceneLeafModel* down_thrust_model_leaf = new DreadedPE::SceneLeafModel(*down_thrust_, NULL, propeller_model, sub_material, CausticShader::getShader(), false, false, DreadedPE::OBJECT, DreadedPE::ShadowRenderer::STATIC_SHADOW);
 	
 	down_thrust2_ = new Propeller(*scene_manager_, model_node_, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.28f, 0.39f)));
-	SceneLeafModel* down_thrust_model_leaf2 = new SceneLeafModel(*down_thrust2_, NULL, *propeller_model, *sub_material, CausticShader::getShader(), false, false, OBJECT, ShadowRenderer::STATIC_SHADOW);
+	DreadedPE::SceneLeafModel* down_thrust_model_leaf2 = new DreadedPE::SceneLeafModel(*down_thrust2_, NULL, propeller_model, sub_material, CausticShader::getShader(), false, false, DreadedPE::OBJECT, DreadedPE::ShadowRenderer::STATIC_SHADOW);
 	
-	SceneNode* side_thrust_location = new SceneNode(*scene_manager_, model_node_, glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.14f, 0.59f)), 90.0f, glm::vec3(0, 0, 1)));
+	DreadedPE::SceneNode* side_thrust_location = new DreadedPE::SceneNode(*scene_manager_, model_node_, glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.14f, 0.59f)), glm::radians(90.0f), glm::vec3(0, 0, 1)));
 	side_thrust_ = new Propeller(*scene_manager_, side_thrust_location, glm::mat4(1.0f));
-	SceneLeafModel* side_thrust_model_leaf = new SceneLeafModel(*side_thrust_, NULL, *propeller_model, *sub_material, CausticShader::getShader(), false, false, OBJECT, ShadowRenderer::STATIC_SHADOW);
+	DreadedPE::SceneLeafModel* side_thrust_model_leaf = new DreadedPE::SceneLeafModel(*side_thrust_, NULL, propeller_model, sub_material, CausticShader::getShader(), false, false, DreadedPE::OBJECT, DreadedPE::ShadowRenderer::STATIC_SHADOW);
 	
-	SceneNode* forward_thrust_location = new SceneNode(*scene_manager_, model_node_, glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.2f, 0.02f, -0.36f)), 90.0f, glm::vec3(1, 0, 0)));
+	DreadedPE::SceneNode* forward_thrust_location = new DreadedPE::SceneNode(*scene_manager_, model_node_, glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.2f, 0.02f, -0.36f)), glm::radians(90.0f), glm::vec3(1, 0, 0)));
 	forward_thrust_ = new Propeller(*scene_manager_, forward_thrust_location, glm::mat4(1.0f));
-	SceneLeafModel* forward_thrust_model_leaf = new SceneLeafModel(*forward_thrust_, NULL, *propeller_model, *sub_material, CausticShader::getShader(), false, false, OBJECT, ShadowRenderer::STATIC_SHADOW);
+	DreadedPE::SceneLeafModel* forward_thrust_model_leaf = new DreadedPE::SceneLeafModel(*forward_thrust_, NULL, propeller_model, sub_material, CausticShader::getShader(), false, false, DreadedPE::OBJECT, DreadedPE::ShadowRenderer::STATIC_SHADOW);
 	
-	SceneNode* forward_thrust_location2 = new SceneNode(*scene_manager_, model_node_, glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(-0.22f, 0.02f, -0.36f)), 90.0f, glm::vec3(1, 0, 0)));
+	DreadedPE::SceneNode* forward_thrust_location2 = new DreadedPE::SceneNode(*scene_manager_, model_node_, glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(-0.22f, 0.02f, -0.36f)), glm::radians(90.0f), glm::vec3(1, 0, 0)));
 	forward_thrust2_ = new Propeller(*scene_manager_, forward_thrust_location2, glm::mat4(1.0f));
-	SceneLeafModel* forward_thrust_model_leaf2 = new SceneLeafModel(*forward_thrust2_, NULL, *propeller_model, *sub_material, CausticShader::getShader(), false, false, OBJECT, ShadowRenderer::STATIC_SHADOW);
+	DreadedPE::SceneLeafModel* forward_thrust_model_leaf2 = new DreadedPE::SceneLeafModel(*forward_thrust2_, NULL, propeller_model, sub_material, CausticShader::getShader(), false, false, DreadedPE::OBJECT, DreadedPE::ShadowRenderer::STATIC_SHADOW);
 	
 	robot_hand_ = new RobotHand(*scene_manager_, model_node_, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -0.5f)));
 	scene_manager_->addUpdateableEntity(*robot_hand_);
@@ -212,7 +210,7 @@ void AUV::prepare(float dt)
 	yaw_ += d_yaw;
 	
 	glm::mat4 model_location(1.0f);
-	model_location = glm::rotate(model_location, yaw_, glm::vec3(0.0f, 1.0f, 0.0f));
+	model_location = glm::rotate(model_location, glm::radians(yaw_), glm::vec3(0.0f, 1.0f, 0.0f));
 	
 	model_node_->setTransformation(model_location);
 	
@@ -223,7 +221,7 @@ void AUV::prepare(float dt)
 	updateTransformations();
 	
 	
-	glm::vec3 actual_location = glm::rotate(desired_direction_, yaw_, glm::vec3(0, 1, 0));
+	glm::vec3 actual_location = glm::rotate(desired_direction_, glm::radians(yaw_), glm::vec3(0, 1, 0));
 	
 	// Activate the thrusters as appropriate.
 	if (d_yaw != 0)
@@ -241,7 +239,7 @@ void AUV::prepare(float dt)
 	down_thrust_->setRotationSpeed(1000 * actual_location.y * velocity_);
 	down_thrust2_->setRotationSpeed(1000 * actual_location.y * velocity_);
 
-	std::vector<CollisionInfo> collision_infos;
+	std::vector<DreadedPE::CollisionInfo> collision_infos;
 
 	bool found_collision = false;
 	if (current_region_ != NULL && false)
@@ -264,11 +262,11 @@ void AUV::prepare(float dt)
 		updateTransformations();
 	}
 	
-	SceneNode::prepare(dt);
+	DreadedPE::SceneNode::prepare(dt);
 	auv_waypoint_->position_ = getGlobalLocation();
 }
 
-void AUV::onCollision(const CollisionInfo& collision_info)
+void AUV::onCollision(const DreadedPE::CollisionInfo& collision_info)
 {
 	
 }

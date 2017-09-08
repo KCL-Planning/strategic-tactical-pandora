@@ -7,32 +7,36 @@
 
 #include <glm/glm.hpp>
 
-#include "../../core/entities/Entity.h"
-#include "../../core/gui/events/ButtonPressedListener.h"
+#include "dpengine/entities/Entity.h"
+#include "dpengine/gui/events/ButtonPressedListener.h"
 
-class SceneNode;
+namespace DreadedPE
+{
+	class SceneNode;
+	class SceneManager;
+	class GPUParticleEmitter;
+	class GPUParticleComputerShader;
+	class GPUParticleDrawShader;
+	class Texture;
+};
+
 class Propeller;
 class RRT;
-class SceneManager;
-class GPUParticleEmitter;
-class GPUParticleComputerShader;
-class GPUParticleDrawShader;
-class Texture;
 class OctomapBuilder;
 class BillBoard;
 class Waypoint;
 class RobotHand;
 
-class AUV : public Entity
+class AUV : public DreadedPE::Entity
 {
 public:
-	AUV(SceneNode* parent, const glm::mat4& transformation, SceneManager& scene_manager, Texture& texture, const std::string& frame_name);
+	AUV(DreadedPE::SceneNode* parent, const glm::mat4& transformation, DreadedPE::SceneManager& scene_manager, DreadedPE::Texture& texture, const std::string& frame_name);
 
 	virtual ~AUV();
 
 	void prepare(float dt);
 
-	void onCollision(const CollisionInfo& collision_info);
+	void onCollision(const DreadedPE::CollisionInfo& collision_info);
 
 	//void addPropeller(Propeller& propeller);
 	
@@ -72,8 +76,14 @@ protected:
 	
 	bool face_forward_; // If true then the AUV will move where it is pointing.
 	
-	SceneNode* auv_node_; // The root of the AUV shape that is a child of this entity.
-	SceneNode* model_node_; // The node that actually holds the model.
+	float desired_yaw_, desired_pitch_; // If face_forward_ is false then these parameters determine where the AUV should be pointing.
+	
+	bool light_is_on_;
+	BillBoard* status_label_;
+	float bill_board_time_;
+	
+	DreadedPE::SceneNode* auv_node_; // The root of the AUV shape that is a child of this entity.
+	DreadedPE::SceneNode* model_node_; // The node that actually holds the model.
 	
 	float total_time_;
 
@@ -82,13 +92,6 @@ protected:
 	Propeller* side_thrust_;
 	Propeller* forward_thrust_;
 	Propeller* forward_thrust2_;
-	
-	bool light_is_on_;
-	
-	float desired_yaw_, desired_pitch_; // If face_forward_ is false then these parameters determine where the AUV should be pointing.
-	
-	BillBoard* status_label_;
-	float bill_board_time_;
 	
 	Waypoint* auv_waypoint_;
 	

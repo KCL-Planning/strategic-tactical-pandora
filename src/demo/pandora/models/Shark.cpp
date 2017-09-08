@@ -3,7 +3,6 @@
 #define GLFW_NO_GLU // Do not allow GL/glfw to include the gl.h header
 
 #include "GL/glew.h"
-#include "GL/glfw.h"
 
 #define _USE_MATH_DEFINES
 #ifdef _WIN32
@@ -19,20 +18,21 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 
-#include "../../../core/entities/camera/Camera.h"
-#include "../../../core/scene/SceneNode.h"
-#include "../../../core/scene/SceneManager.h"
-#include "../../../shapes/terrain.h"
-#include "../../../shapes/Line.h"
-#include "../../../core/collision/BoxCollision.h"
-#include "../../../core/collision/CollisionInfo.h"
-#include "../../../core/scene/portal/Region.h"
-#include "../../../core/scene/SceneLeafModel.h"
-#include "../../../core/shaders/LineShader.h"
-#include "../../../core/shaders/BasicShadowShader.h"
+#include "dpengine/entities/camera/Camera.h"
+#include "dpengine/scene/SceneNode.h"
+#include "dpengine/scene/SceneManager.h"
+#include "dpengine/shapes/terrain.h"
+#include "dpengine/shapes/Line.h"
+#include "dpengine/collision/ConvexPolygon.h"
+#include "dpengine/collision/CollisionInfo.h"
+#include "dpengine/collision/CollisionPoint.h"
+#include "dpengine/scene/portal/Region.h"
+#include "dpengine/scene/SceneLeafModel.h"
+#include "dpengine/shaders/LineShader.h"
+#include "dpengine/shaders/BasicShadowShader.h"
 
-Shark::Shark(SceneNode* parent, const glm::mat4& transformation, SceneManager& scene_manager)
-	: Entity(scene_manager, parent, transformation, OBSTACLE, "shark")
+Shark::Shark(DreadedPE::SceneNode* parent, const glm::mat4& transformation, DreadedPE::SceneManager& scene_manager)
+	: DreadedPE::Entity(scene_manager, parent, transformation, DreadedPE::OBSTACLE, "shark")
 {
 	height_ = 2.1f;
 
@@ -50,14 +50,14 @@ Shark::Shark(SceneNode* parent, const glm::mat4& transformation, SceneManager& s
 	desired_yaw_ = 0;
 }
 
-void Shark::init(Material& material, ShaderInterface& shader)
+void Shark::init(DreadedPE::Material& material, DreadedPE::ShaderInterface& shader)
 {
 	float width = 4.449f * 0.4f;
 	float height = 3.602f * 0.4f;
 	float size = 9.587f * 0.4f;
 	
-	BoxCollision* bc = new BoxCollision(*this, width, height, size);
-	addCollision(*bc, *SceneNode::bright_material_, BasicShadowShader::getShader());
+	DreadedPE::ConvexPolygon* bc = new DreadedPE::ConvexPolygon(*this, width, height, size);
+	addCollision(*bc);
 	
 	
 	/*
@@ -70,7 +70,7 @@ void Shark::init(Material& material, ShaderInterface& shader)
 	glm::vec3 bottom_right_close(width, 0, size);
 	glm::vec3 top_left_close(-width, height, size);
 	glm::vec3 top_right_close(width, height, size);
-	BoxCollision* bc = new BoxCollision(*this, bottom_left_away, bottom_right_away, top_left_away, top_right_away, bottom_left_close, bottom_right_close, top_left_close, top_right_close);
+	ConvexPolygon* bc = new ConvexPolygon(*this, bottom_left_away, bottom_right_away, top_left_away, top_right_away, bottom_left_close, bottom_right_close, top_left_close, top_right_close);
 	addCollision(*bc, material, shader);
 	
 	BoundedBox* bc2 = new BoundedBox(*this, bottom_left_away, bottom_right_away, top_left_away, top_right_away, bottom_left_close, bottom_right_close, top_left_close, top_right_close);
@@ -182,10 +182,10 @@ void Shark::prepare(float dt)
 	down_ray = getCompleteTransformation() * down_ray;
 	
 	// Check the collisions of these rays.
-	std::vector<CollisionInfo> l_collisions;
-	std::vector<CollisionInfo> r_collisions;
-	std::vector<CollisionInfo> u_collisions;
-	std::vector<CollisionInfo> d_collisions;
+	std::vector<DreadedPE::CollisionInfo> l_collisions;
+	std::vector<DreadedPE::CollisionInfo> r_collisions;
+	std::vector<DreadedPE::CollisionInfo> u_collisions;
+	std::vector<DreadedPE::CollisionInfo> d_collisions;
 	//std::cout << "*** (" << getGlobalLocation().x << ", " << getGlobalLocation().y << ", " << getGlobalLocation().z << ")" << std::endl;
 	if (current_region_ != NULL)
 	{
@@ -212,42 +212,42 @@ void Shark::prepare(float dt)
 	float ud = std::numeric_limits<float>::max();
 	float dd = std::numeric_limits<float>::max();
 
-	for (std::vector<CollisionInfo>::const_iterator ci = l_collisions.begin(); ci != l_collisions.end(); ++ci)
+	for (std::vector<DreadedPE::CollisionInfo>::const_iterator ci = l_collisions.begin(); ci != l_collisions.end(); ++ci)
 	{
-		const CollisionInfo& info = *ci;
-		for (std::vector<glm::vec3>::const_iterator ci = info.collision_loc_.begin(); ci != info.collision_loc_.end(); ++ci)
+		const DreadedPE::CollisionInfo& info = *ci;
+		for (std::vector<DreadedPE::CollisionPoint>::const_iterator ci = info.collision_loc_.begin(); ci != info.collision_loc_.end(); ++ci)
 		{
-			float d = glm::distance(*ci, getGlobalLocation());
+			float d = glm::distance(ci->intersection_point_, getGlobalLocation());
 			if (d < ld) ld = d;
 		}
 	}
 
-	for (std::vector<CollisionInfo>::const_iterator ci = r_collisions.begin(); ci != r_collisions.end(); ++ci)
+	for (std::vector<DreadedPE::CollisionInfo>::const_iterator ci = r_collisions.begin(); ci != r_collisions.end(); ++ci)
 	{
-		const CollisionInfo& info = *ci;
-		for (std::vector<glm::vec3>::const_iterator ci = info.collision_loc_.begin(); ci != info.collision_loc_.end(); ++ci)
+		const DreadedPE::CollisionInfo& info = *ci;
+		for (std::vector<DreadedPE::CollisionPoint>::const_iterator ci = info.collision_loc_.begin(); ci != info.collision_loc_.end(); ++ci)
 		{
-			float d = glm::distance(*ci, getGlobalLocation());
+			float d = glm::distance(ci->intersection_point_, getGlobalLocation());
 			if (d < rd) rd = d;
 		}
 	}
 
-	for (std::vector<CollisionInfo>::const_iterator ci = u_collisions.begin(); ci != u_collisions.end(); ++ci)
+	for (std::vector<DreadedPE::CollisionInfo>::const_iterator ci = u_collisions.begin(); ci != u_collisions.end(); ++ci)
 	{
-		const CollisionInfo& info = *ci;
-		for (std::vector<glm::vec3>::const_iterator ci = info.collision_loc_.begin(); ci != info.collision_loc_.end(); ++ci)
+		const DreadedPE::CollisionInfo& info = *ci;
+		for (std::vector<DreadedPE::CollisionPoint>::const_iterator ci = info.collision_loc_.begin(); ci != info.collision_loc_.end(); ++ci)
 		{
-			float d = glm::distance(*ci, getGlobalLocation());
+			float d = glm::distance(ci->intersection_point_, getGlobalLocation());
 			if (d < ud) ud = d;
 		}
 	}
 	
-	for (std::vector<CollisionInfo>::const_iterator ci = d_collisions.begin(); ci != d_collisions.end(); ++ci)
+	for (std::vector<DreadedPE::CollisionInfo>::const_iterator ci = d_collisions.begin(); ci != d_collisions.end(); ++ci)
 	{
-		const CollisionInfo& info = *ci;
-		for (std::vector<glm::vec3>::const_iterator ci = info.collision_loc_.begin(); ci != info.collision_loc_.end(); ++ci)
+		const DreadedPE::CollisionInfo& info = *ci;
+		for (std::vector<DreadedPE::CollisionPoint>::const_iterator ci = info.collision_loc_.begin(); ci != info.collision_loc_.end(); ++ci)
 		{
-			float d = glm::distance(*ci, getGlobalLocation());
+			float d = glm::distance(ci->intersection_point_, getGlobalLocation());
 			if (d < dd) dd = d;
 		}
 	}
@@ -334,28 +334,28 @@ void Shark::prepare(float dt)
 	
 	if (current_direction.x != 0.0f || current_direction.z != 0.0f)
 	{
-		current_direction = glm::rotate(current_direction, pitch_, glm::vec3(1.0f, 0.0f, 0.0f));
-		current_direction = glm::rotate(current_direction, yaw_, glm::vec3(0.0f, 1.0f, 0.0f));
-		current_direction = glm::rotate(current_direction, roll_, glm::vec3(0.0f, 0.0f, 1.0f));
+		current_direction = glm::rotate(current_direction, glm::radians(pitch_), glm::vec3(1.0f, 0.0f, 0.0f));
+		current_direction = glm::rotate(current_direction, glm::radians(yaw_), glm::vec3(0.0f, 1.0f, 0.0f));
+		current_direction = glm::rotate(current_direction, glm::radians(roll_), glm::vec3(0.0f, 0.0f, 1.0f));
 	}
 	
 	//std::cout << "Shark velocity: " << velocity_ << ". Direction: (" << current_direction.x << ", " << current_direction.y << ", " << current_direction.z << ")" << std::endl;
 
 	local_position += current_direction;
 	local_transformation_ = glm::translate(glm::mat4(1.0f), glm::vec3(local_position.x, local_position.y, local_position.z));
-	local_transformation_ = glm::rotate(local_transformation_, roll_, glm::vec3(0, 0, 1));
-	local_transformation_ = glm::rotate(local_transformation_, yaw_, glm::vec3(0, 1, 0));
-	local_transformation_ = glm::rotate(local_transformation_, pitch_, glm::vec3(1, 0, 0));
+	local_transformation_ = glm::rotate(local_transformation_, glm::radians(roll_), glm::vec3(0, 0, 1));
+	local_transformation_ = glm::rotate(local_transformation_, glm::radians(yaw_), glm::vec3(0, 1, 0));
+	local_transformation_ = glm::rotate(local_transformation_, glm::radians(pitch_), glm::vec3(1, 0, 0));
 	//local_transformation_ = glm::scale(local_transformation_, glm::vec3(0.4f, 0.4f, 0.4f));
 	updateTransformations();
 	
-	std::vector<CollisionInfo> collision_infos;
-	glm::fquat parent_rotation = parent_->getGlobalRotation();
+	std::vector<DreadedPE::CollisionInfo> collision_infos;
+	//glm::fquat parent_rotation = parent_->getGlobalRotation();
 
 	// Localise the player.
 	if (current_region_ == NULL)
 	{
-		current_region_ = Region::findRegionGlobal(getGlobalLocation());
+		current_region_ = DreadedPE::Region::findRegionGlobal(getGlobalLocation());
 	}
 
 	bool found_collision = false;
@@ -389,13 +389,13 @@ void Shark::prepare(float dt)
 	}
 
 	local_transformation_ = glm::translate(glm::mat4(1.0f), local_position);
-	local_transformation_ = glm::rotate(local_transformation_, roll_, glm::vec3(0.0f, 0.0f, 1.0f));
-	local_transformation_ = glm::rotate(local_transformation_, yaw_, glm::vec3(0.0f, 1.0f, 0.0f));
-	local_transformation_ = glm::rotate(local_transformation_, pitch_, glm::vec3(1.0f, 0.0f, 0.0f));
+	local_transformation_ = glm::rotate(local_transformation_, glm::radians(roll_), glm::vec3(0.0f, 0.0f, 1.0f));
+	local_transformation_ = glm::rotate(local_transformation_, glm::radians(yaw_), glm::vec3(0.0f, 1.0f, 0.0f));
+	local_transformation_ = glm::rotate(local_transformation_, glm::radians(pitch_), glm::vec3(1.0f, 0.0f, 0.0f));
 	//local_transformation_ = glm::scale(local_transformation_, glm::vec3(0.4f, 0.4f, 0.4f));
 	
 	
-	SceneNode::prepare(dt);
+	DreadedPE::Entity::prepare(dt);
 /*
 	if (region_ != NULL)
 	{
@@ -404,7 +404,7 @@ void Shark::prepare(float dt)
 */
 }
 
-void Shark::transition(SceneNode* scene_node, glm::vec3& local_location)
+void Shark::transition(DreadedPE::SceneNode* scene_node, glm::vec3& local_location)
 {
 	return;
 	if (scene_node == NULL)
@@ -442,7 +442,7 @@ void Shark::transition(SceneNode* scene_node, glm::vec3& local_location)
 	parent_ = scene_node;
 }
 
-void Shark::onCollision(const CollisionInfo& collision_info)
+void Shark::onCollision(const DreadedPE::CollisionInfo& collision_info)
 {
 	
 }

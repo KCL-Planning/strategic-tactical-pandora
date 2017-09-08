@@ -7,7 +7,7 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 
-Propeller::Propeller(SceneManager& scene_manager, SceneNode* parent, const glm::mat4& transformation)
+Propeller::Propeller(DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, const glm::mat4& transformation)
 	: SceneNode(scene_manager, parent, transformation)
 {
 	
@@ -15,6 +15,6 @@ Propeller::Propeller(SceneManager& scene_manager, SceneNode* parent, const glm::
 
 void Propeller::prepare(float dt)
 {
-	local_transformation_ = glm::rotate(local_transformation_, rotation_speed_ * dt, glm::vec3(0.0f, 1.0f, 0.0f));
-	SceneNode::prepare(dt);
+	local_transformation_ = glm::rotate(local_transformation_, glm::radians(rotation_speed_ * dt), glm::vec3(0.0f, 1.0f, 0.0f));
+	DreadedPE::SceneNode::prepare(dt);
 }

@@ -2,7 +2,7 @@
 # Collision! collision.001
 # Collision! collision.002
 # Mesh? Cube
-tex //atlas/ColourAtlas.tga
+tex data/models/Pandora/misc/atlas/ColourAtlas.tga
 v 1.22 0.65 0.32
 v -1.33 0.65 0.32
 v 1.22 0.97 0.32

@@ -1,8 +1,12 @@
-#include "DirectedLight.h"
+#include "dpengine/light/DirectedLight.h"
 
-#include "../scene/SceneManager.h"
-#include "../renderer/ShadowRenderer.h"
-#include "../entities/camera/Camera.h"
+#include "dpengine/scene/SceneManager.h"
+#include "dpengine/renderer/ShadowRenderer.h"
+#include "dpengine/entities/camera/Camera.h"
+#include "dpengine/texture/Texture.h"
+
+namespace DreadedPE
+{
 
 DirectedLight::DirectedLight(SceneManager& scene_manager, const glm::vec3& ambient, const glm::vec3& diffuse, const glm::vec3& specular, float constant_attenuation, float linear_attenuation, float quadratic_attenuation, GLuint shadow_map_dimension)
 	: Light(DIRECTIONAL, ambient, diffuse, specular, constant_attenuation, linear_attenuation, quadratic_attenuation, 0.1f, 10000.0f, shadow_map_dimension)
@@ -32,3 +36,10 @@ glm::mat4 DirectedLight::getPerspectiveMatrix() const
 	//return glm::perspective(90.0f, 1.0f, 0.1f, 60.0f);
 	return glm::ortho(-25.0f, 25.0f, -25.0f, 25.0f, 2.0f, 50.0f);
 }
+
+GLuint DirectedLight::getShadowRendererTextureID() const
+{
+	return shadow_renderer_->getTexture().getActiveTextureId();
+}
+
+};

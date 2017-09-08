@@ -1,20 +1,20 @@
 #ifndef DEMO_PANDORA_SHADERS_PIPE_LINE_SHADER_H
 #define DEMO_PANDORA_SHADERS_PIPE_LINE_SHADER_H
 
-#include "../../../core/shaders/LightShader.h"
+#include "dpengine/shaders/LightShader.h"
 
-class PipeLineShader : public LightShader
+class PipeLineShader : public DreadedPE::LightShader
 {
 public:
 	/**
 	 * We do not render scene leaf lights...
 	 */
-	virtual void initialise(const SceneLeafLight& light_node, const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const SceneLeafLight*>& lights)
+	virtual void initialise(const DreadedPE::SceneLeafLight& light_node, const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const DreadedPE::SceneLeafLight*>& lights)
 	{
 
 	}
 
-	virtual void initialise(const SceneLeafModel& model_node, const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const SceneLeafLight*>& lights);
+	virtual void initialise(const DreadedPE::SceneLeafModel& model_node, const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const DreadedPE::SceneLeafLight*>& lights);
 
 	static PipeLineShader& getShader();
 protected:

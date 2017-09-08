@@ -7,18 +7,21 @@
 #include "PlannerAction.h"
 
 class AUV;
-class Line;
-class SceneNode;
-class SceneLeafModel;
-class SceneManager;
-class Material;
+namespace DreadedPE
+{
+	class Line;
+	class SceneNode;
+	class SceneLeafModel;
+	class SceneManager;
+	class Material;
+};
 class OntologyInterface;
 class Structure;
 
 class ExaminePanelController : public PlannerAction
 {
 public:
-	ExaminePanelController(SceneManager& scene_manager, AUV& auv, OntologyInterface& ontology, ros::Publisher& action_feedback_pub);
+	ExaminePanelController(DreadedPE::SceneManager& scene_manager, AUV& auv, OntologyInterface& ontology, ros::Publisher& action_feedback_pub);
 	
 	void setValvePanel(Structure& valve_panel) { panel_ = &valve_panel; time_ = 0; }
 	

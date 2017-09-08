@@ -11,18 +11,18 @@
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/point_cloud_conversion.h>
 
-#include "../../../core/renderer/ShadowRenderer.h"
-#include "../../../core/entities/camera/Camera.h"
-#include "../../../core/texture/Texture.h"
+#include "dpengine/renderer/ShadowRenderer.h"
+#include "dpengine/entities/camera/Camera.h"
+#include "dpengine/texture/Texture.h"
 
-SliceSonar::SliceSonar(ros::NodeHandle& ros_node, SceneManager& scene_manager, SceneNode* parent, const glm::mat4& transform, float min_range, float max_range, float angle)
-	: Entity(scene_manager, parent, transform, OBSTACLE, "SliceSonar"), ros_node_(&ros_node), min_range_(min_range), max_range_(max_range), angle_(angle), time_since_last_message_(0), shadow_map_width_(64), shadow_map_height_(64)
+SliceSonar::SliceSonar(ros::NodeHandle& ros_node, DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, const glm::mat4& transform, float min_range, float max_range, float angle)
+	: DreadedPE::Entity(scene_manager, parent, transform, DreadedPE::OBSTACLE, "SliceSonar"), ros_node_(&ros_node), min_range_(min_range), max_range_(max_range), angle_(angle), time_since_last_message_(0), shadow_map_width_(64), shadow_map_height_(64)
 {
 	near_range_ = 0.1f;
 	far_range_ = 5.0f;
 	image_size_ = 5.0f;
 	
-	shadow_renderer_ = new ShadowRenderer(scene_manager, shadow_map_width_);
+	shadow_renderer_ = new DreadedPE::ShadowRenderer(scene_manager, shadow_map_width_);
 	shadow_renderer_->setCullMode(GL_BACK);
 	image_data_ = new float[shadow_map_width_ * shadow_map_height_];
 	memset(&image_data_[0], 0., sizeof(float) * shadow_map_width_ * shadow_map_height_);
@@ -97,7 +97,7 @@ glm::vec3 SliceSonar::getLocation() const
 
 void SliceSonar::prepare(float dt)
 {
-	Entity::prepare(dt);
+	DreadedPE::Entity::prepare(dt);
 	shadow_renderer_->render(*this);
 
 	time_since_last_message_ += dt;

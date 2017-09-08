@@ -3,8 +3,8 @@
 
 class ParticleEmitter;
 
-#include "../../../core/shaders/glslshader.h"
-#include "../../../core/shaders/ShaderInterface.h"
+#include "dpengine/shaders/glslshader.h"
+#include "dpengine/shaders/ShaderInterface.h"
 
 /**
  * This shader is used in conjunction with a geometric shader the updates and reads back the 
@@ -13,7 +13,7 @@ class ParticleEmitter;
  * Each particle emitter must have their own shader instance because we need to read back 
  * the values and if multiple emitters use the same shader than these values will be overwritten.
  */
-class ParticleInVectorFieldShader : public GLSLProgram
+class ParticleInVectorFieldShader : public DreadedPE::GLSLProgram
 {
 public:
 	ParticleInVectorFieldShader(ParticleEmitter& particle_system);
@@ -22,7 +22,7 @@ public:
 	/**
 	 * We do not render scene leaf lights...
 	 */
-	void initialise(const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const SceneLeafLight*>& lights, float dt);
+	void initialise(const glm::mat4& view_matrix, const glm::mat4& model_matrix, const glm::mat4& projection_matrix, const std::vector<const DreadedPE::SceneLeafLight*>& lights, float dt);
 
 	GLuint getTFPositions() { return buffer_tf_id_[0]; }
 	GLuint getTFVelocities() { return buffer_tf_id_[1]; }

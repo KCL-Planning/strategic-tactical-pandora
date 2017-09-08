@@ -4,18 +4,21 @@
 #include <glm/glm.hpp>
 #include <vector>
 
-#include "../../../core/entities/Entity.h"
+#include "dpengine/entities/Entity.h"
 #include "Structure.h"
 
 class InspectionPoint;
-class SceneManager;
-class SceneNode;
+namespace DreadedPE
+{
+	class SceneManager;
+	class SceneNode;
+};
 class MissionSite;
 
-class SmallManifold : public Entity, public Structure
+class SmallManifold : public DreadedPE::Entity, public Structure
 {
 public:
-	SmallManifold(SceneManager& scene_manager, SceneNode* parent, MissionSite& mission_site, const glm::mat4& transformation);
+	SmallManifold(DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, MissionSite& mission_site, const glm::mat4& transformation);
 	
 private:
 	
