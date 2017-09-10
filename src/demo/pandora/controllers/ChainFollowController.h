@@ -18,15 +18,15 @@ namespace DreadedPE
 	class SceneManager;
 	class SceneNode;
 	class SceneLeafModel;
-	class HeightMap;
 };
 class OntologyInterface;
+class HeightMap;
 
 class ChainFollowController : public PlannerAction
 {
 public:
 	
-	ChainFollowController(DreadedPE::SceneManager& scene_manager, AUV& auv, OntologyInterface& ontology, ros::Publisher& action_feedback_pub, DreadedPE::HeightMap& height_map);
+	ChainFollowController(DreadedPE::SceneManager& scene_manager, AUV& auv, OntologyInterface& ontology, ros::Publisher& action_feedback_pub, HeightMap& height_map);
 	
 	void followChain(Chain& chain, float max_time);
 	
@@ -50,7 +50,7 @@ private:
 	std::shared_ptr<DreadedPE::Line> line_;
 	std::shared_ptr<DreadedPE::Line> colliding_line_;
 	std::shared_ptr<DreadedPE::Line> grid_line_;
-	DreadedPE::HeightMap* height_map_;
+	HeightMap* height_map_;
 	
 	bool turn_left_;
 	float turning_time_;

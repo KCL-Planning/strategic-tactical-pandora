@@ -23,7 +23,6 @@ namespace DreadedPE
 	class Cube;
 	class Terrain;
 	class SceneNode;
-	class HeightMap;
 	class Label;
 	class Texture;
 	class Camera;
@@ -32,6 +31,7 @@ namespace DreadedPE
 	class SceneLeafModel;
 };
 
+class HeightMap;
 class FPSLabel;
 class ROSTimer;
 class ActionController;
@@ -74,7 +74,7 @@ private:
 	
 	bool getPointOnSeaBed(int mouse_x, int mouse_y, glm::vec3& collision);
 
-	DreadedPE::HeightMap* terrain_node_;
+	HeightMap* terrain_node_;
 
 	DreadedPE::Camera* camera_node_;
 

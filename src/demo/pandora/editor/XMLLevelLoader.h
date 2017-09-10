@@ -11,8 +11,8 @@ namespace DreadedPE
 {
 	class SceneManager;
 	class SceneNode;
-	class HeightMap;
 };
+class HeightMap;
 class Ontology;
 
 struct StructureDescription
@@ -29,7 +29,7 @@ std::ostream& operator<<(std::ostream& os, const StructureDescription& sd);
 class XMLLevelLoader
 {
 public:
-	XMLLevelLoader(DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode& root, Ontology& ontology, DreadedPE::HeightMap& height_map);
+	XMLLevelLoader(DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode& root, Ontology& ontology, HeightMap& height_map);
 	void loadLevel(const std::string& xml_file);
 	
 	const glm::mat4& getAUVLocation() const { return auv_location_; }
@@ -43,7 +43,7 @@ private:
 	DreadedPE::SceneManager* scene_manager_;
 	DreadedPE::SceneNode* root_;
 	Ontology* ontology_;
-	DreadedPE::HeightMap* height_map_;
+	HeightMap* height_map_;
 	
 	glm::mat4 auv_location_;
 	

@@ -80,7 +80,7 @@
 
 #include "dpengine/loaders/AssimpLoader.h"
 
-#include "dpengine/entities/HeightMap.h"
+#include "pandora/models/HeightMap.h"
 #include <dpengine/renderer/Window.h>
 #include "pandora/ontology/ValveGoal.h"
 
@@ -225,7 +225,7 @@ bool Pandora::init(int argc, char** argv)//, bool use_hwu_ontology)
 	std::shared_ptr<DreadedPE::Terrain> terrain(std::make_shared<DreadedPE::Terrain>());
 	terrain->createRandomHeightmap(65, -2.0f, 2.0f);
 
-	terrain_node_ = new DreadedPE::HeightMap(terrain->getWidth(), terrain->getWidth(), terrain->getVertices()[1].x - terrain->getVertices()[0].x, terrain->getHeights(), *scene_manager_, &scene_manager_->getRoot(), glm::mat4(1.0f), DreadedPE::OBSTACLE, "terrain");
+	terrain_node_ = new HeightMap(terrain->getWidth(), terrain->getWidth(), terrain->getVertices()[1].x - terrain->getVertices()[0].x, terrain->getHeights(), *scene_manager_, &scene_manager_->getRoot(), glm::mat4(1.0f), DreadedPE::OBSTACLE, "terrain");
 	
 	DreadedPE::Texture* water_texture = DreadedPE::TargaTexture::loadTexture("data/textures/waterbubble.tga");
 	DreadedPE::Texture* grass_texture = DreadedPE::TargaTexture::loadTexture("data/textures/grass.tga");

@@ -13,9 +13,9 @@ namespace DreadedPE
 {
 	class SceneManager;
 	class SceneNode;
-	class HeightMap;
 };
 
+class HeightMap;
 class InspectionPoint;
 class MissionSite;
 class ChainGoal;
@@ -32,7 +32,7 @@ class ChainLink;
 class Chain : public Structure
 {
 public:
-	Chain(MissionSite& mission_site, DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, DreadedPE::HeightMap& height_map, const glm::mat4& transformation, unsigned int nr_chain_links);
+	Chain(MissionSite& mission_site, DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, HeightMap& height_map, const glm::mat4& transformation, unsigned int nr_chain_links);
 	const std::string& getId() const { return id_; }
 	void setObserved();// { has_been_observed_ = true; }
 	bool hasBeenObserved() const { return has_been_observed_; }

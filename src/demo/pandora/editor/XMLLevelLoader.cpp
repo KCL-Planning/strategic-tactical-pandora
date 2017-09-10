@@ -27,7 +27,7 @@ std::ostream& operator<<(std::ostream& os, const StructureDescription& sd)
 }
 
 
-XMLLevelLoader::XMLLevelLoader(DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode& root, Ontology& ontology, DreadedPE::HeightMap& height_map)
+XMLLevelLoader::XMLLevelLoader(DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode& root, Ontology& ontology, HeightMap& height_map)
 	: scene_manager_(&scene_manager), root_(&root), ontology_(&ontology), height_map_(&height_map)
 {
 	

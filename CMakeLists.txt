@@ -45,7 +45,7 @@ rosbuild_add_executable(visualiser src/Main.cpp
                src/demo/pandora/structures/Valve.cpp src/demo/pandora/structures/Pillar.cpp src/demo/pandora/structures/Chain.cpp src/demo/pandora/structures/ChainLink.cpp src/demo/pandora/structures/Structure.cpp
                src/demo/pandora/gui/PlanVisualiser.cpp src/demo/pandora/gui/StrategicPlanVisualiser.cpp src/demo/pandora/gui/WaypointLabeler.cpp src/demo/pandora/gui/PlanLine.cpp src/demo/pandora/gui/PlanGraph.cpp src/demo/pandora/gui/ActionLabel.cpp src/demo/pandora/gui/BillBoard.cpp src/demo/pandora/gui/PlanningGUI.cpp src/demo/pandora/gui/EditorTool.cpp src/demo/pandora/gui/StrategicPlanGUIElement.cpp src/demo/pandora/gui/AUVStatusIcon.cpp
                src/demo/pandora/level/MissionSite.cpp src/demo/pandora/level/Mission.cpp
-               src/demo/pandora/models/Shark.cpp src/demo/pandora/models/Seal.cpp src/demo/pandora/models/UnderWaterVolcano.cpp src/demo/pandora/models/RobotHand.cpp
+               src/demo/pandora/models/Shark.cpp src/demo/pandora/models/Seal.cpp src/demo/pandora/models/UnderWaterVolcano.cpp src/demo/pandora/models/RobotHand.cpp src/demo/pandora/models/HeightMap.cpp
                src/demo/pandora/shaders/CausticShader.cpp src/demo/pandora/shaders/CausticTerrainShader.cpp src/demo/pandora/shaders/CausticTexture.cpp 
                src/demo/pandora/editor/XMLLevelLoader.cpp
                src/demo/pandora/ROSTimer.cpp

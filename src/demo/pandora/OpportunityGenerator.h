@@ -20,12 +20,12 @@ namespace DreadedPE
 	class Cube;
 	class Terrain;
 	class SceneNode;
-	class HeightMap;
 	class Label;
 	class Texture;
 	class FPSLabel;
 };
 
+class HeightMap;
 class ActionController;
 class OntologyInterface;
 class AUV;
@@ -64,7 +64,7 @@ private:
 	Mission& createChainFollowingSite(MissionSite& mission_site);
 	DreadedPE::Material* terrain_material_,* concrete_material_;
 
-	DreadedPE::HeightMap* terrain_node_;
+	HeightMap* terrain_node_;
 
 	DreadedPE::Camera* camera_node_;
 

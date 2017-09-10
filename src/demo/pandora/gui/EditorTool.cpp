@@ -5,7 +5,7 @@
 #include "dpengine/gui/Button.h"
 #include "dpengine/gui/Label.h"
 #include "dpengine/entities/camera/Camera.h"
-#include "dpengine/entities/HeightMap.h"
+#include "../models/HeightMap.h"
 #include "dpengine/collision/CollisionInfo.h"
 #include "dpengine/collision/CollisionPoint.h"
 #include "dpengine/scene/SceneManager.h"
@@ -22,7 +22,7 @@
 
 std::string EditorTool::status_string_[] = { "IDLE", "REMOVE", "ADD PILLAR", "ADD MANIFOLD", "ADD VALVE PANEL" };
 
-EditorTool::EditorTool(DreadedPE::SceneManager& scene_manager, OntologyInterface& ontology, DreadedPE::Theme& theme, DreadedPE::Font& font, float x, float y, DreadedPE::Camera& camera, DreadedPE::HeightMap& height_map)
+EditorTool::EditorTool(DreadedPE::SceneManager& scene_manager, OntologyInterface& ontology, DreadedPE::Theme& theme, DreadedPE::Font& font, float x, float y, DreadedPE::Camera& camera, HeightMap& height_map)
 	: DreadedPE::Frame(theme, font, x, y, 200, 400), scene_manager_(&scene_manager), ontology_(&ontology), camera_(&camera), height_map_(&height_map), selected_structure_(NULL), submitted_(false), current_mode_(IDLE)
 {
 	DreadedPE::GUIManager& gui_manager = DreadedPE::GUIManager::getInstance();

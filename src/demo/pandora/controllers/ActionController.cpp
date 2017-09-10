@@ -41,7 +41,7 @@ const std::string ActionController::RECHARGE_ACTION_NAME = "recharge";
 
 #define USE_MULTIPLE_AUVS
 
-ActionController::ActionController(DreadedPE::SceneManager& scene_manager, ros::NodeHandle& node_handle, AUV& auv, DreadedPE::HeightMap& height_map, FollowWaypointController& follow_waypoint_controller, OntologyInterface& ontology, ActionLabel* label)
+ActionController::ActionController(DreadedPE::SceneManager& scene_manager, ros::NodeHandle& node_handle, AUV& auv, HeightMap& height_map, FollowWaypointController& follow_waypoint_controller, OntologyInterface& ontology, ActionLabel* label)
 	: node_handle_(&node_handle), auv_(&auv), height_map_(&height_map), follow_waypoint_controller_(&follow_waypoint_controller), ontology_(&ontology), current_action_(NULL), label_(label)
 {
 	std::stringstream ss_dispatch;

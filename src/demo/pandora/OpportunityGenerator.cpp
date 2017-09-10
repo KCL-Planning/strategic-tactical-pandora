@@ -89,7 +89,7 @@
 
 #include "dpengine/entities/behaviours/HoverBehaviour.h"
 #include "dpengine/entities/behaviours/MoveBehaviour.h"
-#include "dpengine/entities/HeightMap.h"
+#include "../models/HeightMap.h"
 #include "ontology/ValveGoal.h"
 
 #ifndef _WIN32
@@ -253,7 +253,7 @@ bool OpportunityGenerator::init(int argc, char** argv)//, bool use_hwu_ontology)
 	terrain_ = new DreadedPE::Terrain();
 	terrain_->createRandomHeightmap(65, -2.0f, 2.0f);
 
-	terrain_node_ = new DreadedPE::HeightMap(terrain_->getWidth(), terrain_->getWidth(), terrain_->getVertices()[1].x - terrain_->getVertices()[0].x, terrain_->getHeights(), *scene_manager_, &scene_manager_->getRoot(), glm::mat4(1.0f), OBSTACLE, "terrain");
+	terrain_node_ = new HeightMap(terrain_->getWidth(), terrain_->getWidth(), terrain_->getVertices()[1].x - terrain_->getVertices()[0].x, terrain_->getHeights(), *scene_manager_, &scene_manager_->getRoot(), glm::mat4(1.0f), OBSTACLE, "terrain");
 	
 	DreadedPE::Texture* water_texture = DreadedPE::TargaTexture::loadTexture("data/textures/waterbubble.tga");
 	DreadedPE::Texture* grass_texture = DreadedPE::TargaTexture::loadTexture("data/textures/grass.tga");

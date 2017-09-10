@@ -15,13 +15,13 @@ namespace DreadedPE
 	class Label;
 	class Button;
 	class Camera;
-	class HeightMap;
 	class SceneManager;
 	class SceneLeafModel;
 	class Material;
 	class Entity;
 };
 
+class HeightMap;
 class MissionSite;
 class OntologyInterface;
 class Structure;
@@ -29,7 +29,7 @@ class Structure;
 class EditorTool : public DreadedPE::Frame
 {
 public:
-	EditorTool(DreadedPE::SceneManager& scene_manager, OntologyInterface& ontology, DreadedPE::Theme& theme, DreadedPE::Font& font, float x, float y, DreadedPE::Camera& camera, DreadedPE::HeightMap& height_map);
+	EditorTool(DreadedPE::SceneManager& scene_manager, OntologyInterface& ontology, DreadedPE::Theme& theme, DreadedPE::Font& font, float x, float y, DreadedPE::Camera& camera, HeightMap& height_map);
 	
 	void buttonPressed(const DreadedPE::Button& source);
 	
@@ -51,7 +51,7 @@ private:
 	DreadedPE::Button* add_manifold_button_;
 	DreadedPE::Button* add_valve_panel_button_;
 	DreadedPE::Camera* camera_;
-	DreadedPE::HeightMap* height_map_;
+	HeightMap* height_map_;
 	
 	MissionSite* mission_site_;
 	

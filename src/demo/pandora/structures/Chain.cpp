@@ -19,7 +19,7 @@
 
 #include "dpengine/shapes/Cube.h"
 
-#include "dpengine/entities/HeightMap.h"
+#include "../models/HeightMap.h"
 
 #include "../Waypoint.h"
 #include "../level/MissionSite.h"
@@ -29,7 +29,7 @@
 
 int Chain::global_chain_id_ = 0;
 
-Chain::Chain(MissionSite& mission_site, DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, DreadedPE::HeightMap& height_map, const glm::mat4& transformation, unsigned int nr_chain_links)
+Chain::Chain(MissionSite& mission_site, DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, HeightMap& height_map, const glm::mat4& transformation, unsigned int nr_chain_links)
 	: Structure("chain", scene_manager, parent, mission_site, transformation), has_been_observed_(false), notification_sent_(false), mission_site_(&mission_site)
 {
 	std::stringstream ss;

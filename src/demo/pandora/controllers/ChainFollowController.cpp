@@ -22,12 +22,12 @@
 #include "dpengine/scene/SceneLeafModel.h"
 #include "dpengine/collision/CollisionInfo.h"
 #include "dpengine/collision/CollisionPoint.h"
-#include "dpengine/entities/HeightMap.h"
+#include "../models/HeightMap.h"
 
 #include "dpengine/shapes/Line.h"
 
 
-ChainFollowController::ChainFollowController(DreadedPE::SceneManager& scene_manager, AUV& auv, OntologyInterface& ontology, ros::Publisher& action_feedback_pub, DreadedPE::HeightMap& height_map)
+ChainFollowController::ChainFollowController(DreadedPE::SceneManager& scene_manager, AUV& auv, OntologyInterface& ontology, ros::Publisher& action_feedback_pub, HeightMap& height_map)
 	: scene_manager_(&scene_manager), auv_(&auv), chain_(NULL), time_(0), max_time_(0), path_(NULL), height_map_(&height_map), turn_left_(true), turning_time_(0)
 {
 	//rrt_->addListener(*this);
