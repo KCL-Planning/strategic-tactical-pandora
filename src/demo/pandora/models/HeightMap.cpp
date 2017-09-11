@@ -11,15 +11,16 @@
 #include "dpengine/math/Math.h"
 #include "dpengine/math/Plane.h"
 #include "dpengine/collision/CollisionInfo.h"
+#include "dpengine/collision/CollisionPoint.h"
 #include "dpengine/collision/ConvexPolygon.h"
 
-HeightMap::HeightMap(unsigned int width, unsigned int height, float cell_size, const std::vector<float>& height_map, DreadedPE::SceneManager& scene_manager, SceneNode* parent, const glm::mat4& transformation, DreadedPE::ENTITY_TYPE type, const std::string& name, bool init_children)
+HeightMap::HeightMap(unsigned int width, unsigned int height, float cell_size, const std::vector<float>& height_map, DreadedPE::SceneManager& scene_manager, DreadedPE::SceneNode* parent, const glm::mat4& transformation, DreadedPE::ENTITY_TYPE type, const std::string& name, bool init_children)
 	: DreadedPE::Entity(scene_manager, parent, transformation, type, name, glm::vec3(1, 1, 1), init_children), width_(width), height_(height), cell_size_(cell_size), height_map_(&height_map)
 {
 
 }
 
-bool HeightMap::getCollisions(Entity& entity, std::vector<DreadedPE::CollisionInfo>& info) const
+bool HeightMap::getCollisions(DreadedPE::Entity& entity, std::vector<DreadedPE::CollisionInfo>& info) const
 {
 	bool found_collision = false;
 	for (std::vector<DreadedPE::SceneNode*>::const_iterator ci = children_.begin(); ci != children_.end(); ++ci)
@@ -142,19 +143,19 @@ bool HeightMap::getCollisions(DreadedPE::Entity& entity, const glm::vec3& begin,
 				glm::vec3 plane_intersection;
 				if (DreadedPE::Plane::intersectsWithPolygon(upper_triangle, p1, p2, plane_intersection))
 				{
-					CollisionInfo ci;
+					DreadedPE::CollisionInfo ci;
 					ci.colliding_entity_ = const_cast<HeightMap*>(this);
 					ci.other_colliding_entity_ = &entity;
-					CollisionPoint cp(plane_intersection, NULL, NULL);
+					DreadedPE::CollisionPoint cp(plane_intersection, NULL, NULL);
 					info.push_back(ci);
 					found_collision = true;
 				}
 				if (DreadedPE::Plane::intersectsWithPolygon(bottom_triangle, p1, p2, plane_intersection))
 				{
-					CollisionInfo ci;
+					DreadedPE::CollisionInfo ci;
 					ci.colliding_entity_ = const_cast<HeightMap*>(this);
 					ci.other_colliding_entity_ = &entity;
-					CollisionPoint cp(plane_intersection, NULL, NULL);
+					DreadedPE::CollisionPoint cp(plane_intersection, NULL, NULL);
 					info.push_back(ci);
 					found_collision = true;
 				}
@@ -420,11 +421,11 @@ bool HeightMap::doesCollide(DreadedPE::Entity* entity, const glm::vec3& begin, c
 
 				// Check the 2 triangles that make up this square.
 				glm::vec3 plane_intersection;
-				if (Plane::getDistanceFromPolygon(upper_triangle, p1, p2) <= effective_width)
+				if (DreadedPE::Plane::getDistanceFromPolygon(upper_triangle, p1, p2) <= effective_width)
 				{
 					return true;
 				}
-				if (Plane::getDistanceFromPolygon(bottom_triangle, p1, p2) <= effective_width)
+				if (DreadedPE::Plane::getDistanceFromPolygon(bottom_triangle, p1, p2) <= effective_width)
 				{
 					return true;
 				}
@@ -432,7 +433,7 @@ bool HeightMap::doesCollide(DreadedPE::Entity* entity, const glm::vec3& begin, c
 		}
 	}
 
-	for (std::vector<SceneNode*>::const_iterator ci = children_.begin(); ci != children_.end(); ++ci)
+	for (std::vector<DreadedPE::SceneNode*>::const_iterator ci = children_.begin(); ci != children_.end(); ++ci)
 	{
 		if ((*ci)->doesCollide(entity, begin, end, effective_width))
 		{

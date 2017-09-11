@@ -21,7 +21,7 @@ find_package(octomap REQUIRED)
 include_directories(${OCTOMAP_INCLUDE_DIRS} include)
 link_libraries(${OCTOMAP_LIBRARIES})
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNDEBUG -O3 -Wno-unknown-pragmas -Wno-unused-variable")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNDEBUG -O3 -Wno-unknown-pragmas -Wno-unused-variable -Wno-sign-compare")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNDEBUG -g -Wno-unknown-pragmas -Wno-unused-variable")
 
 # visualisation
