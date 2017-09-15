@@ -1,0 +1,54 @@
+# knowledge_msgs/KnowledgeInterface.srv
+#
+#   provides a simple interface for accessing the knowledge base using ROS framework services
+#   can be mapped to an ontology or any other knowledge storage system (like flat files or database)
+#
+#   please note that this interface is asymmetric due to *limitations* of the ontological representation
+#   for this reason to operate on multiple properties the suggested approach is to issue multiple requests
+#
+#   request types like REQ_ADD or REQ_DEL require a valid instance_name to execute successfully
+#
+
+# possible request types
+string REQ_GET_INST=get_type_instances
+string REQ_GET_INST_PROP=get_instance_properties
+
+string REQ_ADD_INST=add_type_instance
+string REQ_ADD_DAT_PROP=add_instance_data_property
+string REQ_ADD_OBJ_PROP=add_instance_obj_property
+
+string REQ_DEL_INST=remove_type_instance
+string REQ_DEL_DAT_PROP=remove_instance_data_property
+string REQ_DEL_OBJ_PROP=remove_instance_obj_property
+
+
+# service request
+string request_type             # (required) describes the scope of the service request (add, delete, get, ...)
+
+string type_name                # (required) specifies the knowledge class for the request
+string instance_name            # (optional) specifies the knowledge item (single instance) for the request
+string mission_id				# (required) specifies the mission ID
+
+# data properties
+#
+#   if request_type is REQ_ADD_ATTR then attribute pair is required
+#   and any obj_property_* field is ignored if passed in the request
+#
+string data_property_name           # (optional) item data property name
+string data_property_value          # (optional) item data property value
+
+# object properties
+#
+#   if request_type is REQ_ADD_OBJ then object pair is required
+#   and any data_property_* field is ignored if passed in the request
+#
+string obj_property_name            # (optional) object property name (it describes the name of the relation)
+string obj_property_type            # (optional) object property class (it must be a valid type_name)
+string obj_property_value           # (optional) object property item (it must be a valid instance_name)
+
+---
+
+bool result                             # describes the status of the service call
+string response_type                    # describes the scope of service response (add, delete, get, ...)
+
+knowledge_msgs/KnowledgeObject[] items  # (optional) a list of items with (optional) data and object properties

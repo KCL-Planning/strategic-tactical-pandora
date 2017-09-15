@@ -1,0 +1,344 @@
+SUMMARY
+========
+
+PARAMETERS
+ * /planning_system/data_path
+ * /planning_system/mission_domain
+ * /planning_system/strategic_domain
+ * /planning_system/use_octomap
+ * /rosdistro
+ * /rosversion
+
+NODES
+  /
+    planning_system (planning_system/planner)
+
+ROS_MASTER_URI=http://192.168.1.51:11311
+
+core service [/rosout] found
+process[planning_system-1]: started with pid [10849]
+[ INFO] [1417101166.828827732]: KCL: Using data path: /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/; Using octomap: 0
+[ INFO] [1417101167.452985661]: KCL: Fetching objects
+[ INFO] [1417101167.453308889]: KCL: Building PRM
+[ INFO] [1417101167.453359833]: KCL: Adding Strategic points
+[ INFO] [1417101167.454688890]: KCL: Generating PDDL problem file
+[ INFO] [1417101167.455202391]: KCL: Running: timeout 10 rosrun planning_system bin/popf -n /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/pandora_domain_persistent.pddl /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/pandora_problem.pddl > /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/plan.pddl
+[ INFO] [1417101177.464383663]: KCL: Planning complete
+[ INFO] [1417101177.464646587]: KCL: Post processing plan
+[ INFO] [1417101177.468787635]: KCL: Dispatching action [0, goto, 10.011817, 10.000000]
+[ INFO] [1417101177.468948399]: KCL: Action [0] is 0.004196 second(s) late
+[ INFO] [1417101177.569268943]: KCL: Feedback received [0,action enabled]
+[ INFO] [1417101188.569266252]: KCL: Feedback received [0,action achieved]
+[ INFO] [1417101188.669398281]: KCL: Dispatching action [1, goto, 20.012818, 24.165001]
+[ INFO] [1417101188.669535332]: KCL: Action [1] is 1.203773 second(s) late
+[ INFO] [1417101188.769197134]: KCL: Feedback received [1,action enabled]
+[ INFO] [1417101201.969239510]: KCL: Feedback received [1,action achieved]
+[ INFO] [1417101205.669254475]: KCL: Waiting 5.962546 before dispatching action: [2, observe, 44.178817, 10.000000]
+[ INFO] [1417101211.669211072]: KCL: Dispatching action [2, observe, 44.178817, 10.000000]
+[ INFO] [1417101211.669403526]: KCL: Action [2] is 0.037652 second(s) late
+[ INFO] [1417101211.769270591]: KCL: Feedback received [2,action enabled]
+[ INFO] [1417101221.769237308]: KCL: Feedback received [2,action achieved]
+[ INFO] [1417101221.869424858]: KCL: Dispatching action [3, goto, 54.179817, 10.000000]
+[ INFO] [1417101221.869507276]: KCL: Action [3] is 0.236760 second(s) late
+[ INFO] [1417101221.969265590]: KCL: Feedback received [3,action enabled]
+[ INFO] [1417101229.869243267]: KCL: Feedback received [3,action achieved]
+[ INFO] [1417101231.669244140]: KCL: Dispatching action [4, goto, 64.180816, 15.000000]
+[ INFO] [1417101231.669340967]: KCL: Action [4] is 0.035593 second(s) late
+[ INFO] [1417101231.769264353]: KCL: Feedback received [4,action enabled]
+[ INFO] [1417101249.469217907]: KCL: Feedback received [4,action achieved]
+[ INFO] [1417101249.569348792]: KCL: Dispatching action [5, goto, 79.181816, 10.000000]
+[ INFO] [1417101249.569476901]: KCL: Action [5] is 2.934713 second(s) late
+[ INFO] [1417101249.669215065]: KCL: Feedback received [5,action enabled]
+[ INFO] [1417101249.769225557]: KCL: Feedback received [5,action achieved]
+[ INFO] [1417101250.669215689]: KCL: Waiting 5.966572 before dispatching action: [6, observe, 89.182815, 10.000000]
+[ INFO] [1417101256.669206227]: KCL: Dispatching action [6, observe, 89.182815, 10.000000]
+[ INFO] [1417101256.669305030]: KCL: Action [6] is 0.033558 second(s) late
+[ INFO] [1417101256.769225017]: KCL: Feedback received [6,action enabled]
+[ INFO] [1417101266.769224108]: KCL: Feedback received [6,action achieved]
+[ INFO] [1417101266.869404397]: KCL: Dispatching action [7, goto, 99.183815, 10.000000]
+[ INFO] [1417101266.869519565]: KCL: Action [7] is 0.232774 second(s) late
+[ INFO] [1417101266.969278065]: KCL: Feedback received [7,action enabled]
+[ INFO] [1417101291.369264037]: KCL: Feedback received [7,action achieved]
+[ INFO] [1417101291.469388177]: KCL: Dispatching action [8, goto, 109.184814, 19.000000]
+[ INFO] [1417101291.469505544]: KCL: Action [8] is 14.831760 second(s) late
+[ INFO] [1417101291.569228207]: KCL: Feedback received [8,action enabled]
+[ INFO] [1417101313.469248787]: KCL: Feedback received [8,action achieved]
+[ INFO] [1417101313.569378719]: KCL: Dispatching action [9, goto, 128.185821, 10.000000]
+[ INFO] [1417101313.569477711]: KCL: Action [9] is 17.930725 second(s) late
+[ INFO] [1417101313.669225032]: KCL: Feedback received [9,action enabled]
+[ INFO] [1417101313.769257776]: KCL: Feedback received [9,action achieved]
+[ INFO] [1417101313.869428539]: KCL: Dispatching action [10, observe, 138.186821, 10.000000]
+[ INFO] [1417101313.869519677]: KCL: Action [10] is 8.229768 second(s) late
+[ INFO] [1417101313.969231241]: KCL: Feedback received [10,action enabled]
+[ INFO] [1417101323.969300699]: KCL: Feedback received [10,action achieved]
+[ INFO] [1417101323.969397287]: KCL: Possibly detected panel, so keep looking...
+[ INFO] [1417101323.969540493]: KCL: Detected panel 0; requesting replan
+[ INFO] [1417101324.069366198]: KCL: Fetching objects
+[ INFO] [1417101324.069655236]: KCL: Building PRM
+[ INFO] [1417101324.069719228]: KCL: Adding Strategic points
+[ INFO] [1417101324.072481867]: KCL: Generating PDDL problem file
+[ INFO] [1417101324.073563442]: KCL: Running: timeout 10 rosrun planning_system bin/popf -n /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/pandora_domain_persistent.pddl /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/pandora_problem.pddl > /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/plan.pddl
+[ INFO] [1417101324.274391729]: KCL: Planning complete
+[ INFO] [1417101324.274553917]: KCL: Post processing plan
+[ INFO] [1417101324.274983078]: KCL: Dispatching action [10, goto, 156.821698, 11.832000]
+[ INFO] [1417101324.275239293]: KCL: Action [10] is 0.000599 second(s) late
+[ INFO] [1417101324.375570582]: KCL: Feedback received [10,action enabled]
+[ INFO] [1417101331.975559374]: KCL: Feedback received [10,action achieved]
+[ INFO] [1417101336.175485953]: KCL: Dispatching action [11, examine_panel, 168.654698, 10.000000]
+[ INFO] [1417101336.175609454]: KCL: Action [11] is 0.067980 second(s) late
+[ INFO] [1417101336.275598521]: KCL: Feedback received [11,action enabled]
+[ INFO] [1417101346.275545775]: KCL: Feedback received [11,action achieved]
+[ INFO] [1417101346.275639856]: KCL: Valve 0 detected at -0.038511
+[ INFO] [1417101346.275701650]: KCL: Valve 1 detected at 0.029902
+[ INFO] [1417101346.275781460]: KCL: Valve 2 detected at 0.026082
+[ INFO] [1417101346.275835290]: KCL: Valve 3 detected at 0.122134
+[ INFO] [1417101346.375664723]: KCL: Replanning to correct valves, last deadline completed: 0.000000
+[ INFO] [1417101346.375733515]: KCL: Fetching objects
+[ INFO] [1417101346.375886178]: KCL: Building PRM
+[ INFO] [1417101346.375932620]: KCL: Adding Strategic points
+[ INFO] [1417101346.380089987]: KCL: Generating PDDL problem file
+[ INFO] [1417101346.381688966]: KCL: Running: timeout 10 rosrun planning_system bin/popf -n /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/pandora_domain_persistent.pddl /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/pandora_problem.pddl > /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/plan.pddl
+[ INFO] [1417101356.392452178]: KCL: Planning complete
+[ INFO] [1417101356.392641764]: KCL: Post processing plan
+[ INFO] [1417101356.393191848]: KCL: Dispatching action [12, goto, 188.939776, 5.149000]
+[ INFO] [1417101356.393255412]: KCL: Action [12] is 0.000549 second(s) late
+[ INFO] [1417101356.493508363]: KCL: Feedback received [12,action enabled]
+[ INFO] [1417101358.793549542]: KCL: Feedback received [12,action achieved]
+[ INFO] [1417101361.593493832]: KCL: Dispatching action [13, examine_panel, 194.089776, 0.000000]
+[ INFO] [1417101361.593616606]: KCL: Action [13] is 0.050909 second(s) late
+[ INFO] [1417101361.693583471]: KCL: Feedback received [13,action enabled]
+[ INFO] [1417101371.693571710]: KCL: Feedback received [13,action achieved]
+[ INFO] [1417101371.693653569]: KCL: Valve 0 detected at -0.034515
+[ INFO] [1417101371.693708538]: KCL: Valve 1 detected at 0.032181
+[ INFO] [1417101371.693842538]: KCL: Valve 2 detected at 0.031051
+[ INFO] [1417101371.693929621]: KCL: Valve 3 detected at 0.121736
+[ INFO] [1417101371.793718560]: KCL: Dispatching action [14, turn_valve, 194.089776, 120.000000]
+[ INFO] [1417101371.793801782]: KCL: Action [14] is 10.251093 second(s) late
+[ INFO] [1417101371.893516916]: KCL: Feedback received [14,action enabled]
+[ INFO] [1417101457.893517338]: KCL: Feedback received [14,action achieved]
+[ INFO] [1417101463.593559189]: KCL: Waiting 17.950191 before dispatching action: [15, goto, 314.090777, 10.000000]
+[ INFO] [1417101469.593599189]: KCL: Waiting 11.950153 before dispatching action: [15, goto, 314.090777, 10.000000]
+[ INFO] [1417101475.593534368]: KCL: Waiting 5.950215 before dispatching action: [15, goto, 314.090777, 10.000000]
+[ INFO] [1417101481.593540127]: KCL: Dispatching action [15, goto, 314.090777, 10.000000]
+[ INFO] [1417101481.593637923]: KCL: Action [15] is 0.049928 second(s) late
+[ INFO] [1417101481.693495179]: KCL: Feedback received [15,action enabled]
+[ INFO] [1417101484.593551212]: KCL: Feedback received [15,action achieved]
+[ INFO] [1417101490.493574731]: KCL: Waiting 107.900181 before dispatching action: [16, examine_panel, 430.940783, 0.000000]
+[ INFO] [1417101496.493566532]: KCL: Waiting 101.900190 before dispatching action: [16, examine_panel, 430.940783, 0.000000]
+[ INFO] [1417101502.493548177]: KCL: Waiting 95.900221 before dispatching action: [16, examine_panel, 430.940783, 0.000000]
+[ INFO] [1417101508.493565484]: KCL: Waiting 89.900188 before dispatching action: [16, examine_panel, 430.940783, 0.000000]
+[ INFO] [1417101514.493498468]: KCL: Waiting 83.900264 before dispatching action: [16, examine_panel, 430.940783, 0.000000]
+[ INFO] [1417101520.493490914]: KCL: Waiting 77.900263 before dispatching action: [16, examine_panel, 430.940783, 0.000000]
+[ INFO] [1417101526.493559387]: KCL: Waiting 71.900197 before dispatching action: [16, examine_panel, 430.940783, 0.000000]
+[ INFO] [1417101532.493540124]: KCL: Waiting 65.900219 before dispatching action: [16, examine_panel, 430.940783, 0.000000]
+[ INFO] [1417101538.493517288]: KCL: Waiting 59.900253 before dispatching action: [16, examine_panel, 430.940783, 0.000000]
+[ INFO] [1417101544.493551919]: KCL: Waiting 53.900201 before dispatching action: [16, examine_panel, 430.940783, 0.000000]
+[ INFO] [1417101550.493492360]: KCL: Waiting 47.900261 before dispatching action: [16, examine_panel, 430.940783, 0.000000]
+[ INFO] [1417101556.493495911]: KCL: Waiting 41.900259 before dispatching action: [16, examine_panel, 430.940783, 0.000000]
+[ INFO] [1417101562.493531016]: KCL: Waiting 35.900225 before dispatching action: [16, examine_panel, 430.940783, 0.000000]
+[ INFO] [1417101568.493537556]: KCL: Waiting 29.900218 before dispatching action: [16, examine_panel, 430.940783, 0.000000]
+[ INFO] [1417101574.493494956]: KCL: Waiting 23.900259 before dispatching action: [16, examine_panel, 430.940783, 0.000000]
+[ INFO] [1417101580.493495493]: KCL: Waiting 17.900263 before dispatching action: [16, examine_panel, 430.940783, 0.000000]
+[ INFO] [1417101586.493529125]: KCL: Waiting 11.900227 before dispatching action: [16, examine_panel, 430.940783, 0.000000]
+[ INFO] [1417101592.493535069]: KCL: Waiting 5.900222 before dispatching action: [16, examine_panel, 430.940783, 0.000000]
+[ INFO] [1417101598.493530330]: KCL: Dispatching action [16, examine_panel, 430.940783, 0.000000]
+[ INFO] [1417101598.493625697]: KCL: Action [16] is 0.099911 second(s) late
+[ INFO] [1417101598.593520200]: KCL: Feedback received [16,action enabled]
+[ INFO] [1417101608.593555465]: KCL: Feedback received [16,action failed]
+[ INFO] [1417101608.593637733]: KCL: Panel detected as missing. Forget everything.
+[ INFO] [1417101608.693482855]: KCL: We have drifted. Resetting Landmarks.
+[ INFO] [1417101608.693760744]: KCL: Fetching objects
+[ INFO] [1417101608.693938678]: KCL: Building PRM
+[ INFO] [1417101608.693985189]: KCL: Adding Strategic points
+[ INFO] [1417101608.698487266]: KCL: Generating PDDL problem file
+[ INFO] [1417101608.700074141]: KCL: Running: timeout 10 rosrun planning_system bin/popf -n /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/pandora_domain_persistent.pddl /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/pandora_problem.pddl > /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/plan.pddl
+[ INFO] [1417101618.707782300]: KCL: Planning complete
+[ INFO] [1417101618.707989267]: KCL: Post processing plan
+[ INFO] [1417101618.708535523]: KCL: Dispatching action [17, goto, 451.255117, 10.000000]
+[ INFO] [1417101618.708623193]: KCL: Action [17] is 0.000561 second(s) late
+[ INFO] [1417101618.808916869]: KCL: Feedback received [17,action enabled]
+[ INFO] [1417101625.208913670]: KCL: Feedback received [17,action achieved]
+[ INFO] [1417101628.808883917]: KCL: Dispatching action [18, goto, 461.256117, 11.769000]
+[ INFO] [1417101628.809019216]: KCL: Action [18] is 0.099958 second(s) late
+[ INFO] [1417101628.908886580]: KCL: Feedback received [18,action enabled]
+[ INFO] [1417101644.708974787]: KCL: Feedback received [18,action achieved]
+[ INFO] [1417101644.809127481]: KCL: Dispatching action [19, goto, 473.026117, 10.000000]
+[ INFO] [1417101644.809261341]: KCL: Action [19] is 4.330215 second(s) late
+[ INFO] [1417101644.908897011]: KCL: Feedback received [19,action enabled]
+[ INFO] [1417101645.008931369]: KCL: Feedback received [19,action achieved]
+[ INFO] [1417101650.508989987]: KCL: Dispatching action [20, observe, 483.027116, 10.000000]
+[ INFO] [1417101650.509116870]: KCL: Action [20] is 0.029069 second(s) late
+[ INFO] [1417101650.608969735]: KCL: Feedback received [20,action enabled]
+[ INFO] [1417101660.608991518]: KCL: Feedback received [20,action achieved]
+[ INFO] [1417101660.709115168]: KCL: Replanning to find valve panel
+[ INFO] [1417101660.709279312]: KCL: Replanning to correct valves, last deadline completed: 0.000000
+[ INFO] [1417101660.709415406]: KCL: Fetching objects
+[ INFO] [1417101660.709567277]: KCL: Building PRM
+[ INFO] [1417101660.709684269]: KCL: Adding Strategic points
+[ INFO] [1417101660.715752260]: KCL: Generating PDDL problem file
+[ INFO] [1417101660.717475996]: KCL: Running: timeout 10 rosrun planning_system bin/popf -n /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/pandora_domain_persistent.pddl /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/pandora_problem.pddl > /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/plan.pddl
+[ INFO] [1417101670.726464113]: KCL: Planning complete
+[ INFO] [1417101670.726663861]: KCL: Post processing plan
+[ INFO] [1417101670.727921589]: KCL: Dispatching action [21, goto, 503.273784, 10.000000]
+[ INFO] [1417101670.727986021]: KCL: Action [21] is 0.001272 second(s) late
+[ INFO] [1417101670.828281660]: KCL: Feedback received [21,action enabled]
+[ INFO] [1417101670.928273802]: KCL: Feedback received [21,action achieved]
+[ INFO] [1417101674.728251985]: KCL: Waiting 5.999502 before dispatching action: [22, goto, 513.274784, 2.279000]
+[ INFO] [1417101680.728245538]: KCL: Dispatching action [22, goto, 513.274784, 2.279000]
+[ INFO] [1417101680.728526215]: KCL: Action [22] is 0.000778 second(s) late
+[ INFO] [1417101680.828259843]: KCL: Feedback received [22,action enabled]
+[ INFO] [1417101680.928246646]: KCL: Feedback received [22,action achieved]
+[ INFO] [1417101683.028232661]: KCL: Dispatching action [23, observe, 515.554784, 10.000000]
+[ INFO] [1417101683.028333071]: KCL: Action [23] is 0.020617 second(s) late
+[ INFO] [1417101683.128282499]: KCL: Feedback received [23,action enabled]
+[ INFO] [1417101693.128239392]: KCL: Feedback received [23,action achieved]
+[ INFO] [1417101693.228408016]: KCL: Dispatching action [24, goto, 525.555783, 10.000000]
+[ INFO] [1417101693.228542553]: KCL: Action [24] is 0.219827 second(s) late
+[ INFO] [1417101693.328226779]: KCL: Feedback received [24,action enabled]
+[ INFO] [1417101719.528240106]: KCL: Feedback received [24,action achieved]
+[ INFO] [1417101719.628405622]: KCL: Dispatching action [25, goto, 535.556785, 19.000000]
+[ INFO] [1417101719.628685389]: KCL: Action [25] is 16.618956 second(s) late
+[ INFO] [1417101719.728231609]: KCL: Feedback received [25,action enabled]
+[ INFO] [1417101737.228353752]: KCL: Feedback received [25,action achieved]
+[ INFO] [1417101737.328615080]: KCL: Dispatching action [26, goto, 554.557784, 10.000000]
+[ INFO] [1417101737.328715053]: KCL: Action [26] is 15.317986 second(s) late
+[ INFO] [1417101737.428270624]: KCL: Feedback received [26,action enabled]
+[ INFO] [1417101737.528270746]: KCL: Feedback received [26,action achieved]
+[ INFO] [1417101737.628423154]: KCL: Dispatching action [27, observe, 564.558784, 10.000000]
+[ INFO] [1417101737.628524757]: KCL: Action [27] is 5.616808 second(s) late
+[ INFO] [1417101737.728258010]: KCL: Feedback received [27,action enabled]
+[ INFO] [1417101747.728271319]: KCL: Feedback received [27,action achieved]
+[ INFO] [1417101747.828456265]: KCL: Dispatching action [28, goto, 574.559787, 10.000000]
+[ INFO] [1417101747.828621424]: KCL: Action [28] is 5.815896 second(s) late
+[ INFO] [1417101747.928283584]: KCL: Feedback received [28,action enabled]
+[ INFO] [1417101758.428270179]: KCL: Feedback received [28,action achieved]
+[ INFO] [1417101758.528470878]: KCL: Dispatching action [29, goto, 584.560786, 15.000000]
+[ INFO] [1417101758.528570433]: KCL: Action [29] is 6.514853 second(s) late
+[ INFO] [1417101758.628288728]: KCL: Feedback received [29,action enabled]
+[ INFO] [1417101780.028329500]: KCL: Feedback received [29,action achieved]
+[ INFO] [1417101780.128471384]: KCL: Dispatching action [30, goto, 599.561786, 10.000000]
+[ INFO] [1417101780.128585878]: KCL: Action [30] is 13.113853 second(s) late
+[ INFO] [1417101780.228315377]: KCL: Feedback received [30,action enabled]
+[ INFO] [1417101780.428306260]: KCL: Feedback received [30,action achieved]
+[ INFO] [1417101780.528608818]: KCL: Dispatching action [31, observe, 609.562785, 10.000000]
+[ INFO] [1417101780.528695077]: KCL: Action [31] is 3.512974 second(s) late
+[ INFO] [1417101780.628295467]: KCL: Feedback received [31,action enabled]
+[ INFO] [1417101790.628265976]: KCL: Feedback received [31,action achieved]
+[ INFO] [1417101790.728454333]: KCL: Dispatching action [32, goto, 619.563785, 10.000000]
+[ INFO] [1417101790.728503452]: KCL: Action [32] is 3.711793 second(s) late
+[ INFO] [1417101790.828248050]: KCL: Feedback received [32,action enabled]
+[ INFO] [1417101816.128278863]: KCL: Feedback received [32,action achieved]
+[ INFO] [1417101816.228544691]: KCL: Dispatching action [33, goto, 629.564784, 19.000000]
+[ INFO] [1417101816.228630648]: KCL: Action [33] is 19.210925 second(s) late
+[ INFO] [1417101816.328270223]: KCL: Feedback received [33,action enabled]
+[ INFO] [1417101838.828249032]: KCL: Feedback received [33,action achieved]
+[ INFO] [1417101838.928441130]: KCL: Dispatching action [34, goto, 648.565791, 10.000000]
+[ INFO] [1417101838.928620180]: KCL: Action [34] is 22.909882 second(s) late
+[ INFO] [1417101839.028252608]: KCL: Feedback received [34,action enabled]
+[ INFO] [1417101839.228235485]: KCL: Feedback received [34,action achieved]
+[ INFO] [1417101839.328445673]: KCL: Dispatching action [35, observe, 658.566783, 10.000000]
+[ INFO] [1417101839.328607216]: KCL: Action [35] is 13.308890 second(s) late
+[ INFO] [1417101839.428211697]: KCL: Feedback received [35,action enabled]
+[ INFO] [1417101849.428299504]: KCL: Feedback received [35,action achieved]
+[ INFO] [1417101849.528624686]: KCL: Replanning to find valve panel
+[ INFO] [1417101849.528690719]: KCL: Replanning to correct valves, last deadline completed: 0.000000
+[ INFO] [1417101849.528756518]: KCL: Fetching objects
+[ INFO] [1417101849.528918598]: KCL: Building PRM
+[ INFO] [1417101849.528971338]: KCL: Adding Strategic points
+[ INFO] [1417101849.535455739]: KCL: Generating PDDL problem file
+[ INFO] [1417101849.538818400]: KCL: Running: timeout 10 rosrun planning_system bin/popf -n /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/pandora_domain_persistent.pddl /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/pandora_problem.pddl > /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/plan.pddl
+[ INFO] [1417101859.548971187]: KCL: Planning complete
+[ INFO] [1417101859.549283096]: KCL: Post processing plan
+[ INFO] [1417101859.552852597]: KCL: Dispatching action [36, goto, 692.096454, 10.000000]
+[ INFO] [1417101859.552999751]: KCL: Action [36] is 0.003614 second(s) late
+[ INFO] [1417101859.653378557]: KCL: Feedback received [36,action enabled]
+[ INFO] [1417101859.753324968]: KCL: Feedback received [36,action achieved]
+[ INFO] [1417101863.553334370]: KCL: Waiting 5.997097 before dispatching action: [37, goto, 702.097455, 4.959000]
+[ INFO] [1417101869.553289577]: KCL: Dispatching action [37, goto, 702.097455, 4.959000]
+[ INFO] [1417101869.553423150]: KCL: Action [37] is 0.003049 second(s) late
+[ INFO] [1417101869.653331205]: KCL: Feedback received [37,action enabled]
+[ INFO] [1417101873.453331933]: KCL: Feedback received [37,action achieved]
+[ INFO] [1417101874.553286150]: KCL: Dispatching action [38, observe, 707.057455, 10.000000]
+[ INFO] [1417101874.553407892]: KCL: Action [38] is 0.043021 second(s) late
+[ INFO] [1417101874.653288198]: KCL: Feedback received [38,action enabled]
+[ INFO] [1417101884.653330352]: KCL: Feedback received [38,action achieved]
+[ INFO] [1417101884.753415982]: KCL: Dispatching action [39, goto, 717.058454, 10.000000]
+[ INFO] [1417101884.753502801]: KCL: Action [39] is 0.242118 second(s) late
+[ INFO] [1417101884.853291650]: KCL: Feedback received [39,action enabled]
+[ INFO] [1417101894.153315530]: KCL: Feedback received [39,action achieved]
+[ INFO] [1417101894.553311464]: KCL: Dispatching action [40, goto, 727.059455, 30.000000]
+[ INFO] [1417101894.553412475]: KCL: Action [40] is 0.041024 second(s) late
+[ INFO] [1417101894.653282215]: KCL: Feedback received [40,action enabled]
+[ INFO] [1417101917.053263275]: KCL: Feedback received [40,action achieved]
+[ INFO] [1417101918.553286885]: KCL: Waiting 5.960142 before dispatching action: [41, observe, 757.060451, 10.000000]
+[ INFO] [1417101924.553349360]: KCL: Dispatching action [41, observe, 757.060451, 10.000000]
+[ INFO] [1417101924.553454119]: KCL: Action [41] is 0.040070 second(s) late
+[ INFO] [1417101924.653295921]: KCL: Feedback received [41,action enabled]
+[ INFO] [1417101934.653376965]: KCL: Feedback received [41,action achieved]
+[ INFO] [1417101934.653452241]: KCL: Possibly detected panel, so keep looking...
+[ INFO] [1417101934.653542952]: KCL: Detected panel 0; requesting replan
+[ INFO] [1417101934.753534316]: KCL: Fetching objects
+[ INFO] [1417101934.753712947]: KCL: Building PRM
+[ INFO] [1417101934.753760445]: KCL: Adding Strategic points
+[ INFO] [1417101934.761140859]: KCL: Generating PDDL problem file
+[ INFO] [1417101934.763604198]: KCL: Running: timeout 10 rosrun planning_system bin/popf -n /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/pandora_domain_persistent.pddl /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/pandora_problem.pddl > /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/plan.pddl
+[ INFO] [1417101934.969891766]: KCL: Planning complete
+[ INFO] [1417101934.970093692]: KCL: Post processing plan
+[ INFO] [1417101934.970637494]: KCL: Dispatching action [41, goto, 767.517233, 8.448000]
+[ INFO] [1417101934.970724733]: KCL: Action [41] is 0.000561 second(s) late
+[ INFO] [1417101935.070937918]: KCL: Feedback received [41,action enabled]
+[ INFO] [1417101941.571012757]: KCL: Feedback received [41,action achieved]
+[ INFO] [1417101943.470952872]: KCL: Dispatching action [42, examine_panel, 775.966233, 10.000000]
+[ INFO] [1417101943.471121930]: KCL: Action [42] is 0.051912 second(s) late
+[ INFO] [1417101943.570981066]: KCL: Feedback received [42,action enabled]
+[ INFO] [1417101953.571034048]: KCL: Feedback received [42,action achieved]
+[ INFO] [1417101953.571120078]: KCL: Valve 0 detected at -0.036301
+[ INFO] [1417101953.571179189]: KCL: Valve 1 detected at 0.015176
+[ INFO] [1417101953.571263332]: KCL: Valve 2 detected at 0.027971
+[ INFO] [1417101953.571313591]: KCL: Valve 3 detected at 0.421638
+[ INFO] [1417101953.671138687]: KCL: Replanning to correct valves, last deadline completed: 0.000000
+[ INFO] [1417101953.671200505]: KCL: Fetching objects
+[ INFO] [1417101953.671350526]: KCL: Building PRM
+[ INFO] [1417101953.671396126]: KCL: Adding Strategic points
+[ INFO] [1417101953.680072256]: KCL: Generating PDDL problem file
+[ INFO] [1417101953.683038793]: KCL: Running: timeout 10 rosrun planning_system bin/popf -n /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/pandora_domain_persistent.pddl /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/pandora_problem.pddl > /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/plan.pddl
+[ INFO] [1417101963.693153025]: KCL: Planning complete
+[ INFO] [1417101963.693326749]: KCL: Post processing plan
+[ INFO] [1417101963.693969045]: KCL: Dispatching action [43, goto, 796.240447, 5.251000]
+[ INFO] [1417101963.694036057]: KCL: Action [43] is 0.000658 second(s) late
+[ INFO] [1417101963.794295206]: KCL: Feedback received [43,action enabled]
+[ INFO] [1417101966.994291093]: KCL: Feedback received [43,action achieved]
+[ INFO] [1417101968.994209991]: KCL: Dispatching action [44, examine_panel, 801.492447, 0.000000]
+[ INFO] [1417101968.994261548]: KCL: Action [44] is 0.048895 second(s) late
+[ INFO] [1417101969.094284661]: KCL: Feedback received [44,action enabled]
+[ INFO] [1417101979.094376251]: KCL: Feedback received [44,action achieved]
+[ INFO] [1417101979.094455755]: KCL: Valve 0 detected at -0.030270
+[ INFO] [1417101979.094496082]: KCL: Valve 1 detected at 0.033627
+[ INFO] [1417101979.094534042]: KCL: Valve 2 detected at 0.057903
+[ INFO] [1417101979.094572485]: KCL: Valve 3 detected at 0.421638
+[ INFO] [1417101979.194489698]: KCL: Dispatching action [45, turn_valve, 801.492447, 120.000000]
+[ INFO] [1417101979.194582260]: KCL: Action [45] is 10.249210 second(s) late
+[ INFO] [1417101979.294293916]: KCL: Feedback received [45,action enabled]
+[ INFO] [1417102065.294291042]: KCL: Feedback received [45,action achieved]
+[ INFO] [1417102070.994290995]: KCL: Waiting 17.952133 before dispatching action: [46, goto, 921.493446, 10.000000]
+[ INFO] [1417102076.994336766]: KCL: Waiting 11.952085 before dispatching action: [46, goto, 921.493446, 10.000000]
+[ INFO] [1417102082.994255981]: KCL: Waiting 5.952140 before dispatching action: [46, goto, 921.493446, 10.000000]
+[ INFO] [1417102088.994347053]: KCL: Dispatching action [46, goto, 921.493446, 10.000000]
+[ INFO] [1417102088.994471269]: KCL: Action [46] is 0.048094 second(s) late
+[ INFO] [1417102089.294290266]: KCL: Feedback received [46,action enabled]
+[ INFO] [1417102090.994324413]: KCL: Feedback received [46,action achieved]
+[ INFO] [1417102092.994344454]: KCL: Waiting 5.953093 before dispatching action: [47, examine_panel, 931.494445, 0.000000]
+[ INFO] [1417102098.994236456]: KCL: Dispatching action [47, examine_panel, 931.494445, 0.000000]
+[ INFO] [1417102098.994388190]: KCL: Action [47] is 0.047016 second(s) late
+[ INFO] [1417102099.094357958]: KCL: Feedback received [47,action enabled]
+[ INFO] [1417102109.094335709]: KCL: Feedback received [47,action achieved]
+[ INFO] [1417102109.094417376]: KCL: Valve 0 detected at -0.019731
+[ INFO] [1417102109.094473514]: KCL: Valve 1 detected at 0.032801
+[ INFO] [1417102109.094521667]: KCL: Valve 2 detected at 0.056820
+[ INFO] [1417102109.094571516]: KCL: Valve 3 detected at -0.171607
+[ INFO] [1417102109.194512137]: KCL: Dispatching action [48, turn_valve, 931.494445, 120.000000]
+[ INFO] [1417102109.194632488]: KCL: Action [48] is 10.247256 second(s) late
+[ INFO] [1417102109.294293410]: KCL: Feedback received [48,action enabled]
+[ INFO] [1417102199.494335383]: KCL: Feedback received [48,action failed]
+[ INFO] [1417102199.494420333]: KCL: Valve 2 detected as blocked 1 time(s)
+

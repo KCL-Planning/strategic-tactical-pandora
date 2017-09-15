@@ -1,0 +1,11 @@
+<launch>
+
+	<!-- planning system -->
+	<node name="planning_system" pkg="planning_system" type="planner" respawn="false" output="screen">
+	    <param name="data_path" value="$(find planning_system)/data/" />
+	</node>
+
+	<!-- planning interface -->
+	<node name="planning_interface" pkg="hwu_planning_interface" type="hwu_planning_interface.py" respawn="false" output="log" />
+
+</launch>

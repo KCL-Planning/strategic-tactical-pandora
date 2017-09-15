@@ -1,0 +1,6 @@
+# PDDL problem generation; service(4/4):
+# Get all attributes of an instance. The results is passed as name / value pairs, where the values need to be parsed by the program.
+string instance_name
+string type_name
+---
+diagnostic_msgs/KeyValue[] values

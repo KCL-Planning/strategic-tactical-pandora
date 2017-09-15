@@ -1,0 +1,11 @@
+# SearchForChain.action
+
+#goal definition
+int32 search_x
+int32 search_y
+int32 max_steps
+---
+#result definition
+bool found
+---
+#feedback

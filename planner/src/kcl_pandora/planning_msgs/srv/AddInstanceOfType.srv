@@ -1,0 +1,8 @@
+# AddInstanceOfType.srv
+
+string instance_name
+string type_name
+diagnostic_msgs/KeyValue[] attributes
+---
+bool result
+

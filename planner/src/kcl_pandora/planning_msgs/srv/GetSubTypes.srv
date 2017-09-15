@@ -1,0 +1,5 @@
+# PDDL problem generation; service(1/4):
+# Get all the subtypes of the type 'name'
+string name
+---
+string[] subtypes

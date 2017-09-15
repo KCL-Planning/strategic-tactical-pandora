@@ -1,0 +1,129 @@
+[ INFO] [1416588600.415643003]: KCL: Using data path: /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/; Using octomap: 0
+[ INFO] [1416588600.838879508]: KCL: Fetching objects
+[ INFO] [1416588600.839277608]: KCL: Building PRM
+[ INFO] [1416588600.839329972]: KCL: Adding Strategic points
+[ INFO] [1416588600.843084686]: KCL: Generating PDDL problem file
+[ INFO] [1416588600.844388994]: KCL: Running: timeout 10 rosrun planning_system bin/popf -n /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/pandora_domain_persistent.pddl /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/pandora_problem.pddl > /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/plan.pddl
+[ INFO] [1416588610.858118210]: KCL: Planning complete
+[ INFO] [1416588610.858414471]: KCL: Post processing plan
+[ INFO] [1416588612.062266490]: KCL: Waiting 59.937822 before dispatching action: [0, goto, 71.161198, 10.000000]
+[ INFO] [1416588632.062239766]: KCL: Waiting 39.937823 before dispatching action: [0, goto, 71.161198, 10.000000]
+[ INFO] [1416588652.062307380]: KCL: Waiting 19.937757 before dispatching action: [0, goto, 71.161198, 10.000000]
+[ INFO] [1416588672.062313568]: KCL: Dispatching action [0, goto, 71.161198, 10.000000]
+[ INFO] [1416588672.162273067]: KCL: Feedback received [0,action enabled]
+[ INFO] [1416588682.462282320]: KCL: Feedback received [0,action achieved]
+[ INFO] [1416588682.562491617]: KCL: Dispatching action [1, goto, 71.161198, 18.136999]
+[ INFO] [1416588682.662247616]: KCL: Feedback received [1,action enabled]
+[ INFO] [1416588694.862276013]: KCL: Feedback received [1,action achieved]
+[ INFO] [1416588694.962433904]: KCL: Dispatching action [2, observe, 71.161198, 10.000000]
+[ INFO] [1416588695.062226431]: KCL: Feedback received [2,action enabled]
+[ INFO] [1416588697.062259801]: KCL: Feedback received [2,action achieved]
+[ INFO] [1416588697.062381680]: KCL: Detected panel 0; requesting replan
+[ INFO] [1416588697.162421296]: KCL: Fetching objects
+[ INFO] [1416588697.162530020]: KCL: Building PRM
+[ INFO] [1416588697.162551097]: KCL: Adding Strategic points
+[ INFO] [1416588697.165147044]: KCL: Generating PDDL problem file
+[ INFO] [1416588697.165950353]: KCL: Running: timeout 10 rosrun planning_system bin/popf -n /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/pandora_domain_persistent.pddl /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/pandora_problem.pddl > /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/plan.pddl
+[ INFO] [1416588697.382211631]: KCL: Planning complete
+[ INFO] [1416588697.382368425]: KCL: Post processing plan
+Examing panel:
+* wp_strat_panel0.
+* p0.
+Examing panel:
+* wp_strat_panel0.
+* p0.
+[ INFO] [1416588697.382888799]: KCL: Dispatching action [3, goto, 71.161198, 11.914000]
+[ INFO] [1416588697.483194873]: KCL: Feedback received [3,action enabled]
+[ INFO] [1416588711.783198487]: KCL: Feedback received [3,action achieved]
+[ INFO] [1416588711.883461186]: KCL: Dispatching action [4, examine_panel, 71.161198, 10.000000]
+[ INFO] [1416588711.983184977]: KCL: Feedback received [4,action enabled]
+[ INFO] [1416588713.983181141]: KCL: Feedback received [4,action achieved]
+[feedbackValveState: valve_0_angle->2.27456690122
+[ INFO] [1416588713.983281350]: KCL: Valve 0 detected at 2.274567
+[feedbackValveState: valve_0_in_panel->0
+[feedbackValveState: valveID: 0; panelID: 0
+[feedbackValveState: valve_1_angle->2.15476493572
+[ INFO] [1416588713.983383225]: KCL: Valve 1 detected at 2.154765
+[feedbackValveState: valve_1_in_panel->0
+[feedbackValveState: valveID: 1; panelID: 0
+[feedbackValveState: valve_2_angle->2.25145870485
+[ INFO] [1416588713.983453512]: KCL: Valve 2 detected at 2.251459
+[feedbackValveState: valve_2_in_panel->0
+[feedbackValveState: valveID: 2; panelID: 0
+[feedbackValveState: valve_3_angle->2.16354026059
+[ INFO] [1416588713.983621610]: KCL: Valve 3 detected at 2.163540
+[feedbackValveState: valve_3_in_panel->0
+[feedbackValveState: valveID: 3; panelID: 0
+[ INFO] [1416588714.083406318]: KCL: Replanning to correct valves, last deadline completed: 0.000000
+[ INFO] [1416588714.083475905]: KCL: Fetching objects
+[ INFO] [1416588714.083685266]: KCL: Building PRM
+[ INFO] [1416588714.083733709]: KCL: Adding Strategic points
+[ INFO] [1416588714.094124412]: KCL: Generating PDDL problem file
+[ INFO] [1416588714.097440185]: KCL: Running: timeout 10 rosrun planning_system bin/popf -n /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/pandora_domain_persistent.pddl /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/pandora_problem.pddl > /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/plan.pddl
+[ INFO] [1416588724.108341811]: KCL: Planning complete
+[ INFO] [1416588724.108539112]: KCL: Post processing plan
+[ INFO] [1416588724.109027226]: KCL: Dispatching action [5, goto, 71.161198, 4.629000]
+[ INFO] [1416588724.209334629]: KCL: Feedback received [5,action enabled]
+[ INFO] [1416588728.209349719]: KCL: Feedback received [5,action achieved]
+[ INFO] [1416588728.309627805]: KCL: Dispatching action [6, turn_valve, 71.161198, 120.000000]
+[ INFO] [1416588728.409335673]: KCL: Feedback received [6,action enabled]
+[ INFO] [1416588820.209347101]: KCL: Feedback received [6,action achieved]
+[ INFO] [1416588820.309538788]: KCL: Dispatching action [7, goto, 199.161198, 10.000000]
+[ INFO] [1416588820.409324992]: KCL: Feedback received [7,action enabled]
+[ INFO] [1416588825.009339104]: KCL: Feedback received [7,action achieved]
+[ INFO] [1416588825.109674497]: KCL: Dispatching action [8, turn_valve, 199.161198, 120.000000]
+[ INFO] [1416588825.209326423]: KCL: Feedback received [8,action enabled]
+[ INFO] [1416588917.209348382]: KCL: Feedback received [8,action achieved]
+[ INFO] [1416588917.309634132]: KCL: Replanning to validate valve positions on panel 0
+[ INFO] [1416588917.309703881]: KCL: Replanning to correct valves, last deadline completed: 600.000000
+[ INFO] [1416588917.309858456]: KCL: Fetching objects
+[ INFO] [1416588917.310084271]: KCL: Building PRM
+[ INFO] [1416588917.310133397]: KCL: Adding Strategic points
+[ INFO] [1416588917.322750435]: KCL: Generating PDDL problem file
+[ INFO] [1416588917.325253840]: KCL: Running: timeout 10 rosrun planning_system bin/popf -n /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/pandora_domain_persistent.pddl /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/pandora_problem.pddl > /home/arnau/hydro_ws/src/kcl_pandora/planning_system/data/plan.pddl
+[ INFO] [1416588927.335900468]: KCL: Planning complete
+[ INFO] [1416588927.336147539]: KCL: Post processing plan
+Examing panel:
+* wp_strat_panel0.
+* p0.
+Examing panel:
+* wp_strat_panel0.
+* p0.
+[ INFO] [1416588928.036877635]: KCL: Dispatching action [9, goto, 327.161198, 13.863000]
+[ INFO] [1416588928.136877942]: KCL: Feedback received [9,action enabled]
+[ INFO] [1416588938.536840998]: KCL: Feedback received [9,action achieved]
+[ INFO] [1416588938.637139243]: KCL: Dispatching action [10, examine_panel, 327.161198, 10.000000]
+[ INFO] [1416588938.736852751]: KCL: Feedback received [10,action enabled]
+[ INFO] [1416588940.736858975]: KCL: Feedback received [10,action achieved]
+[feedbackValveState: valve_0_angle->2.47336123995
+[ INFO] [1416588940.736942020]: KCL: Valve 0 detected at 2.473361
+[feedbackValveState: valve_0_in_panel->0
+[feedbackValveState: valveID: 0; panelID: 0
+[feedbackValveState: valve_1_angle->2.31579772396
+[ INFO] [1416588940.737024184]: KCL: Valve 1 detected at 2.315798
+[feedbackValveState: valve_1_in_panel->0
+[feedbackValveState: valveID: 1; panelID: 0
+[feedbackValveState: valve_2_angle->2.22295029634
+[ INFO] [1416588940.737094048]: KCL: Valve 2 detected at 2.222950
+[feedbackValveState: valve_2_in_panel->0
+[feedbackValveState: valveID: 2; panelID: 0
+[feedbackValveState: valve_3_angle->2.05773006631
+[ INFO] [1416588940.737162808]: KCL: Valve 3 detected at 2.057730
+[feedbackValveState: valve_3_in_panel->0
+[feedbackValveState: valveID: 3; panelID: 0
+[ INFO] [1416588940.837090264]: KCL: Dispatching action [11, goto, 327.161198, 5.500000]
+[ INFO] [1416588940.936848780]: KCL: Feedback received [11,action enabled]
+[ INFO] [1416588941.036869671]: KCL: Feedback received [11,action achieved]
+[ INFO] [1416588941.137110493]: KCL: Dispatching action [12, turn_valve, 327.161198, 120.000000]
+[ INFO] [1416588941.236820705]: KCL: Feedback received [12,action enabled]
+[ INFO] [1416589035.037001316]: KCL: Feedback received [12,action achieved]
+[ INFO] [1416589036.036873667]: KCL: Waiting 19.963191 before dispatching action: [13, goto, 455.161198, 10.000000]
+[ INFO] [1416589056.036846733]: KCL: Dispatching action [13, goto, 455.161198, 10.000000]
+[ INFO] [1416589056.136819947]: KCL: Feedback received [13,action enabled]
+[ INFO] [1416589061.036898531]: KCL: Feedback received [13,action achieved]
+[ INFO] [1416589061.137108368]: KCL: Dispatching action [14, turn_valve, 455.161198, 120.000000]
+[ INFO] [1416589061.236908822]: KCL: Feedback received [14,action enabled]
+[ INFO] [1416589153.136865507]: KCL: Feedback received [14,action achieved]
+[ INFO] [1416589153.237024177]: KCL: Replanning to validate valve positions on panel 0
+[ INFO] [1416589153.237064641]: KCL: Replanning to correct valves, last deadline completed: 600.000000
+

@@ -1,0 +1,11 @@
+<launch>
+
+	<!-- planning system -->
+	<node name="planning_system" pkg="planning_system" type="planner" respawn="false" output="screen">
+	    <param name="data_path" value="$(find planning_system)/data/" />
+	    <param name="strategic_domain" value="$(find planning_system)/data/pandora_domain_strategic.pddl" />
+	    <param name="mission_domain" value="$(find planning_system)/data/pandora_domain_persistent.pddl" />
+	    <param name="use_octomap" value="false" />
+	</node>
+
+</launch>

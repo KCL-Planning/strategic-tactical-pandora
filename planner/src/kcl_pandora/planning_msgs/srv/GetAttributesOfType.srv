@@ -1,0 +1,5 @@
+# PDDL problem generation; service(3/4):
+# Get all attributes of a type. The results is passed as name / value pairs, where the values need to be parsed by the program.
+string name 
+---
+diagnostic_msgs/KeyValue[] values
