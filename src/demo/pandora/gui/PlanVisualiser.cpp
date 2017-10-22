@@ -170,7 +170,7 @@ void PlanVisualiser::setCurrentPlan(const planning_msgs::CompletePlan::ConstPtr&
 			if (added_first_point)
 			{
 				std::vector<glm::vec3>* to_add_to = NULL;
-				if (scene_manager_->getRoot().doesCollide(auv_, previous_point, point, 1.0f))
+				if (scene_manager_->getRoot().doesCollide(previous_point, point, 1.0f))
 				{
 					to_add_to = &bad_line_segments;
 				}

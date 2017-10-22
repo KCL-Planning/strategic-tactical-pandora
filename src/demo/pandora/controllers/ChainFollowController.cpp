@@ -264,7 +264,7 @@ PlannerAction::PLANNER_ACTION_STATUS ChainFollowController::getStatus()
 		}
 		
 		// Check if the AUV is about to collide, if this is the case then we do an emergency stop.
-		if (scene_manager_->getRoot().doesCollide(auv_, auv_->getGlobalLocation(), end_point, 1.0f))
+		if (scene_manager_->getRoot().doesCollide(auv_->getGlobalLocation(), end_point, 1.0f))
 		{
 			auv_->setVelocity(0.0f);
 			std::cout << "ACTION FAILED!!!!!!!!!!" << std::endl;

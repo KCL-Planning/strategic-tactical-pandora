@@ -96,7 +96,7 @@ PipeNetwork::PipeNetwork(DreadedPE::SceneManager& scene_manager, DreadedPE::Scen
 	{
 		glm::vec3 mid_point((i % grid_width_) * grid_size + min_x, 2.0f, (i / grid_width_) * grid_size + min_y);
 		
-		if (scene_manager.getRoot().doesCollide(NULL, mid_point, mid_point + glm::vec3(0.0f, 100.0f, 0.0f), 1.5f))
+		if (scene_manager.getRoot().doesCollide(mid_point, mid_point + glm::vec3(0.0f, 100.0f, 0.0f), 1.5f))
 		{
 			grid[i] = -1;
 			

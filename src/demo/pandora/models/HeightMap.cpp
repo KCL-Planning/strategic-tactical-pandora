@@ -329,7 +329,7 @@ bool HeightMap::doesCollide(DreadedPE::Entity& entity, DreadedPE::CollisionInfo&
 
 	for (std::vector<DreadedPE::SceneNode*>::const_iterator ci = children_.begin(); ci != children_.end(); ++ci)
 	{
-		if ((*ci)->doesCollide(entity, info))
+		if ((*ci)->doesCollide(entity))
 		{
 			return true;
 		}
@@ -352,7 +352,7 @@ bool HeightMap::doesCollide(DreadedPE::Entity& entity, const glm::vec3& begin, c
 
 	for (std::vector<DreadedPE::SceneNode*>::const_iterator ci = children_.begin(); ci != children_.end(); ++ci)
 	{
-		if ((*ci)->doesCollide(entity, begin, end, info))
+		if ((*ci)->doesCollide(begin, end))
 		{
 			return true;
 		}
@@ -435,7 +435,7 @@ bool HeightMap::doesCollide(DreadedPE::Entity* entity, const glm::vec3& begin, c
 
 	for (std::vector<DreadedPE::SceneNode*>::const_iterator ci = children_.begin(); ci != children_.end(); ++ci)
 	{
-		if ((*ci)->doesCollide(entity, begin, end, effective_width))
+		if ((*ci)->doesCollide(begin, end, effective_width))
 		{
 			return true;
 		}
@@ -457,7 +457,7 @@ bool HeightMap::doesCollide(DreadedPE::Entity* entity, const glm::vec3& point) c
 
 	for (std::vector<DreadedPE::SceneNode*>::const_iterator ci = children_.begin(); ci != children_.end(); ++ci)
 	{
-		if ((*ci)->doesCollide(entity, point))
+		if ((*ci)->doesCollide(point))
 		{
 			return true;
 		}
