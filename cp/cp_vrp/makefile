@@ -1,23 +1,25 @@
-CCC = clang++
+include Makefile.linux
+#include Makefile.osx
+#CCC = clang++
 
-ILOGDIR = /usr/local/ilog/CPLEX_Studio127
+#ILOGDIR = /usr/local/ilog/CPLEX_Studio127
 
 CONCERTDIR = $(ILOGDIR)/concert
 CPLEXDIR = $(ILOGDIR)/cplex
 CPODIR = $(ILOGDIR)/cpoptimizer
 
-CPLEXLIBDIR   = $(CPLEXDIR)/lib/x86-64_osx/static_pic
-CONCERTLIBDIR = $(CONCERTDIR)/lib/x86-64_osx/static_pic
-CPOLIBDIR = $(CPODIR)/lib/x86-64_osx/static_pic
+CPLEXLIBDIR   = $(CPLEXDIR)/lib/$(ARCH)
+CONCERTLIBDIR = $(CONCERTDIR)/lib/$(ARCH)
+CPOLIBDIR = $(CPODIR)/lib/$(ARCH)
 
 PORT_FLAGS = -DONE_TO_ONE_RECHARGES -DRECHARGE_LB 
 #-DINSERT_SOLUTION
-#DEBUG = -g
-DEBUG = -O -DNDEBUG
+DEBUG = -g
+#DEBUG = -O -DNDEBUG
 
 CFLAGS = -DIL_STD $(DEBUG) $(PORT_FLAGS) -I$(CPLEXDIR)/include -I$(CPODIR)/include -I$(CONCERTDIR)/include -fPIC -fstrict-aliasing -pedantic -Wall -fexceptions -Wno-long-long -m64 -DILOUSEMT -D_REENTRANT -DILM_REENTRANT -std=c++11
 
-LDFLAGS = -L$(CPOLIBDIR) -lcp -L$(CPLEXLIBDIR) -lcplex -lilocplex -L$(CONCERTLIBDIR) -lconcert -lpthread -lm
+LDFLAGS = -L$(CONCERTLIBDIR) -L$(CPLEXLIBDIR) -L$(CPOLIBDIR) -lcp -lconcert -lilocplex -lcplex -lm -lpthread 
 
 #=============== SOURCES =========================
 OBJ_SRCS = problem.cpp solver.cpp main.cpp
