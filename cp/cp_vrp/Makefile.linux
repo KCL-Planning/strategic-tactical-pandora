@@ -1,0 +1,3 @@
+CCC = g++
+ILOGDIR = /opt/ilog/CPLEX_Studio1271
+ARCH = x86-64_linux/static_pic

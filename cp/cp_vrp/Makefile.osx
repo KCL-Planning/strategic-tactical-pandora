@@ -1,0 +1,3 @@
+CCC = clang++
+ILOGDIR = /usr/local/ilog/CPLEX_Studio127
+ARCH = x86-64_osx/static_pic
