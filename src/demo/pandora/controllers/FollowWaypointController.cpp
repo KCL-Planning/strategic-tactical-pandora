@@ -102,7 +102,7 @@ void FollowWaypointController::update(float dt)
 	glm::vec3 end_point = goal_;
 		
 	// Check if the AUV is about to collide, if this is the case then we do an emergency stop.
-	if (scene_manager_->getRoot().doesCollide(auv_, auv_->getGlobalLocation(), end_point, collision_distance_))
+	if (scene_manager_->getRoot().doesCollide(auv_->getGlobalLocation(), end_point, collision_distance_))
 	{
 		auv_->setVelocity(0);
 	}
@@ -151,7 +151,7 @@ PlannerAction::PLANNER_ACTION_STATUS FollowWaypointController::getStatus()
 	}
 	
 	// Check if the AUV is about to collide, if this is the case then we do an emergency stop.
-	if (scene_manager_->getRoot().doesCollide(auv_, auv_->getGlobalLocation(), end_point, collision_distance_))
+	if (scene_manager_->getRoot().doesCollide(auv_->getGlobalLocation(), end_point, collision_distance_))
 	{
 		auv_->setVelocity(0.0f);
 		std::cout << "ACTION FAILED!!!!!!!!!!" << std::endl;

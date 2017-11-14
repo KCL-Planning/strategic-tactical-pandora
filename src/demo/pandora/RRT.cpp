@@ -178,7 +178,7 @@ bool RRT::canConnect(const glm::vec3& w1, const glm::vec3& w2, float min_width, 
 {
 	if (perfect_data)
 	{
-		return !scene_manager_->getRoot().doesCollide(entities_[0], w1, w2, min_width);
+		return !scene_manager_->getRoot().doesCollide(w1, w2, min_width);
 	}
 	return !octomap_->isBlocked(w1, w2, min_width);
 }

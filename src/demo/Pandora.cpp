@@ -175,14 +175,17 @@ bool Pandora::getPointOnSeaBed(int mouse_x, int mouse_y, glm::vec3& collision)
 	glm::vec3 world_coordinates = glm::vec3(glm::inverse(camera_node_->getViewMatrix()) * eye_ray);
 	glm::vec3 direction = glm::normalize(world_coordinates);
 	
-	DreadedPE::CollisionInfo collision_info;
-	if (terrain_node_->doesCollide(*auv_, camera_node_->getGlobalLocation(), camera_node_->getGlobalLocation() + direction * 200.0f, collision_info))
+	std::vector<DreadedPE::CollisionInfo> collision_info;
+	if (terrain_node_->getCollisions(*auv_, camera_node_->getGlobalLocation(), camera_node_->getGlobalLocation() + direction * 200.0f, collision_info))
 	{
-		for (std::vector<DreadedPE::CollisionPoint>::const_iterator ci = collision_info.collision_loc_.begin(); ci != collision_info.collision_loc_.end(); ++ci)
+		for (const DreadedPE::CollisionInfo& col : collision_info)
 		{
-			std::cout << "Got a collision at: (" << (*ci).intersection_point_.x << ", " << (*ci).intersection_point_.y << ", " << (*ci).intersection_point_.z << ")" << std::endl;
-			collision = (*ci).intersection_point_;
-			return true;
+			for (std::vector<DreadedPE::CollisionPoint>::const_iterator ci = col.collision_loc_.begin(); ci != col.collision_loc_.end(); ++ci)
+			{
+				std::cout << "Got a collision at: (" << (*ci).intersection_point_.x << ", " << (*ci).intersection_point_.y << ", " << (*ci).intersection_point_.z << ")" << std::endl;
+				collision = (*ci).intersection_point_;
+				return true;
+			}
 		}
 	}
 	return false;
