@@ -1,0 +1,47 @@
+# :functions is not recognized in domain
+# :metric is not recognized in problem
+# Domain name:pandora_domain_strategic
+# Problem name: pandora_strategic_mission
+# ----------------------------
+# Vehicles
+nb_vehicles 1
+auv 1200.0 wp_auv0
+# Missions
+nb_missions 15
+mission0 261.867 261.867 mission_site_start_point_1 4100.0
+mission1 242.065 242.065 mission_site_start_point_1 7100.0
+mission10 73.317 73.317 mission_site_start_point_2 -1
+mission11 364.822 364.822 mission_site_start_point_2 -1
+mission12 366.427 366.427 mission_site_start_point_2 -1
+mission13 274.995 274.995 mission_site_start_point_2 -1
+mission14 690.906 690.906 mission_site_start_point_2 -1
+mission2 336.17 336.17 mission_site_start_point_1 -1
+mission3 365.49 365.49 mission_site_start_point_1 -1
+mission4 340.969 340.969 mission_site_start_point_1 -1
+mission5 337.334 337.334 mission_site_start_point_1 -1
+mission6 283.019 283.019 mission_site_start_point_1 -1
+mission7 650.15 650.15 mission_site_start_point_1 -1
+mission8 364.384 364.384 mission_site_start_point_1 -1
+mission9 626.822 626.822 mission_site_start_point_1 -1
+# Recharging
+nb_recharges 1
+dock 20 20
+recharge mission_site_start_point_0 1800 2000
+undock 10
+# Distances
+nb_distances 12
+mission_site_start_point_0 mission_site_start_point_1 53.8888
+mission_site_start_point_0 mission_site_start_point_2 102.0
+mission_site_start_point_0 wp_auv0 56.7891
+mission_site_start_point_1 mission_site_start_point_0 53.8888
+mission_site_start_point_1 mission_site_start_point_2 50.0
+mission_site_start_point_1 wp_auv0 22.561
+mission_site_start_point_2 mission_site_start_point_0 102.0
+mission_site_start_point_2 mission_site_start_point_1 50.0
+mission_site_start_point_2 wp_auv0 63.3167
+wp_auv0 mission_site_start_point_0 56.7891
+wp_auv0 mission_site_start_point_1 22.561
+wp_auv0 mission_site_start_point_2 63.3167
+# Travel
+delta_charge_coeff 5.0
+travel_duration_coeff 5.0

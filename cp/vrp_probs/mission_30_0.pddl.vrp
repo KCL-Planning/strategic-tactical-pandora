@@ -1,0 +1,70 @@
+# :functions is not recognized in domain
+# :metric is not recognized in problem
+# Domain name:pandora_domain_strategic
+# Problem name: pandora_strategic_mission
+# ----------------------------
+# Vehicles
+nb_vehicles 1
+auv 1200.0 wp_auv0
+# Missions
+nb_missions 30
+mission0 261.867 261.867 mission_site_start_point_1 4100.0
+mission1 242.066 242.066 mission_site_start_point_1 7100.0
+mission10 73.317 73.317 mission_site_start_point_2 -1
+mission11 73.317 73.317 mission_site_start_point_2 -1
+mission12 340.705 340.705 mission_site_start_point_2 -1
+mission13 332.347 332.347 mission_site_start_point_2 -1
+mission14 364.822 364.822 mission_site_start_point_2 -1
+mission15 366.427 366.427 mission_site_start_point_2 -1
+mission16 607.311 607.311 mission_site_start_point_2 -1
+mission17 793.546 793.546 mission_site_start_point_2 -1
+mission18 787.447 787.447 mission_site_start_point_2 -1
+mission19 626.011 626.011 mission_site_start_point_2 -1
+mission2 336.17 336.17 mission_site_start_point_1 -1
+mission20 80.774 80.774 mission_site_start_point_3 -1
+mission21 80.774 80.774 mission_site_start_point_3 -1
+mission22 384.45 384.45 mission_site_start_point_3 -1
+mission23 327.052 327.052 mission_site_start_point_3 -1
+mission24 328.48 328.48 mission_site_start_point_3 -1
+mission25 385.348 385.348 mission_site_start_point_3 -1
+mission26 653.218 653.218 mission_site_start_point_3 -1
+mission27 733.812 733.812 mission_site_start_point_3 -1
+mission28 650.03 650.03 mission_site_start_point_3 -1
+mission29 689.49 689.49 mission_site_start_point_3 -1
+mission3 365.49 365.49 mission_site_start_point_1 -1
+mission4 340.969 340.969 mission_site_start_point_1 -1
+mission5 337.334 337.334 mission_site_start_point_1 -1
+mission6 608.425 608.425 mission_site_start_point_1 -1
+mission7 800.794 800.794 mission_site_start_point_1 -1
+mission8 692.803 692.803 mission_site_start_point_1 -1
+mission9 629.094 629.094 mission_site_start_point_1 -1
+# Recharging
+nb_recharges 1
+dock 20 20
+recharge mission_site_start_point_0 1800 2000
+undock 10
+# Distances
+nb_distances 20
+mission_site_start_point_0 mission_site_start_point_1 53.8888
+mission_site_start_point_0 mission_site_start_point_2 102.0
+mission_site_start_point_0 mission_site_start_point_3 58.3438
+mission_site_start_point_0 wp_auv0 56.7891
+mission_site_start_point_1 mission_site_start_point_0 53.8888
+mission_site_start_point_1 mission_site_start_point_2 50.0
+mission_site_start_point_1 mission_site_start_point_3 50.0
+mission_site_start_point_1 wp_auv0 22.561
+mission_site_start_point_2 mission_site_start_point_0 102.0
+mission_site_start_point_2 mission_site_start_point_1 50.0
+mission_site_start_point_2 mission_site_start_point_3 70.7107
+mission_site_start_point_2 wp_auv0 63.3167
+mission_site_start_point_3 mission_site_start_point_0 58.3438
+mission_site_start_point_3 mission_site_start_point_1 50.0
+mission_site_start_point_3 mission_site_start_point_2 70.7107
+mission_site_start_point_3 wp_auv0 70.7743
+wp_auv0 mission_site_start_point_0 56.7891
+wp_auv0 mission_site_start_point_1 22.561
+wp_auv0 mission_site_start_point_2 63.3167
+wp_auv0 mission_site_start_point_3 70.7743
+# Travel
+delta_charge_coeff 5.0
+travel_duration_coeff 5.0
