@@ -14,8 +14,8 @@ CPOLIBDIR = $(CPODIR)/lib/$(ARCH)
 
 PORT_FLAGS = -DONE_TO_ONE_RECHARGES -DRECHARGE_LB 
 #-DINSERT_SOLUTION
-DEBUG = -g
-#DEBUG = -O -DNDEBUG
+#DEBUG = -g
+DEBUG = -O -DNDEBUG
 
 CFLAGS = -DIL_STD $(DEBUG) $(PORT_FLAGS) -I$(CPLEXDIR)/include -I$(CPODIR)/include -I$(CONCERTDIR)/include -fPIC -fstrict-aliasing -pedantic -Wall -fexceptions -Wno-long-long -m64 -DILOUSEMT -D_REENTRANT -DILM_REENTRANT -std=c++11
 
