@@ -290,8 +290,8 @@ void Problem::dumpData() {
     cout << "\t" << *r << endl;
 
   cout << "Num Waypoints: " << _waypointIndex.size() << endl;
-  for(int i = 0; i < _waypointIndex.size(); ++i) {
-    for(int j = 0; j < _waypointIndex.size(); ++j) 
+  for(unsigned int i = 0; i < _waypointIndex.size(); ++i) {
+    for(unsigned int j = 0; j < _waypointIndex.size(); ++j) 
       cout << "\t" << _distanceMatrix[i][j];
     cout << endl;
   }
