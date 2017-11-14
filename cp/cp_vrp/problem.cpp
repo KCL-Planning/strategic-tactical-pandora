@@ -92,24 +92,36 @@ void Problem::parseWaypointIndex(string line) {
   float distance; // ignored
   sscanf(line.c_str(),"%s %s %f", wp1, wp2, &distance);
 
-  //cout << wp1 << " " <<  _waypointIndex.size() << endl;
+  if (_waypointIndex.find(wp1) == _waypointIndex.end()) {
+    // JCB: with g++ (but not clang++) a side-effect increments size
+    // with the LHS of the statement below leading to the incorrect
+    // index. Hence the two-steps.
+    int newIndex =  _waypointIndex.size();
+    //cout << "Adding " << wp1 << " " << newIndex << endl;
+    _waypointIndex[wp1] = newIndex;
+    // map<string,int>::iterator it = _waypointIndex.find(wp1);
+    // cout << it->first << " " << it->second << endl;
+  }
 
-  if (_waypointIndex.find(wp1) == _waypointIndex.end())
-    _waypointIndex[wp1] = _waypointIndex.size();
+  if (_waypointIndex.find(wp2) == _waypointIndex.end()) {
+    int newIndex =  _waypointIndex.size();
+    //cout << "Adding " <<  wp2 << " " <<  newIndex << endl;
+    _waypointIndex[wp2] =  newIndex;
 
-  //cout << wp1 << " " <<  _waypointIndex.size() << endl;
-  if (_waypointIndex.find(wp2) == _waypointIndex.end())
-    _waypointIndex[wp2] = _waypointIndex.size();
+    // map<string,int>::iterator it = _waypointIndex.find(wp2);
+    // cout << it->first << " " << it->second << endl;
+  }
 }
   
 void Problem::parseAllDistances(vector<string> allDistances) {
   // processes all distances into a distance matrix
 
-//   for(map<string,int>::iterator it = _waypointIndex.begin();
-//       it != _waypointIndex.end();
-//       it++) {
-//     cout << it->first << " " << it->second << endl;
-//   }
+  // cout << "parseAllDistances" << endl;
+  //  for(map<string,int>::iterator it = _waypointIndex.begin();
+  //      it != _waypointIndex.end();
+  //      it++) {
+  //    cout << it->first << " " << it->second << endl;
+  //  }
 
 
   // create 2D distance array
@@ -121,11 +133,11 @@ void Problem::parseAllDistances(vector<string> allDistances) {
       _distanceMatrix[i][j] = 0;
   }
 
-//   for(int i = 0; i < _waypointIndex.size(); ++i) {
-//     for(int j = 0; j < _waypointIndex.size(); ++j) 
-//       cout << "\t" << _distanceMatrix[i][j];
-//     cout << endl;
-//   }
+  // for(unsigned int i = 0; i < _waypointIndex.size(); ++i) {
+  //   for(unsigned int j = 0; j < _waypointIndex.size(); ++j) 
+  //     cout << "\t" << _distanceMatrix[i][j];
+  //   cout << endl;
+  // }
 
   // for each entry in allDistances, set the distance
   for (string s : allDistances) {
