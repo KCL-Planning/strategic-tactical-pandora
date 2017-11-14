@@ -25,7 +25,7 @@ void Solver::calculateHorizonBound(IloInt maxTransition) {
   cout << "MaxTransition: " << maxTransition << endl;
 #endif
    int rechargeIndex = _problem.getWaypointIndex()[getRechargeWaypoint()];
-   for(int i = 0; i < _problem.getWaypointIndex().size(); ++i) {
+   for(unsigned int i = 0; i < _problem.getWaypointIndex().size(); ++i) {
      IloInt d = Discretize((_problem.getDistance(i, rechargeIndex) + 
 			    _problem.getDistance(rechargeIndex, i)) * 
 			   _problem.getTravelDurationCoeff());
@@ -71,17 +71,17 @@ IloInt Solver::populateTransitions() {
 
   // second representation of same distance data for use in the element constraint
   _inverseDeltaCharge = IloArray<IloIntArray>(_env);
-  for(int i = 0; i < waypointIndex.size() + 1; ++i) {
+  for(unsigned int i = 0; i < waypointIndex.size() + 1; ++i) {
     _inverseDeltaCharge.add(IloIntArray(_env));
-    for(int j = 0; j <  waypointIndex.size() + 1; ++j) {
+    for(unsigned int j = 0; j <  waypointIndex.size() + 1; ++j) {
       _inverseDeltaCharge[i].add(0);
     }
   }
 
   IloInt maxTransition = 0;
 
-  for(int i = 0; i < waypointIndex.size(); ++i) {
-    for(int j = 0; j < waypointIndex.size(); ++j) {
+  for(unsigned int i = 0; i < waypointIndex.size(); ++i) {
+    for(unsigned int j = 0; j < waypointIndex.size(); ++j) {
       // even though we have one more type, all distances to the last type are zero
       // and so the above loops do not need to iterate over the last type
       IloInt d = Discretize(_problem.getDistance(i,j) * _problem.getTravelDurationCoeff());
@@ -97,8 +97,8 @@ IloInt Solver::populateTransitions() {
   }
 
 #ifndef NDEBUG
-  for(int i = 0; i < waypointIndex.size(); ++i) {
-    for(int j = 0; j < waypointIndex.size(); ++j) {
+  for(unsigned int i = 0; i < waypointIndex.size(); ++i) {
+    for(unsigned int j = 0; j < waypointIndex.size(); ++j) {
 
       cout << Undiscretize(_inverseDeltaCharge[i][j]) << " ";
     }
@@ -234,7 +234,7 @@ void Solver::addRechargeBound() {
   }
 
   sort(missionCharge.begin(), missionCharge.end());
-  for(int i = 0; i < missionCharge.size(); ++i)
+  for(unsigned int i = 0; i < missionCharge.size(); ++i)
     cout << Undiscretize(missionCharge[i]) << " ";
   cout << endl;
 
@@ -243,7 +243,7 @@ void Solver::addRechargeBound() {
   chargeLB.add(0);
   chargeLB.add(missionCharge[0]);
   
-  for(int i = 1; i < missionCharge.size(); ++i) {
+  for(unsigned int i = 1; i < missionCharge.size(); ++i) {
     missionCharge[i] += missionCharge[i-1];
     cout << Undiscretize(missionCharge[i]) << " ";
     chargeLB.add(missionCharge[i]);
@@ -345,7 +345,7 @@ bool Solver::createModel() {
 
   IloIntervalVarArray dockActs(_env);
   IloIntervalVarArray undockActs(_env);
-  for(int i = 0; i < _problem.getMissions().size() + 1; ++i) {
+  for(unsigned int i = 0; i < _problem.getMissions().size() + 1; ++i) {
     // need an one more recharge than the number of missions because we may
     // start with a recharge
     IloIntervalVar dockAct = createDockActivity(i);
@@ -470,10 +470,9 @@ bool Solver::createModel() {
   for(int i = 0; i < _recharges.getSize(); ++i) {
     IloIntervalVar dockAct = dockActs[i];
     IloIntervalVar rechargeAct = _recharges[i];
-    IloIntervalVar undockAct = undockActs[i];
     Recharge *r = (Recharge *) rechargeAct.getObject();
     assert(rechargeAct.getObject() == dockAct.getObject());
-    assert(rechargeAct.getObject() == undockAct.getObject());
+    assert(rechargeAct.getObject() == undockActs[i].getObject());
 
     // energy consumption by dockAct
     IloInt startConsumption = Discretize(r->getStartCharge());
