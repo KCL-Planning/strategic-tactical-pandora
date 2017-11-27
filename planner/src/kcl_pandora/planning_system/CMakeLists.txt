@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 2.8.3)
 project(planning_system)
 
 find_package(catkin REQUIRED COMPONENTS rospy roscpp std_msgs diagnostic_msgs planning_msgs knowledge_msgs geometry_msgs auv_msgs nav_msgs actionlib)
-find_package(Eigen3 REQUIRED)
+#find_package(Eigen3 REQUIRED)
+find_package(PkgConfig)
+pkg_search_module(Eigen3 REQUIRED eigen3)
 
 ###################################
 ## catkin specific configuration ##

@@ -129,6 +129,7 @@ namespace PandoraKCL {
 	 */
 	bool runStrategicPlanner(std::string &dataPath)
 	{
+		/*
 		std::string popfCommand = "rosrun planning_system bin/popf ";
 
 		// run the planner
@@ -140,7 +141,7 @@ namespace PandoraKCL {
 		ROS_INFO("KCL: Running: %s", commandString.c_str());
 		std::string plan = runCommand(commandString.c_str());
 		ROS_INFO("KCL: Planning complete");
-
+		
 		// check the Planner solved the problem
 		std::ifstream planfile;
 		planfile.open((dataPath + "plan_strategic.pddl").c_str());
@@ -157,11 +158,29 @@ namespace PandoraKCL {
 				return false;
 		}
 		planfile.close();
-		
+		*/
+
 		ROS_INFO("KCL: Processing strategic plan");
 
+		std::string command_convert = "python p2vrp.py "
+			 + strategicDomain + " "
+			 + dataPath + "pandora_strategic_problem.pddl > "
+			 + dataPath + "strategic_problem.vrp";
+		ROS_INFO("KCL: Running: %s", command_convert.c_str());
+		runCommand(command_convert.c_str());
+
+		/*
+		0 = maximize number of missions executed
+		1 = maximize number of missions executed then (given that number of missions) minimize number of recharges
+		2 = execute all missions and minimize the makespan
+		*/
+		std::string command_solve = "cp_vrp strategic_problem.vrp 60 2";
+		ROS_INFO("KCL: Running: %s", command_solve.c_str());
+		runCommand(command_solve.c_str());
+
 		// Convert plan into message list for dispatch
-		prepareStrategicPlan(dataPath);
+		// prepareStrategicPlan(dataPath);
+		// TODO parse cp output into action list by rewriting the above method.		
 
 		return true;
 	}
