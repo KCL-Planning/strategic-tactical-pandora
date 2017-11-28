@@ -1,4 +1,4 @@
-(define (domain pandora_strategic)
+(define (domain pandora_domain_strategic)
 
 (:requirements :strips :typing :fluents :disjunctive-preconditions :durative-actions :timed-initial-literals)
 
