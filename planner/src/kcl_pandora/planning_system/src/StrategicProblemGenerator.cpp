@@ -67,29 +67,7 @@ namespace PandoraKCL {
 					next=line.find(" ",curr);
 					msg.duration = (double)atof(line.substr(curr,next-curr).c_str());
 
-					/* parameters
-					std::vector<std::string> params;
-					curr=next+5;
-					next=line.find(")",curr);
-					int at = curr;
-					while(at < next) {
-						int cc = line.find(" ",curr);
-						int cc1 = line.find(")",curr);
-						curr = cc<cc1?cc:cc1;
-						std::string param = name_map[line.substr(at,curr-at)];
-						params.push_back(param);
-						++curr;
-						at = curr;
-					}
-					if("do_hover" == msg.name) {
-						// parameters (?v - vehicle ?from ?to - waypoint)
-						std::string wp_id = params[1];
-						msg.name = "goto_structure";
-						diagnostic_msgs::KeyValue pair;
-						pair.key = "structure";
-						pair.value = wp_id;
-						msg.parameters.push_back(pair);
-					} else */if(line.substr(0,4).compare("dock") == 0) {
+					if(line.substr(0,4).compare("dock") == 0) {
 						// parameters (?v - vehicle ?wp - waypoint)
 						msg.name = "dock_auv";
 					} else if(line.substr(0,6).compare("undock") == 0) {
@@ -99,6 +77,7 @@ namespace PandoraKCL {
 						// parameters (?v - vehicle ?wp - waypoint)
 						msg.name = "recharge";
 					} else if(line.substr(0,11).compare("auv_mission") == 0) {
+
 						msg.name = "complete_mission";
 						// parameters (?v - vehicle ?m - mission ?wp - waypoint)
 						curr = 11;
@@ -108,6 +87,28 @@ namespace PandoraKCL {
 						pair.key = "mission";
 						pair.value = "Mission" + mission_id;
 						msg.parameters.push_back(pair);
+
+						if(msg.dispatch_time - planDuration > 0) {
+							// insert do_hover
+							planning_msgs::ActionDispatch dh_msg;
+							dh_msg.action_id = -1;
+							dh_msg.name = "goto_structure";
+
+							diagnostic_msgs::KeyValue dh_pair;
+							dh_pair.key = "structure";
+							std::map<std::string,std::string>::iterator it=mission_structure_map.begin();
+							for (; it!=mission_structure_map.end(); ++it) {
+								if(it->first == pair.value) {
+									dh_pair.value = structure_wp_names[it->second];
+								}
+							}
+							dh_msg.parameters.push_back(dh_pair);
+
+							dh_msg.dispatch_time = planDuration;
+							dh_msg.duration = msg.dispatch_time - planDuration;
+
+							potentialPlan.push_back(dh_msg);
+						}
 					}
 
 
