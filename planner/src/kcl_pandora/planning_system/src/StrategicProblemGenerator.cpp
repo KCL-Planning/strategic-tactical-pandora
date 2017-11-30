@@ -70,6 +70,29 @@ namespace PandoraKCL {
 					if(line.substr(0,4).compare("dock") == 0) {
 						// parameters (?v - vehicle ?wp - waypoint)
 						msg.name = "dock_auv";
+
+						if(msg.dispatch_time - planDuration > 0) {
+							// insert do_hover
+							planning_msgs::ActionDispatch dh_msg;
+							dh_msg.action_id = -1;
+							dh_msg.name = "goto_structure";
+
+							diagnostic_msgs::KeyValue dh_pair;
+							dh_pair.key = "structure";
+							if (recharge_structures.size() > 0) {
+								std::vector<std::string>::iterator rit = recharge_structures.begin();
+								dh_pair.value = structure_wp_names[*rit];
+							} else {
+								ROS_ERROR("KCL: No recharge stations exist.");
+							}
+							dh_msg.parameters.push_back(dh_pair);
+
+							dh_msg.dispatch_time = planDuration;
+							dh_msg.duration = msg.dispatch_time - planDuration;
+
+							potentialPlan.push_back(dh_msg);
+						}
+
 					} else if(line.substr(0,6).compare("undock") == 0) {
 						// parameters (?v - vehicle ?wp - waypoint)
 						msg.name = "undock_auv";
